@@ -56,6 +56,14 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Narrow-screen Gantt label column. board.css has the same rule, but it is imported before the
+   token above and loses to it; the prototype defines the token first. */
+@media (max-width: 860px) {
+  :root {
+    --lw: 150px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --bg: #0d1222;
