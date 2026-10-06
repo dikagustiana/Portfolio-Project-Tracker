@@ -22,7 +22,7 @@ The spec is [`BRIEF.md`](BRIEF.md). Where the brief says nothing, the prototype'
 
 - Client: Vite, React 19, TypeScript, Tailwind CSS 4 (utilities only; the prototype's reviewed CSS is ported verbatim in `src/styles/board.css`), TanStack Query, Supabase Realtime.
 - Backend: Supabase (Postgres, Auth, RLS, RPC, Edge Functions, `pg_cron`), in a dedicated project used only for SAMB data.
-- Hosting: Vercel (`vercel.json` sets security headers).
+- Hosting: Vercel at `https://project-tracker.dikagustiana.com` (owner's choice for BRIEF §12.5; `vercel.json` sets security headers).
 
 ## How access works
 
