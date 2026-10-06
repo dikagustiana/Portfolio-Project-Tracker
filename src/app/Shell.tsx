@@ -1,9 +1,8 @@
 // App shell: sidebar + main view (prototype render/renderSide/renderMain).
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useBoard } from '../data/board-context.ts'
 import type { Project } from '../domain/index.ts'
 import { supabase } from '../lib/supabase.ts'
-import { Admin } from '../views/Admin.tsx'
 import { Dashboard } from '../views/Dashboard.tsx'
 import { ProjectView } from '../views/ProjectView.tsx'
 import { Team } from '../views/Team.tsx'
@@ -14,6 +13,9 @@ import { useActionCount } from './hooks.ts'
 import { ShellCtx } from './shell-context.ts'
 import { applyTheme, setUI, useTheme, useUI } from './ui.ts'
 import type { View } from './ui.ts'
+
+// Owner-only screens load on demand, so everyone else's bundle stays smaller.
+const Admin = lazy(() => import('../views/Admin.tsx').then((m) => ({ default: m.Admin })))
 
 export function Shell() {
   const ui = useUI()
@@ -63,7 +65,9 @@ export function Shell() {
           ) : view === 'week' ? (
             <Week />
           ) : view === 'admin' ? (
-            <Admin />
+            <Suspense fallback={<div className="skel" />}>
+              <Admin />
+            </Suspense>
           ) : view === 'project' && p ? (
             <ProjectView p={p} />
           ) : (
