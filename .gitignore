@@ -26,3 +26,7 @@ supabase/.branches
 .DS_Store
 *.log
 *.local
+
+# Local agent worktrees and scratch files
+.claude/
+.shots.mjs
