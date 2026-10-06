@@ -187,13 +187,14 @@ export function WhoLine({ t, p }: { t: Task; p: Project | null | undefined }) {
 
 /** Quick calendar and reminder buttons on a checklist row (prototype rowActs). */
 export function RowActs({ t }: { t: Task }) {
-  const { d, extras } = useBoard()
+  const { d, board, extras } = useBoard()
   const flows = useFlows()
   const p = d.project(t.projectId)
   if (d.isDone(t) || !d.pActive(p)) return null
   const c = extras.calendar.find((x) => x.taskId === t.id)
   const canRem = d.canPlan(p) && !d.locked(t)
   const pend = d.remPending(t.id)
+  const mailActive = board.settings.emailProvider !== 'none' && extras.emailLog.length > 0
   return (
     <div className="racts">
       {c && c.end === t.end ? (
@@ -209,7 +210,7 @@ export function RowActs({ t }: { t: Task }) {
       )}
       {canRem &&
         (pend ? (
-          <span className="ra-ok" title={d.remStatusText(pend, extras.emailLog.length > 0)}>
+          <span className="ra-ok" title={d.remStatusText(pend, mailActive)}>
             <Icon name="bell" />
             <span>Pengingat menunggu</span>
           </span>

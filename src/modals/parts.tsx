@@ -1,6 +1,7 @@
 // Pieces shared by several dialogs: the warning list (prototype renderWarn), people options
 // (pmOpts/memberOpts), calendar links (calLinksHtml), the calendar + reminder block under a task
 // (taskActionsHtml), and the fallback when the record a dialog shows has disappeared.
+import { useMailActive } from '../app/hooks.ts'
 import { useState } from 'react'
 import { Icon } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
@@ -110,15 +111,15 @@ export function CalBlock({ t }: { t: Task }) {
 
 /** Bottom of a task dialog: calendar links and reminder status (prototype taskActionsHtml). */
 export function TaskActions({ t }: { t: Task }) {
-  const { d, extras } = useBoard()
+  const { d } = useBoard()
   const flows = useFlows()
+  const mail = useMailActive()
   const p = d.project(t.projectId)
   if (d.isDone(t) || !d.pActive(p)) return null
   const last = d.remFor(t.id)[0]
   const pend = d.remPending(t.id)
   const m = d.person(t.assignee)
   const canRem = d.canPlan(p) && !d.locked(t)
-  const mail = extras.emailLog.length > 0
   return (
     <div className="tact">
       <CalBlock t={t} />

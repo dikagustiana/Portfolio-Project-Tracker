@@ -1,5 +1,6 @@
 // "Kirim pengingat" (prototype openRemind): queue a reminder e-mail to the task's PIC. Sending is
 // phase 2; until an e-mail run has happened the reminder waits in the queue.
+import { useMailActive } from '../app/hooks.ts'
 import { useState } from 'react'
 import { useOverlay } from '../app/overlay-context.ts'
 import { useBoard } from '../data/board-context.ts'
@@ -18,14 +19,14 @@ export function RemindDialog({ taskId }: { taskId: Id }) {
 }
 
 function RemindBody({ t, m }: { t: Task; m: Person }) {
-  const { extras, actions } = useBoard()
+  const { actions } = useBoard()
   const { close } = useOverlay()
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
   const [msg, setMsg] = useState(
     () => `Halo ${firstName(m.name)}, mohon task "${t.title}" diselesaikan sebelum ${fmtLong(t.end)}. Kalau ada kendala, kabari saya.`,
   )
-  const mail = extras.emailLog.length > 0
+  const mail = useMailActive()
   const save = () => {
     const e = bad.need([['rmMsg', msg, 'Tulis pesannya.']])
     if (e) return setErr(e)
