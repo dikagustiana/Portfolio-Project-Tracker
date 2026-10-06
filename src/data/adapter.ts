@@ -60,6 +60,18 @@ export interface BoardExtras {
 }
 
 const ts = (s: string | null | undefined): number | null => (s ? Date.parse(s) : null)
+
+/**
+ * Prototype list order: its store listed records by id in byte order, so imported rows come in
+ * workbook-id order (CAP-NOV, G0…, K01…, MB01…, TB-…) and rows created in the app follow in
+ * creation order.
+ */
+const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
+const byCreated = <R extends { created_at: string; id: string; legacy_id?: string | null }>(a: R, b: R): number =>
+  Number(!a.legacy_id) - Number(!b.legacy_id) ||
+  cmp(a.legacy_id ?? '', b.legacy_id ?? '') ||
+  Date.parse(a.created_at) - Date.parse(b.created_at) ||
+  cmp(a.id, b.id)
 const tsReq = (s: string): number => Date.parse(s)
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -90,9 +102,7 @@ export function toBoard(r: BoardRows): { board: Board; extras: BoardExtras } {
     role: m.role as Membership['role'],
   }))
 
-  const projects: Project[] = [...r.projects]
-    .sort((a, b) => a.created_at.localeCompare(b.created_at))
-    .map((p) => ({
+  const projects: Project[] = [...r.projects].sort(byCreated).map((p) => ({
       id: p.id,
       name: p.name,
       entity: p.entity_code,
@@ -115,7 +125,7 @@ export function toBoard(r: BoardRows): { board: Board; extras: BoardExtras } {
       createdAt: tsReq(p.created_at),
     }))
 
-  const milestones: Milestone[] = r.milestones.map((m) => ({
+  const milestones: Milestone[] = [...r.milestones].sort(byCreated).map((m) => ({
     id: m.id,
     projectId: m.project_id,
     code: m.code,
@@ -141,9 +151,7 @@ export function toBoard(r: BoardRows): { board: Board; extras: BoardExtras } {
     if (code) stepsOf.set(s.task_id, [...(stepsOf.get(s.task_id) ?? []), code])
   }
 
-  const tasks: Task[] = [...r.tasks]
-    .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))
-    .map((t) => ({
+  const tasks: Task[] = [...r.tasks].sort(byCreated).map((t) => ({
       id: t.id,
       projectId: t.project_id,
       milestoneId: t.milestone_id ?? '',
@@ -172,7 +180,7 @@ export function toBoard(r: BoardRows): { board: Board; extras: BoardExtras } {
       createdAt: tsReq(t.created_at),
     }))
 
-  const asks: Ask[] = r.asks.map((a) => ({
+  const asks: Ask[] = [...r.asks].sort(byCreated).map((a) => ({
     id: a.id,
     projectId: a.project_id,
     milestoneId: a.milestone_id ?? '',

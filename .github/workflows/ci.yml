@@ -73,3 +73,42 @@ jobs:
       - name: Stop local Postgres
         if: always()
         run: npx supabase stop --no-backup
+
+  integration:
+    name: Integration (seed import, DB parity, API and Realtime isolation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Start local Supabase (database, auth, REST, Realtime)
+        run: npx supabase start -x studio,imgproxy,logflare,vector,supavisor,storage-api,postgres-meta,edge-runtime
+
+      # The local stack uses the CLI's well-known demo keys; nothing here is a real secret.
+      - name: Export local endpoints
+        run: |
+          npx supabase status -o env | tr -d '"' > /tmp/sb.env
+          . /tmp/sb.env
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_DB_URL=$DB_URL"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "VITE_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+          } >> "$GITHUB_ENV"
+
+      - name: Seed import and verification report (BRIEF section 7)
+        run: node scripts/import-seed.ts run --db-url "$SUPABASE_DB_URL"
+
+      - name: Parity through the database and isolation through the API
+        run: npx vitest run tests/integration
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup
