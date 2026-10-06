@@ -103,13 +103,19 @@ jobs:
             echo "SUPABASE_DB_URL=$DB_URL"
             echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
             echo "VITE_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+            echo "VITE_SUPABASE_URL=$API_URL"
           } >> "$GITHUB_ENV"
 
       - name: Seed import and verification report (BRIEF section 7)
         run: node scripts/import-seed.ts run --db-url "$SUPABASE_DB_URL"
 
-      - name: Parity through the database, isolation through API and Realtime, digest dry run
+      - name: Parity through the database, isolation through API and Realtime, invitations, digest dry run
         run: npx vitest run tests/integration --no-file-parallelism
+
+      - name: Browser end-to-end (Playwright)
+        run: |
+          npx playwright install --with-deps chromium
+          npm run e2e
 
       - name: Stop local Supabase
         if: always()

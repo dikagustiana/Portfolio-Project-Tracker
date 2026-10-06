@@ -22,7 +22,8 @@
     "db:report": "psql \"${SUPABASE_DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}\" -X -q -f scripts/access-report.sql > docs/access-policies.md",
     "db:lint": "supabase db lint --level warning --fail-on warning",
     "fn:check": "deno check --no-lock supabase/functions/*/index.ts",
-    "db:types": "supabase gen types typescript --local > src/data/database.types.ts"
+    "db:types": "supabase gen types typescript --local > src/data/database.types.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
