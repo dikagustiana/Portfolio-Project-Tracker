@@ -20,6 +20,14 @@ describe('client bundle sources', () => {
     expect(offenders).toEqual([])
   })
 
+  it('the build inlines only public Supabase values', () => {
+    const config = readFileSync(join(root, 'vite.config.ts'), 'utf8')
+    const block = /const PUBLIC_ENV = \{([\s\S]*?)\n\}/.exec(config)?.[1] ?? ''
+    const names = [...block.matchAll(/'([A-Z_]+)'/g)].map((m) => m[1] ?? '')
+    expect(names.length).toBeGreaterThan(0)
+    expect(names.filter((n) => !/_(URL|PUBLISHABLE_KEY|ANON_KEY)$/.test(n))).toEqual([])
+  })
+
   it('.env.example exposes no secret through a VITE_ variable', () => {
     const viteVars = readFileSync(join(root, '.env.example'), 'utf8')
       .split('\n')
