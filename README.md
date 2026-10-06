@@ -14,7 +14,7 @@ The spec is [`BRIEF.md`](BRIEF.md). Where the brief says nothing, the prototype'
 | M1 | Schema, RLS, workflow RPCs, triggers | Done | pgTAP: access matrix A1–A17, workflow and schema guard (222 assertions); `docs/access-policies.md` |
 | M2 | Domain port in `src/domain` | Done | Golden parity 100% (111 cases); switch tests |
 | M3 | Invite-only magic-link auth, owner admin | Done locally | Database sign-up gate; isolation test over REST, RPC and Realtime |
-| M4 | UI parity on Realtime data | In review | Screen-by-screen walkthrough against the prototype |
+| M4 | UI parity on Realtime data | Built; owner walkthrough pending | All screens and dialogs ported. Browser tests: access grant, task form pemeriksa (§6.7), commit → submit → accept |
 | M5 | Seed import, Vercel preview | Import done; cloud waiting on owner | Verification report; DB round-trip matches the golden file. Cloud deploy needs a free Supabase project slot (`docs/deploy.md`) |
 | M6 | Daily digest, dry run | Done locally | Edge Function run for a workday and a holiday matches the golden digest |
 
@@ -54,6 +54,7 @@ npm run dev                          # http://localhost:5173
 | `npm run dev` / `build` / `preview` | Vite dev server, production build, preview |
 | `npm run lint` / `typecheck` / `test` | ESLint (type-aware, zero warnings), `tsc -b`, Vitest |
 | `npm run fn:check` | Type-check the Edge Functions with Deno |
+| `npm run e2e` | Playwright browser tests (local stack; set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) |
 | `npm run db:start` / `db:stop` / `db:reset` | Local Supabase stack |
 | `npm run db:test` | pgTAP suite (`supabase/tests/database`) |
 | `npm run db:lint` | plpgsql_check over every function |
@@ -69,11 +70,12 @@ npm run dev                          # http://localhost:5173
 | Domain | `tests/golden-parity.test.ts`, `domain-*.test.ts` | Every prototype rule reproduces the golden file. Switches and permissions are covered too. |
 | Database | `supabase/tests/database/*.test.sql` | Access matrix A1–A17, workflow rules, triggers, schema guard, digest schedule |
 | Integration | `tests/integration/*.test.ts` (needs a local stack) | The seed round-trips to the golden file. A PM sees no other project's rows over REST, RPC or Realtime. The digest dry run matches the golden digest. |
+| Browser | `e2e/*.spec.ts` (Playwright, local stack) | The owner grants two projects and the person sees exactly those. The task form saves the chosen pemeriksa. An officer commits and submits, and the pemeriksa accepts. |
 
 CI (`.github/workflows/ci.yml`) runs three jobs on every push:
 1. Lint, typecheck, Vitest, build, and the Deno check.
 2. pgTAP, db lint, and a check that the policy report is current.
-3. The integration suite against a local Supabase stack, including the seed verification report.
+3. The integration and browser suites against a local Supabase stack, including the seed verification report.
 
 ## Layout
 
