@@ -88,6 +88,7 @@ export function toBoard(r: BoardRows): { board: Board; extras: BoardExtras } {
     .sort((a, b) => a.display_name.localeCompare(b.display_name, 'id'))
     .map((p) => ({
       id: p.id,
+      legacyId: p.legacy_id,
       name: p.display_name,
       role: p.job_title,
       userId: p.user_id,

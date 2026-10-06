@@ -27,6 +27,8 @@ export interface DecisionSource {
 
 export interface Person {
   id: Id
+  /** Workbook id from the prototype (e.g. 'm-dika'), when imported. Keeps avatar colours stable. */
+  legacyId?: string | null
   name: string
   /** Job title / division (prototype `role`). */
   role: string

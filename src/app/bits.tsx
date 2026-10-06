@@ -22,7 +22,7 @@ export function Avatar({ id, size }: { id: Id | null | undefined; size?: number 
   const st = size ? { width: size, height: size } : undefined
   if (!m) return <span className="av none" style={st} title="Belum ditentukan">?</span>
   return (
-    <span className="av" style={{ background: AVC[hash(m.id) % AVC.length], ...st }} title={m.name}>
+    <span className="av" style={{ background: AVC[hash(m.legacyId ?? m.id) % AVC.length], ...st }} title={m.name}>
       {initials(m.name)}
     </span>
   )

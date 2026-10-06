@@ -70,10 +70,17 @@ export function VcStrip({ p, sel = '', link = false }: { p: Project; sel?: strin
   const n = vs.strip.length
   const grid: CSSProperties | undefined =
     n === PROTOTYPE_STRIP ? undefined : { gridTemplateColumns: `repeat(${n},minmax(94px,1fr))`, minWidth: n * 98 }
+  // The deck reference belongs to the Trading SAMB template (Margin Bridge kick-off deck, page 4).
+  const fromDeck = d.board.templates.find((t) => t.id === p.stepTemplateId)?.name === 'Trading SAMB'
   const note = (
     <p className="sub">
-      Bar = paket yang sudah <b>diterima</b> pemeriksa (yang sedang diperiksa ditampilkan lebih pucat). PIC dan komit
-      mengikuti baris <i>Supplied by</i> dan <i>Due date</i> di deck kick-off.
+      Bar = paket yang sudah <b>diterima</b> pemeriksa (yang sedang diperiksa ditampilkan lebih pucat).
+      {fromDeck && (
+        <>
+          {' '}
+          PIC dan komit mengikuti baris <i>Supplied by</i> dan <i>Due date</i> di deck kick-off.
+        </>
+      )}
       {none ? ` ${none} paket lain tidak masuk value chain (fondasi, BAU, planning).` : ''}
     </p>
   )
