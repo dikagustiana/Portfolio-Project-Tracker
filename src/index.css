@@ -1,0 +1,177 @@
+/* Tailwind without preflight: the board styles (board.css) were reviewed against browser
+   defaults, so the reset is left out to keep them pixel-identical. Utilities serve new screens. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import './styles/board.css';
+
+/* Dark variant follows the theme switch: explicit data-theme wins, otherwise the device setting (prototype applyTheme). */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+}
+
+/* Theme tokens from samb.co.id, as in the prototype (BRIEF §8). */
+:root {
+  --bg: #f1f4f9;
+  --surface: #ffffff;
+  --surface-2: #f5f7fb;
+  --ink: #2b3548;
+  --muted: #7c88a1;
+  --line: #e2e7f0;
+  --pill: #3e55d8;
+  --pill-fg: #ffffff;
+  --accent: #3e55d8;
+  --accent-soft: #e7ebfc;
+  --focus: #3e55d8;
+  --s-todo: #8a95ab;
+  --s-progress: #3e55d8;
+  --s-review: #7656e8;
+  --s-done: #109e86;
+  --danger: #d9402f;
+  --danger-soft: #fbe2df;
+  --review-soft: #ece7fd;
+  --done-soft: #dcf3ee;
+  --bad-ink: #b3301c;
+  --warn-ink: #a8430b;
+  --warn: #c8661a;
+  --warn-soft: #fcefe1;
+  --vc: #2f44b8;
+  --vc-ink: #2f44b8;
+  --brand-dot: #1b2a6b;
+  --shadow: 0 1px 2px rgba(43, 53, 72, 0.04), 0 8px 24px rgba(43, 53, 72, 0.06);
+  --f-ui: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r-lg: 22px;
+  --r-md: 14px;
+  --lw: 240px;
+  color-scheme: light;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Narrow-screen Gantt label column. board.css has the same rule, but it is imported before the
+   token above and loses to it; the prototype defines the token first. */
+@media (max-width: 860px) {
+  :root {
+    --lw: 150px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0d1222;
+    --surface: #151c30;
+    --surface-2: #1b2440;
+    --ink: #e5eaf5;
+    --muted: #93a0bd;
+    --line: #26314f;
+    --pill: #7086f2;
+    --pill-fg: #0d1222;
+    --accent: #7086f2;
+    --accent-soft: #1e2852;
+    --focus: #7086f2;
+    --s-todo: #8e9ab4;
+    --s-progress: #7086f2;
+    --s-review: #9a80ff;
+    --s-done: #2cc4a8;
+    --danger: #ff6a59;
+    --danger-soft: #3d1d1a;
+    --review-soft: #2a2445;
+    --done-soft: #123a33;
+    --bad-ink: #ff8a7a;
+    --warn-ink: #ffa46b;
+    --warn: #f0a060;
+    --warn-soft: #3a2614;
+    --vc: #3a50c8;
+    --vc-ink: #a9b7ff;
+    --brand-dot: #aab8ff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0d1222;
+  --surface: #151c30;
+  --surface-2: #1b2440;
+  --ink: #e5eaf5;
+  --muted: #93a0bd;
+  --line: #26314f;
+  --pill: #7086f2;
+  --pill-fg: #0d1222;
+  --accent: #7086f2;
+  --accent-soft: #1e2852;
+  --focus: #7086f2;
+  --s-todo: #8e9ab4;
+  --s-progress: #7086f2;
+  --s-review: #9a80ff;
+  --s-done: #2cc4a8;
+  --danger: #ff6a59;
+  --danger-soft: #3d1d1a;
+  --review-soft: #2a2445;
+  --done-soft: #123a33;
+  --bad-ink: #ff8a7a;
+  --warn-ink: #ffa46b;
+  --warn: #f0a060;
+  --warn-soft: #3a2614;
+  --vc: #3a50c8;
+  --vc-ink: #a9b7ff;
+  --brand-dot: #aab8ff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-pill: var(--pill);
+  --color-pill-fg: var(--pill-fg);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-focus: var(--focus);
+  --color-todo: var(--s-todo);
+  --color-progress: var(--s-progress);
+  --color-review: var(--s-review);
+  --color-done: var(--s-done);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-review-soft: var(--review-soft);
+  --color-done-soft: var(--done-soft);
+  --color-bad-ink: var(--bad-ink);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-vc: var(--vc);
+  --color-vc-ink: var(--vc-ink);
+  --color-brand-dot: var(--brand-dot);
+
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --shadow-panel: var(--shadow);
+}
+
+/* Host base styles the prototype ran inside. */
+body {
+  margin: 0;
+  padding: 0;
+}
+img {
+  max-width: 100%;
+}
+[hidden]:not([hidden='until-found' i]) {
+  display: none !important;
+}

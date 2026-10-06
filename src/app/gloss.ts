@@ -1,0 +1,23 @@
+// Glossary behind the (?) tips, reviewed wording from the prototype (GLOSS).
+export const GLOSS: Record<string, string> = {
+  vc: "Bagian value chain yang diisi task ini, mengikuti template value chain project. Satu task boleh mengisi lebih dari satu step. Dipakai untuk progress per step di dashboard.",
+  hasil: "Kondisi akhir yang ingin dicapai project, yang bisa dilihat orang lain. Tulis kondisinya, bukan aktivitasnya.",
+  ukur: "Bukti atau angka yang menunjukkan hasil akhir benar-benar tercapai. Dipakai waktu menutup project.",
+  pm: "Project Manager yang bertanggung jawab atas project ini, menutup project di akhir, dan memutuskan milestone kalau tidak ada pemutus lain.",
+  milestone: "Kondisi antara yang harus sudah benar sebelum hasil akhir tercapai. Contoh: \"Account mapping TB disetujui\". Disusun mundur dari hasil akhir.",
+  mundur: "Mulai dari hasil akhir, lalu tanya: apa yang harus sudah benar tepat sebelumnya? Jawabannya jadi milestone. Ulangi sampai kembali ke kondisi sekarang.",
+  syarat: "Apa yang harus terbukti supaya milestone dianggap tercapai. Contoh: \"Mapping ditandatangani Accounting dan diarsip\".",
+  bahaya: "Kondisi yang membuat milestone harus dihentikan atau rencananya diubah. Contoh: \"Data WMS belum masuk 5 hari kerja setelah tutup buku\".",
+  cadangan: "Rencana pengganti yang disepakati dari awal, dijalankan kalau milestone dihentikan. Contoh: \"Pakai driver interim nilai stok per principal\".",
+  pemutus: "Orang yang menentukan milestone tercapai, perlu diubah rencananya, atau dihentikan. Kosongkan untuk memakai PM.",
+  pic: "Orang yang mengerjakan task ini.",
+  pemeriksa: "Orang yang mengecek hasil kerja PIC lalu menerima atau menolaknya. Tidak boleh PIC sendiri.",
+  bukti: "Apa yang harus ditunjukkan PIC supaya pemeriksa bisa menerima dalam sekali lihat. Contoh: \"File data per principal, total cocok ke closing stock\".",
+  peran: "Peran berlaku per project. Project Manager: merencanakan project, memeriksa task, dan memutuskan. Officer: mengerjakan task miliknya sendiri (komit tanggal, centang, ajukan selesai dengan bukti). Viewer: hanya melihat. PM, pemeriksa, dan pemutus selalu Project Manager di project itu. Akses diatur oleh owner.",
+  akun: "Akun login orang ini. Owner mengundangnya lewat email kantor. Setelah masuk lewat link di email, app otomatis mengenali dia.",
+  komit: "PIC menyatakan sanggup dengan tanggal ini. Sebelum dikomit, tanggal tampil pucat bergaris putus di Gantt.",
+  pemeriksaan: "Task yang selesai harus diajukan dengan bukti lalu diterima pemeriksa. Matikan untuk project kecil supaya centang langsung selesai.",
+  sifat: "\"Perlu dikaji\" untuk milestone yang masih banyak ketidakpastian. \"Siap eksekusi\" untuk yang sudah jelas tinggal dikerjakan.",
+  tunggu: "Task ini baru bisa mulai setelah task yang dipilih selesai.",
+  kematangan: "Seberapa jadi hasil yang dikejar: coba-coba (prototype), rilis pertama, cukup untuk dasar keputusan, atau operasi rutin.",
+}
