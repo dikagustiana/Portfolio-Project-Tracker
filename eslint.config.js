@@ -6,8 +6,9 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig([
-  // reference/ is the frozen prototype package (behavioural spec), not app code.
-  globalIgnores(['dist', 'coverage', 'reference', 'supabase/.temp', 'supabase/.branches']),
+  // reference/ is the frozen prototype package (behavioural spec), not app code. Edge Functions
+  // are Deno code, type-checked with `npm run fn:check`; database.types.ts is generated.
+  globalIgnores(['dist', 'coverage', 'reference', 'supabase/.temp', 'supabase/.branches', 'supabase/functions', 'src/data/database.types.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

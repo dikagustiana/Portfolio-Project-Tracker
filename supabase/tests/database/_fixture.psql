@@ -30,21 +30,23 @@ begin
 end
 $$;
 
-insert into auth.users (id, email)
-select pg_temp.u(n), n || '@samb.test'
-  from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'mira', 'bimo', 'gita']) n;
-
-insert into public.app_roles (user_id, role) values
-  (pg_temp.u('dika'), 'owner'),
-  (pg_temp.u('gita'), 'group_viewer');
-
-insert into public.people (id, display_name, job_title, user_id)
-select pg_temp.p(n), initcap(n), 'Staf', case when n <> 'rina' then pg_temp.u(n) end
+-- People and contacts first: logins can only be created for known e-mails (…_auth.sql), and
+-- the link trigger then connects each login to its person.
+insert into public.people (id, display_name, job_title)
+select pg_temp.p(n), initcap(n), 'Staf'
   from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'mira', 'bimo', 'gita', 'rina']) n;
 
 insert into public.people_contact (person_id, email)
 select pg_temp.p(n), n || '@samb.test'
   from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'mira', 'bimo', 'gita', 'rina']) n;
+
+insert into public.pending_app_roles (email, role) values ('dika@samb.test', 'owner');
+
+insert into auth.users (id, email)
+select pg_temp.u(n), n || '@samb.test'
+  from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'mira', 'bimo', 'gita']) n;
+
+insert into public.app_roles (user_id, role) values (pg_temp.u('gita'), 'group_viewer');
 
 insert into public.projects (id, name, entity_code) values
   (pg_temp.prj('MB'), 'Project Margin Bridge', 'SAMB'),

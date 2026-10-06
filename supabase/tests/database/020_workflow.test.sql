@@ -228,5 +228,18 @@ insert into auth.users (id, email) values (pg_temp.u('nadia'), 'nadia@samb.test'
 select is((select user_id from public.people where id = pg_temp.p('nadia')), pg_temp.u('nadia'),
   'an invited login links to its person by e-mail (case-insensitive)');
 
+select throws_ok($$ insert into auth.users (id, email) values (gen_random_uuid(), 'orang.asing@contoh.test') $$,
+  '42501', 'Email ini belum terdaftar. Minta owner mengundangmu.', 'no login can be created for an unknown e-mail');
+select is((select user_id from public.app_roles where role = 'owner'), pg_temp.u('dika'),
+  'a pending owner role is granted when that login is created');
+select is((select count(*) from public.pending_app_roles), 0::bigint, '… and the pending grant is consumed');
+select is((select user_id from public.people where id = pg_temp.p('david')), pg_temp.u('david'),
+  'logins link to people by e-mail');
+select pg_temp.login('muti');
+select throws_ok($$ select * from public.admin_people_status() $$, '42501', null, 'only the owner sees login status');
+select pg_temp.login('dika');
+select is((select count(*) from public.admin_people_status() where user_id is not null), 9::bigint, 'owner sees which people have a login (8 in the fixture plus Nadia)');
+reset role;
+
 select * from finish();
 rollback;
