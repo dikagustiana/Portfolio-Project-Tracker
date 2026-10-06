@@ -1,0 +1,319 @@
+{
+ "meta": {
+  "note": "Diekstrak dari konstanta HOL di reference/prototype.html. Hitungan per tahun dicek ke daftar setneg.go.id: 2027 cocok penuh per tanggal; 2026 cocok per jumlah dan tanggal cuti bersama. Cuti bersama untuk swasta bersifat fakultatif (diatur pimpinan perusahaan), lihat org setting cuti_bersama_is_workday.",
+  "counts": {
+   "2026-libur": 17,
+   "2026-cuti": 8,
+   "2027-libur": 18,
+   "2027-cuti": 8
+  }
+ },
+ "holidays": [
+  {
+   "date": "2026-01-01",
+   "type": "libur",
+   "name": "Tahun Baru Masehi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-01-16",
+   "type": "libur",
+   "name": "Isra Mikraj",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-02-16",
+   "type": "cuti",
+   "name": "Cuti bersama Imlek",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-02-17",
+   "type": "libur",
+   "name": "Tahun Baru Imlek",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-18",
+   "type": "cuti",
+   "name": "Cuti bersama Nyepi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-19",
+   "type": "libur",
+   "name": "Hari Suci Nyepi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-20",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-21",
+   "type": "libur",
+   "name": "Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-22",
+   "type": "libur",
+   "name": "Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-23",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-03-24",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-04-03",
+   "type": "libur",
+   "name": "Wafat Yesus Kristus",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-04-05",
+   "type": "libur",
+   "name": "Paskah",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-05-01",
+   "type": "libur",
+   "name": "Hari Buruh",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-05-14",
+   "type": "libur",
+   "name": "Kenaikan Yesus Kristus",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-05-15",
+   "type": "cuti",
+   "name": "Cuti bersama Kenaikan",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-05-27",
+   "type": "libur",
+   "name": "Idul Adha",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-05-28",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Adha",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-05-31",
+   "type": "libur",
+   "name": "Hari Raya Waisak",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-06-01",
+   "type": "libur",
+   "name": "Hari Lahir Pancasila",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-06-16",
+   "type": "libur",
+   "name": "Tahun Baru Islam",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-08-17",
+   "type": "libur",
+   "name": "Proklamasi Kemerdekaan",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-08-25",
+   "type": "libur",
+   "name": "Maulid Nabi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-12-24",
+   "type": "cuti",
+   "name": "Cuti bersama Natal",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2026-12-25",
+   "type": "libur",
+   "name": "Natal",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1497/2025, 2/2025, 5/2025 (setneg.go.id, ditandatangani 19 Sep 2025): 17 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-01-01",
+   "type": "libur",
+   "name": "Tahun Baru Masehi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-01-05",
+   "type": "libur",
+   "name": "Isra Mikraj",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-02-05",
+   "type": "cuti",
+   "name": "Cuti bersama Imlek",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-02-06",
+   "type": "libur",
+   "name": "Tahun Baru Imlek",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-08",
+   "type": "libur",
+   "name": "Hari Suci Nyepi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-09",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-10",
+   "type": "libur",
+   "name": "Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-11",
+   "type": "libur",
+   "name": "Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-12",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-15",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Fitri",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-25",
+   "type": "cuti",
+   "name": "Cuti bersama Wafat Yesus",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-26",
+   "type": "libur",
+   "name": "Wafat Yesus Kristus",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-03-28",
+   "type": "libur",
+   "name": "Paskah",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-05-01",
+   "type": "libur",
+   "name": "Hari Buruh",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-05-06",
+   "type": "libur",
+   "name": "Kenaikan Yesus Kristus",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-05-17",
+   "type": "libur",
+   "name": "Idul Adha",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-05-18",
+   "type": "cuti",
+   "name": "Cuti bersama Idul Adha",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-05-19",
+   "type": "cuti",
+   "name": "Cuti bersama Waisak",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-05-20",
+   "type": "libur",
+   "name": "Hari Raya Waisak",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-06-01",
+   "type": "libur",
+   "name": "Hari Lahir Pancasila",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-06-06",
+   "type": "libur",
+   "name": "Tahun Baru Islam",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-08-15",
+   "type": "libur",
+   "name": "Maulid Nabi",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-08-17",
+   "type": "libur",
+   "name": "Proklamasi Kemerdekaan",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-12-24",
+   "type": "cuti",
+   "name": "Cuti bersama Natal",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-12-25",
+   "type": "libur",
+   "name": "Natal",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  },
+  {
+   "date": "2027-12-26",
+   "type": "libur",
+   "name": "Isra Mikraj",
+   "source": "SKB Menag/Menaker/MenPANRB No. 1205/2026, 3/2026, 2/2026 (setneg.go.id, ditandatangani 15 Sep 2026): 18 libur nasional + 8 cuti bersama"
+  }
+ ]
+}

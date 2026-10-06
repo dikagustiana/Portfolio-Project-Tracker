@@ -1,0 +1,97 @@
+{
+ "meta": {
+  "name": "Trading SAMB",
+  "source": "Deck \"Project Margin Bridge\" kick-off (Kick_Off_Meeting_Deck_Sep-26.pptx), halaman 4: Trading value chain, baris Driver / What we need / Supplied by / Due date.",
+  "kinds": "chain = chevron berurutan; output = kotak Report di ujung chain; side = blok terpisah di luar chain (Logistics services)."
+ },
+ "steps": [
+  {
+   "code": "appraise",
+   "label_no": "⓪",
+   "name": "Appraise",
+   "need": "Measured inputs; agreed terms; actual contribution against appraisal",
+   "sort": 1,
+   "kind": "chain"
+  },
+  {
+   "code": "procure",
+   "label_no": "①",
+   "name": "Procure",
+   "need": "Pieces per carton, carton volume and net buy price per product",
+   "sort": 2,
+   "kind": "chain"
+  },
+  {
+   "code": "receive",
+   "label_no": "②",
+   "name": "Receive",
+   "need": "Cartons and CBM received per owner of goods",
+   "sort": 3,
+   "kind": "chain"
+  },
+  {
+   "code": "store",
+   "label_no": "③",
+   "name": "Store",
+   "need": "Pallet-days per owner of goods; one position count per warehouse",
+   "sort": 4,
+   "kind": "chain"
+  },
+  {
+   "code": "pick",
+   "label_no": "④",
+   "name": "Pick & pack",
+   "need": "Cartons picked per owner of goods; warehouse time study",
+   "sort": 5,
+   "kind": "chain"
+  },
+  {
+   "code": "load",
+   "label_no": "⑤",
+   "name": "Load",
+   "need": "CBM and tonnage measured per delivery note",
+   "sort": 6,
+   "kind": "chain"
+  },
+  {
+   "code": "transport",
+   "label_no": "⑥",
+   "name": "Transport",
+   "need": "Trip and drop IDs per delivery note; one fleet count and perimeter",
+   "sort": 7,
+   "kind": "chain"
+  },
+  {
+   "code": "deliver",
+   "label_no": "⑦",
+   "name": "Deliver",
+   "need": "Net sales and gross profit per principal every month",
+   "sort": 8,
+   "kind": "chain"
+  },
+  {
+   "code": "collect",
+   "label_no": "⑧",
+   "name": "Collect",
+   "need": "Invoice count; receivable days per principal",
+   "sort": 9,
+   "kind": "chain"
+  },
+  {
+   "code": "report",
+   "label_no": "",
+   "name": "Report",
+   "need": "First report to the agreed specification",
+   "sort": 10,
+   "kind": "output"
+  },
+  {
+   "code": "lp",
+   "label_no": "",
+   "name": "Logistics services",
+   "need": "Contribution logistics services, dibaca terpisah dari trading",
+   "sort": 11,
+   "kind": "side"
+  }
+ ]
+}

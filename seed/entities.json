@@ -1,0 +1,72 @@
+{
+ "meta": {
+  "note": "11 entitas dari prototype + MAM (ditambahkan atas permintaan owner, 6 Okt 2026) + Group untuk project lintas entitas. Nama legal lengkap belum diisi; owner melengkapi di layar admin."
+ },
+ "entities": [
+  {
+   "code": "SAMB",
+   "label": "SAMB",
+   "sort": 1
+  },
+  {
+   "code": "ASI",
+   "label": "ASI",
+   "sort": 2
+  },
+  {
+   "code": "ARBI",
+   "label": "ARBI",
+   "sort": 3
+  },
+  {
+   "code": "KNI",
+   "label": "KNI",
+   "sort": 4
+  },
+  {
+   "code": "KDU",
+   "label": "KDU",
+   "sort": 5
+  },
+  {
+   "code": "OKI",
+   "label": "OKI",
+   "sort": 6
+  },
+  {
+   "code": "BMG",
+   "label": "BMG",
+   "sort": 7
+  },
+  {
+   "code": "KBF",
+   "label": "KBF",
+   "sort": 8
+  },
+  {
+   "code": "KGR",
+   "label": "KGR",
+   "sort": 9
+  },
+  {
+   "code": "NMG",
+   "label": "NMG",
+   "sort": 10
+  },
+  {
+   "code": "DNI",
+   "label": "DNI",
+   "sort": 11
+  },
+  {
+   "code": "MAM",
+   "label": "MAM",
+   "sort": 12
+  },
+  {
+   "code": "Group",
+   "label": "Group (lintas entitas)",
+   "sort": 13
+  }
+ ]
+}

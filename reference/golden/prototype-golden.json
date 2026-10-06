@@ -1,0 +1,2078 @@
+{
+ "meta": {
+  "generated_from": "reference/prototype.html (published 2026-10-06)",
+  "fixed_now": "2026-10-07T08:00:00+07:00",
+  "timezone": "Asia/Jakarta",
+  "seed": "seed/board-export.json",
+  "how": "Prototype loaded in jsdom with Date.now() fixed and the seed injected; each value is the direct return of the named prototype function."
+ },
+ "today": "2026-10-07",
+ "tasks": [
+  {
+   "id": "CAP-NOV",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 33,
+   "workdays": 25,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     1,
+     "Durasi 33 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Durasi 33 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB01",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 5,
+   "workdays": 5,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB02",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 5,
+   "workdays": 5,
+   "seqConflict": {
+    "prevMilestone": "G0",
+    "prevEnd": "2026-10-12"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G0 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G0 selesai (12 Okt), padahal G0 belum lulus."
+   ]
+  },
+  {
+   "id": "MB03",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 5,
+   "workdays": 5,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB04",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 10,
+   "workdays": 8,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus."
+   ]
+  },
+  {
+   "id": "MB05",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 6,
+   "workdays": 4,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB06",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 11,
+   "workdays": 9,
+   "seqConflict": {
+    "prevMilestone": "G0",
+    "prevEnd": "2026-10-12"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G0 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G0 selesai (12 Okt), padahal G0 belum lulus."
+   ]
+  },
+  {
+   "id": "MB07",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 10,
+   "workdays": 8,
+   "seqConflict": {
+    "prevMilestone": "G0",
+    "prevEnd": "2026-10-12"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G0 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G0 selesai (12 Okt), padahal G0 belum lulus."
+   ]
+  },
+  {
+   "id": "MB08",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus."
+   ]
+  },
+  {
+   "id": "MB09",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus."
+   ]
+  },
+  {
+   "id": "MB10",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 19,
+   "workdays": 15,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     1,
+     "Durasi 19 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus.",
+    "Durasi 19 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB11",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus."
+   ]
+  },
+  {
+   "id": "MB12",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 33,
+   "workdays": 25,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     1,
+     "Durasi 33 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus.",
+    "Durasi 33 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB13",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 26,
+   "workdays": 20,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     1,
+     "Durasi 26 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus.",
+    "Durasi 26 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB14",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus."
+   ]
+  },
+  {
+   "id": "MB15",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 33,
+   "workdays": 25,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     1,
+     "Durasi 33 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus.",
+    "Durasi 33 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB16",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 19,
+   "workdays": 15,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     1,
+     "Durasi 19 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus.",
+    "Durasi 19 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB17",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 10,
+   "workdays": 8,
+   "seqConflict": {
+    "prevMilestone": "G0",
+    "prevEnd": "2026-10-12"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G0 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G0 selesai (12 Okt), padahal G0 belum lulus."
+   ]
+  },
+  {
+   "id": "MB18",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus."
+   ]
+  },
+  {
+   "id": "MB19",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 26,
+   "workdays": 20,
+   "seqConflict": {
+    "prevMilestone": "G1",
+    "prevEnd": "2026-10-21"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G1 selesai"
+    ],
+    [
+     1,
+     "Durasi 26 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G1 selesai (21 Okt), padahal G1 belum lulus.",
+    "Durasi 26 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB20",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Rentang ini melewati 1 hari libur/cuti bersama (5 Jan Isra Mikraj)."
+   ]
+  },
+  {
+   "id": "MB21",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 5,
+   "workdays": 5,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ],
+    [
+     2,
+     "Menunggu: TB Oktober 2026 final (data rehearsal)"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB22",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G2",
+    "prevEnd": "2026-12-04"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G2 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G2 selesai (4 Des), padahal G2 belum lulus."
+   ]
+  },
+  {
+   "id": "MB23",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 19,
+   "workdays": 15,
+   "seqConflict": {
+    "prevMilestone": "G2",
+    "prevEnd": "2026-12-04"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G2 selesai"
+    ],
+    [
+     1,
+     "Durasi 19 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G2 selesai (4 Des), padahal G2 belum lulus.",
+    "Durasi 19 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB24",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 19,
+   "workdays": 15,
+   "seqConflict": {
+    "prevMilestone": "G2",
+    "prevEnd": "2026-12-04"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G2 selesai"
+    ],
+    [
+     1,
+     "Durasi 19 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G2 selesai (4 Des), padahal G2 belum lulus.",
+    "Durasi 19 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB25",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 10,
+   "workdays": 8,
+   "seqConflict": {
+    "prevMilestone": "G2",
+    "prevEnd": "2026-12-04"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G2 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G2 selesai (4 Des), padahal G2 belum lulus."
+   ]
+  },
+  {
+   "id": "MB26",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G2",
+    "prevEnd": "2026-12-04"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G2 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G2 selesai (4 Des), padahal G2 belum lulus."
+   ]
+  },
+  {
+   "id": "MB27",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 9,
+   "workdays": 7,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ],
+    [
+     2,
+     "Menunggu: Capture data fisik November untuk laporan pertama: pallet-days, handling, trip, workload LP, TB November 2026 final (data laporan pertama yang dikunci)"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB28",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 5,
+   "workdays": 5,
+   "seqConflict": {
+    "prevMilestone": "G8",
+    "prevEnd": "2027-05-14"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G8 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G8 selesai (14 Mei), padahal G8 belum lulus."
+   ]
+  },
+  {
+   "id": "MB29",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 54,
+   "workdays": 31,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     1,
+     "Jatuh di hari libur: Wafat Yesus Kristus"
+    ],
+    [
+     1,
+     "Durasi 54 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Tanggal selesai jatuh di libur nasional: Wafat Yesus Kristus.",
+    "Durasi 54 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task.",
+    "Rentang ini melewati 8 hari libur/cuti bersama (5 Feb Cuti bersama Imlek, 8 Mar Hari Suci Nyepi, 9 Mar Cuti bersama Idul Fitri, 10 Mar Idul Fitri, 11 Mar Idul Fitri, 12 Mar Cuti bersama Idul Fitri, 15 Mar Cuti bersama Idul Fitri, 25 Mar Cuti bersama Wafat Yesus)."
+   ]
+  },
+  {
+   "id": "MB30",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": {
+    "prevMilestone": "G4",
+    "prevEnd": "2027-03-26"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G4 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G4 selesai (26 Mar), padahal G4 belum lulus.",
+    "Rentang ini melewati 1 hari libur/cuti bersama (5 Jan Isra Mikraj)."
+   ]
+  },
+  {
+   "id": "MB31",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": {
+    "prevMilestone": "G5",
+    "prevEnd": "2027-02-19"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G5 selesai"
+    ],
+    [
+     1,
+     "Jatuh di hari libur: Cuti bersama Imlek"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G5 selesai (19 Feb), padahal G5 belum lulus.",
+    "Tanggal selesai jatuh di cuti bersama: Cuti bersama Imlek."
+   ]
+  },
+  {
+   "id": "MB32",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G5",
+    "prevEnd": "2027-02-19"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G5 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G5 selesai (19 Feb), padahal G5 belum lulus."
+   ]
+  },
+  {
+   "id": "MB33",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB34",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB35",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 19,
+   "workdays": 14,
+   "seqConflict": {
+    "prevMilestone": "G5",
+    "prevEnd": "2027-02-19"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G5 selesai"
+    ],
+    [
+     1,
+     "Jatuh di hari libur: Cuti bersama Imlek"
+    ],
+    [
+     1,
+     "Durasi 19 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G5 selesai (19 Feb), padahal G5 belum lulus.",
+    "Tanggal selesai jatuh di cuti bersama: Cuti bersama Imlek.",
+    "Durasi 19 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task."
+   ]
+  },
+  {
+   "id": "MB36",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G5",
+    "prevEnd": "2027-02-19"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G5 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G5 selesai (19 Feb), padahal G5 belum lulus."
+   ]
+  },
+  {
+   "id": "MB37",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G4",
+    "prevEnd": "2027-03-26"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G4 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G4 selesai (26 Mar), padahal G4 belum lulus."
+   ]
+  },
+  {
+   "id": "MB38",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G4",
+    "prevEnd": "2027-03-26"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G4 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G4 selesai (26 Mar), padahal G4 belum lulus."
+   ]
+  },
+  {
+   "id": "MB39",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 4,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     1,
+     "Jatuh di hari libur: Hari Suci Nyepi"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Tanggal mulai jatuh di libur nasional: Hari Suci Nyepi.",
+    "Rentang ini melewati 5 hari libur/cuti bersama (9 Mar Cuti bersama Idul Fitri, 10 Mar Idul Fitri, 11 Mar Idul Fitri, 12 Mar Cuti bersama Idul Fitri, 15 Mar Cuti bersama Idul Fitri)."
+   ]
+  },
+  {
+   "id": "MB40",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 19,
+   "workdays": 14,
+   "seqConflict": {
+    "prevMilestone": "G4",
+    "prevEnd": "2027-03-26"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G4 selesai"
+    ],
+    [
+     1,
+     "Durasi 19 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G4 selesai (26 Mar), padahal G4 belum lulus.",
+    "Durasi 19 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task.",
+    "Rentang ini melewati 1 hari libur/cuti bersama (5 Feb Cuti bersama Imlek)."
+   ]
+  },
+  {
+   "id": "MB41",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 8,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Rentang ini melewati 2 hari libur/cuti bersama (25 Mar Cuti bersama Wafat Yesus, 26 Mar Wafat Yesus Kristus)."
+   ]
+  },
+  {
+   "id": "MB42",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB43",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 5,
+   "workdays": 3,
+   "seqConflict": {
+    "prevMilestone": "G6",
+    "prevEnd": "2027-04-16"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G6 selesai"
+    ],
+    [
+     1,
+     "Jatuh di hari libur: Wafat Yesus Kristus"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G6 selesai (16 Apr), padahal G6 belum lulus.",
+    "Tanggal selesai jatuh di libur nasional: Wafat Yesus Kristus.",
+    "Rentang ini melewati 1 hari libur/cuti bersama (25 Mar Cuti bersama Wafat Yesus)."
+   ]
+  },
+  {
+   "id": "MB44",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB45",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G3",
+    "prevEnd": "2026-12-22"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G3 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G3 selesai (22 Des), padahal G3 belum lulus."
+   ]
+  },
+  {
+   "id": "MB46",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     1,
+     "Jatuh di hari libur: Cuti bersama Imlek"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Tanggal selesai jatuh di cuti bersama: Cuti bersama Imlek."
+   ]
+  },
+  {
+   "id": "MB47",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Rentang ini melewati 1 hari libur/cuti bersama (6 Mei Kenaikan Yesus Kristus)."
+   ]
+  },
+  {
+   "id": "MB48",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 47,
+   "workdays": 31,
+   "seqConflict": {
+    "prevMilestone": "G9",
+    "prevEnd": "2026-12-18"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G9 selesai"
+    ],
+    [
+     1,
+     "Durasi 47 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G9 selesai (18 Des), padahal G9 belum lulus.",
+    "Durasi 47 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task.",
+    "Rentang ini melewati 4 hari libur/cuti bersama (24 Des Cuti bersama Natal, 25 Des Natal, 1 Jan Tahun Baru Masehi, 5 Jan Isra Mikraj)."
+   ]
+  },
+  {
+   "id": "MB49",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G8",
+    "prevEnd": "2027-05-14"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G8 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G8 selesai (14 Mei), padahal G8 belum lulus."
+   ]
+  },
+  {
+   "id": "MB50",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": {
+    "prevMilestone": "G8",
+    "prevEnd": "2027-05-14"
+   },
+   "taskFlags": [
+    [
+     1,
+     "Mulai sebelum G8 selesai"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Mulai sebelum G8 selesai (14 Mei), padahal G8 belum lulus."
+   ]
+  },
+  {
+   "id": "MB51",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 47,
+   "workdays": 33,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     1,
+     "Durasi 47 hari, sebaiknya dipecah"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Durasi 47 hari. Task di atas ~2 minggu sebaiknya dipecah jadi beberapa task.",
+    "Rentang ini melewati 2 hari libur/cuti bersama (5 Jan Isra Mikraj, 5 Feb Cuti bersama Imlek)."
+   ]
+  },
+  {
+   "id": "MB52",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB53",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-david",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": []
+  },
+  {
+   "id": "MB54",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 6,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     1,
+     "Jatuh di hari libur: Idul Adha"
+    ],
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Tanggal mulai jatuh di libur nasional: Idul Adha.",
+    "Rentang ini melewati 3 hari libur/cuti bersama (18 Mei Cuti bersama Idul Adha, 19 Mei Cuti bersama Waisak, 20 Mei Hari Raya Waisak)."
+   ]
+  },
+  {
+   "id": "TB-DES",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Bukti yang diminta belum diisi. Tanpa ini pemeriksa tidak punya patokan.",
+    "Rentang ini melewati 1 hari libur/cuti bersama (5 Jan Isra Mikraj)."
+   ]
+  },
+  {
+   "id": "TB-JAN",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 9,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Bukti yang diminta belum diisi. Tanpa ini pemeriksa tidak punya patokan.",
+    "Rentang ini melewati 1 hari libur/cuti bersama (5 Feb Cuti bersama Imlek)."
+   ]
+  },
+  {
+   "id": "TB-NOV",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 11,
+   "workdays": 9,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Bukti yang diminta belum diisi. Tanpa ini pemeriksa tidak punya patokan."
+   ]
+  },
+  {
+   "id": "TB-OKT",
+   "isLate": false,
+   "needsCommit": true,
+   "validatorOf": "m-dika",
+   "selfAccept": false,
+   "durDays": 12,
+   "workdays": 10,
+   "seqConflict": null,
+   "taskFlags": [
+    [
+     2,
+     "Tanggal belum dikomit PIC"
+    ]
+   ],
+   "warnings": [
+    "Bukti yang diminta belum diisi. Tanpa ini pemeriksa tidak punya patokan."
+   ]
+  }
+ ],
+ "milestones": [
+  {
+   "id": "G0",
+   "msNo": "G0",
+   "msState": "jalan",
+   "msDate": "2026-10-12",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G1",
+   "msNo": "G1",
+   "msState": "jalan",
+   "msDate": "2026-10-21",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G2",
+   "msNo": "G2",
+   "msState": "jalan",
+   "msDate": "2026-12-04",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G3",
+   "msNo": "G3",
+   "msState": "jalan",
+   "msDate": "2026-12-22",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G4",
+   "msNo": "G4",
+   "msState": "jalan",
+   "msDate": "2027-03-26",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G5",
+   "msNo": "G5",
+   "msState": "jalan",
+   "msDate": "2027-02-19",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G6",
+   "msNo": "G6",
+   "msState": "jalan",
+   "msDate": "2027-04-16",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G7",
+   "msNo": "G7",
+   "msState": "jalan",
+   "msDate": "2027-03-26",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G8",
+   "msNo": "G8",
+   "msState": "jalan",
+   "msDate": "2027-05-14",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G9",
+   "msNo": "G9",
+   "msState": "jalan",
+   "msDate": "2026-12-18",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G10",
+   "msNo": "G10",
+   "msState": "jalan",
+   "msDate": "2027-02-19",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G11",
+   "msNo": "G11",
+   "msState": "jalan",
+   "msDate": "2027-03-05",
+   "msLate": false,
+   "approverOf": "m-dika"
+  },
+  {
+   "id": "G12",
+   "msNo": "G12",
+   "msState": "jalan",
+   "msDate": "2027-05-28",
+   "msLate": false,
+   "approverOf": "m-dika"
+  }
+ ],
+ "projects": [
+  {
+   "id": "samb-timeline",
+   "prog": {
+    "d": 0,
+    "n": 59,
+    "p": 0
+   },
+   "health": {
+    "level": "warn",
+    "label": "Perlu perhatian",
+    "items": [
+     "G0 belum siap jalan"
+    ]
+   },
+   "readiness": {
+    "milestone": "G0",
+    "ok": 0,
+    "n": 3,
+    "ready": false
+   },
+   "currentMs": "G0",
+   "readyToClose": false
+  }
+ ],
+ "inbox": {
+  "all": {
+   "toValidate": [],
+   "gates": [],
+   "stops": [],
+   "closes": [],
+   "asks": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08"
+   ],
+   "commits": [
+    "MB02",
+    "MB03",
+    "MB04",
+    "MB05",
+    "MB06",
+    "MB07",
+    "MB08",
+    "MB09",
+    "MB10",
+    "MB17",
+    "MB18",
+    "MB20",
+    "MB21",
+    "MB22",
+    "MB23",
+    "MB24",
+    "MB25",
+    "MB27",
+    "MB28",
+    "MB29",
+    "MB30",
+    "MB31",
+    "MB32",
+    "MB33",
+    "MB34",
+    "MB35",
+    "MB36",
+    "MB38",
+    "MB39",
+    "MB41",
+    "MB43",
+    "MB44",
+    "MB45",
+    "MB46",
+    "MB48",
+    "MB49",
+    "MB52",
+    "MB53",
+    "MB54"
+   ],
+   "rejected": [],
+   "n": 47
+  },
+  "m-david": {
+   "toValidate": [],
+   "gates": [],
+   "stops": [],
+   "closes": [],
+   "asks": [],
+   "commits": [
+    "MB03",
+    "MB48",
+    "MB52",
+    "MB54"
+   ],
+   "rejected": [],
+   "n": 4
+  },
+  "m-dika": {
+   "toValidate": [],
+   "gates": [],
+   "stops": [],
+   "closes": [],
+   "asks": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08"
+   ],
+   "commits": [
+    "MB02",
+    "MB07",
+    "MB17",
+    "MB21",
+    "MB22",
+    "MB23",
+    "MB24",
+    "MB25",
+    "MB27",
+    "MB28",
+    "MB31",
+    "MB32",
+    "MB33",
+    "MB34",
+    "MB35",
+    "MB36",
+    "MB39",
+    "MB41",
+    "MB43",
+    "MB44",
+    "MB49",
+    "MB53"
+   ],
+   "rejected": [],
+   "n": 30
+  },
+  "m-muti": {
+   "toValidate": [],
+   "gates": [],
+   "stops": [],
+   "closes": [],
+   "asks": [],
+   "commits": [
+    "MB06",
+    "MB08",
+    "MB18",
+    "MB20",
+    "MB38"
+   ],
+   "rejected": [],
+   "n": 5
+  },
+  "m-yani": {
+   "toValidate": [],
+   "gates": [],
+   "stops": [],
+   "closes": [],
+   "asks": [],
+   "commits": [
+    "MB04",
+    "MB05",
+    "MB09",
+    "MB10",
+    "MB29",
+    "MB30",
+    "MB45",
+    "MB46"
+   ],
+   "rejected": [],
+   "n": 8
+  }
+ },
+ "valueChain": {
+  "appraise": {
+   "n": 3,
+   "done": 0,
+   "rev": 0,
+   "pic": 3,
+   "com": 0,
+   "late": 0
+  },
+  "procure": {
+   "n": 2,
+   "done": 0,
+   "rev": 0,
+   "pic": 2,
+   "com": 0,
+   "late": 0
+  },
+  "receive": {
+   "n": 3,
+   "done": 0,
+   "rev": 0,
+   "pic": 0,
+   "com": 0,
+   "late": 0
+  },
+  "store": {
+   "n": 4,
+   "done": 0,
+   "rev": 0,
+   "pic": 0,
+   "com": 0,
+   "late": 0
+  },
+  "pick": {
+   "n": 3,
+   "done": 0,
+   "rev": 0,
+   "pic": 0,
+   "com": 0,
+   "late": 0
+  },
+  "load": {
+   "n": 3,
+   "done": 0,
+   "rev": 0,
+   "pic": 0,
+   "com": 0,
+   "late": 0
+  },
+  "transport": {
+   "n": 4,
+   "done": 0,
+   "rev": 0,
+   "pic": 0,
+   "com": 0,
+   "late": 0
+  },
+  "deliver": {
+   "n": 4,
+   "done": 0,
+   "rev": 0,
+   "pic": 2,
+   "com": 0,
+   "late": 0
+  },
+  "collect": {
+   "n": 1,
+   "done": 0,
+   "rev": 0,
+   "pic": 1,
+   "com": 0,
+   "late": 0
+  },
+  "report": {
+   "n": 8,
+   "done": 0,
+   "rev": 0,
+   "pic": 7,
+   "com": 0,
+   "late": 0
+  },
+  "lp": {
+   "n": 3,
+   "done": 0,
+   "rev": 0,
+   "pic": 2,
+   "com": 0,
+   "late": 0
+  }
+ },
+ "digest": {
+  "m-david": {
+   "count": 4,
+   "subject": "[SAMB] 4 hal untuk kamu hari ini · Rab, 7 Okt",
+   "text": "Halo David,\n\nIni yang perlu kamu lakukan hari ini (Rabu, 7 Oktober 2026):\n\nTANGGAL PERLU KAMU KOMIT\n• Commit source owners, weekly capacity and portfolio priorities\n  Project Margin Bridge · G0 · 5 Okt – 9 Okt\n• Operate monthly decision review and benefit follow-up\n  Project Margin Bridge · G10 · 14 Des – 29 Jan\n• Accept permanent report/model ownership and maintenance\n  Project Margin Bridge · G11 · 22 Feb – 5 Mar\n• Close approved transformation scope and transfer residual work\n  Project Margin Bridge · G12 · 17 Mei – 28 Mei\n\nBuka SAMB Project Board untuk menindaklanjuti:\nhttps://claude.ai/artifact/BP9FN3MwNzf2uNdSeZG6fP\n\nEmail ini dikirim otomatis setiap pagi hari kerja. Tidak ada email kalau tidak ada yang perlu kamu lakukan."
+  },
+  "m-dika": {
+   "count": 30,
+   "subject": "[SAMB] 30 hal untuk kamu hari ini · Rab, 7 Okt",
+   "text": "Halo Dika,\n\nIni yang perlu kamu lakukan hari ini (Rabu, 7 Oktober 2026):\n\nTANGGAL PERLU KAMU KOMIT\n• Define contribution layers, volumes and economic perimeter\n  Project Margin Bridge · G1 · 5 Okt – 9 Okt\n• Repair broken references and error-aware controls\n  Project Margin Bridge · G1 · 5 Okt – 14 Okt\n• Approve allocation, fixed/idle and partial-coverage policy\n  Project Margin Bridge · G1 · 12 Okt – 21 Okt\n• Certify scoped pilot evidence and exceptions\n  Project Margin Bridge · G2 · 16 Nov – 20 Nov\n• Build coverage, missing-data and report layer controls\n  Project Margin Bridge · G3 · 19 Okt – 30 Okt\n• Build measured principal cost-to-serve and contribution\n  Project Margin Bridge · G3 · 9 Nov – 27 Nov\n• Build LP service contribution and disclosed coverage\n  Project Margin Bridge · G3 · 9 Nov – 27 Nov\n• Reconcile contribution, residual pools and operating profit\n  Project Margin Bridge · G3 · 23 Nov – 2 Des\n• Accept and release first actual monthly report\n  Project Margin Bridge · G3 · 14 Des – 22 Des\n• Establish next-month close pipeline and control checklist\n  Project Margin Bridge · G9 · 30 Nov – 4 Des\n• Validate revenue, COGS and claim/term response\n  Project Margin Bridge · G6 · 25 Jan – 5 Feb\n• Validate storage and handling forecast cost response\n  Project Margin Bridge · G6 · 8 Feb – 19 Feb\n• Validate distribution workload and cost response\n  Project Margin Bridge · G6 · 22 Feb – 5 Mar\n• Validate LP contract volume and service economics\n  Project Margin Bridge · G6 · 22 Feb – 5 Mar\n• Rebuild principal terms-to-working-capital cash causality\n  Project Margin Bridge · G6 · 18 Jan – 5 Feb\n• Validate purchases, inventory and claims movement\n  Project Margin Bridge · G6 · 8 Feb – 19 Feb\n• Validate funding-limited P&L, balance sheet and cash\n  Project Margin Bridge · G6 · 8 Mar – 19 Mar\n• Connect capacity to served demand, cost, capex and cash\n  Project Margin Bridge · G6 · 22 Mar – 2 Apr\n• Accept business plan v1 with explicit limits\n  Project Margin Bridge · G7 · 22 Mar – 26 Mar\n• Certify decision-grade integrated business plan\n  Project Margin Bridge · G8 · 19 Apr – 30 Apr\n• Establish reproducible workbook and extract versioning\n  Project Margin Bridge · G9 · 30 Nov – 11 Des\n• Certify contribution for the selected management decision\n  Project Margin Bridge · G4 · 11 Jan – 22 Jan\n\nKEPUTUSAN DIBUTUHKAN\n• K01 · Sahkan: rehearsal pakai data Oktober, laporan pertama dikunci pada data November — Opsi: Setuju / pakai rehearsal September. Pemutus (workbook): Sponsor. Bisa dibalik: Ya. Catatan: Usulan Dika 4 Okt; disahkan di MB01\n  Project Margin Bridge · batas 9 Okt\n• K02 · Track planning mulai Januari 2027 atau jalan paralel dengan owner dan kapasitas terpisah — Opsi: Januari 2027 / paralel dengan owner baru. Pemutus (workbook): Sponsor. Bisa dibalik: Ya. Catatan: Kalau Budget 2027 butuh BP lebih cepat, planning butuh kapasitas di luar Project Finance\n  Project Margin Bridge · batas 9 Okt\n• K03 · Kalender close Accounting: tanggal TB final Oktober, November, Desember, Januari — Opsi: Tanggal per bulan. Pemutus (workbook): Accounting. Bisa dibalik: Ya. Catatan: Menggantikan asumsi A01\n  Project Margin Bridge · batas 9 Okt\n• K04 · Nama owner untuk paket berlabel nama belum ditunjuk, identitas Deni/Denny, dan reviewer independen — Opsi: Nama per paket. Pemutus (workbook): GM. Bisa dibalik: Ya. Catatan: Bagian dari MB03; tanpa ini semua window tetap draft\n  Project Margin Bridge · batas 9 Okt\n• K05 · Kapasitas mingguan Project Finance dan prioritas lintas Budget SAMB, BMG dan KGR — Opsi: Jam per minggu dan WIP limit. Pemutus (workbook): Sponsor. Bisa dibalik: Ya. Catatan: Bagian dari MB03; peran Project Finance dan Accounting Manager dipegang orang yang sama\n  Project Margin Bridge · batas 9 Okt\n• K06 · Rilis laporan November sebelum libur akhir tahun (draft 14 sampai 22 Des) atau awal Januari — Opsi: Desember / Januari. Pemutus (workbook): Sponsor. Bisa dibalik: Ya. Catatan: Diputuskan setelah re-test UAT rehearsal MB26\n  Project Margin Bridge · batas 11 Des\n• K07 · Siapa reviewer independen di luar tim penyusun: internal audit, staf finance yang tidak terlibat, atau pihak luar — Opsi: Internal audit / staf finance lain / pihak luar. Pemutus (workbook): GM. Bisa dibalik: Ya. Catatan: Dibutuhkan untuk validasi MB07 (14 Okt), MB23 dan MB26\n  Project Margin Bridge · batas 9 Okt\n• K08 · Lokasi penyimpanan artefak: satu folder bersama, subfolder per ID paket, nama file mengikuti kolom Nama artefak — Opsi: Folder bersama yang dipilih. Pemutus (workbook): Project Finance. Bisa dibalik: Ya. Catatan: Tanpa lokasi tetap, bukti acceptance tidak bisa dicek sekali lihat\n  Project Margin Bridge · batas 9 Okt\n\nBuka SAMB Project Board untuk menindaklanjuti:\nhttps://claude.ai/artifact/BP9FN3MwNzf2uNdSeZG6fP\n\nEmail ini dikirim otomatis setiap pagi hari kerja. Tidak ada email kalau tidak ada yang perlu kamu lakukan."
+  },
+  "m-muti": {
+   "count": 5,
+   "subject": "[SAMB] 5 hal untuk kamu hari ini · Rab, 7 Okt",
+   "text": "Halo Muti,\n\nIni yang perlu kamu lakukan hari ini (Rabu, 7 Oktober 2026):\n\nTANGGAL PERLU KAMU KOMIT\n• Approve financial classification and account bridge\n  Project Margin Bridge · G1 · 6 Okt – 16 Okt\n• Produce monthly principal financial extract and GP bridge\n  Project Margin Bridge · G2 · 12 Okt – 23 Okt\n• Reconcile LP contracts, billing and management-fee treatment\n  Project Margin Bridge · G2 · 19 Okt – 30 Okt\n• Attribute actual AR/AP/claims and exposure by principal\n  Project Margin Bridge · G4 · 4 Jan – 15 Jan\n• Validate capex, assets, leases and tax timing policies\n  Project Margin Bridge · G5 · 18 Jan – 29 Jan\n\nBuka SAMB Project Board untuk menindaklanjuti:\nhttps://claude.ai/artifact/BP9FN3MwNzf2uNdSeZG6fP\n\nEmail ini dikirim otomatis setiap pagi hari kerja. Tidak ada email kalau tidak ada yang perlu kamu lakukan."
+  },
+  "m-yani": {
+   "count": 8,
+   "subject": "[SAMB] 8 hal untuk kamu hari ini · Rab, 7 Okt",
+   "text": "Halo Yani,\n\nIni yang perlu kamu lakukan hari ini (Rabu, 7 Oktober 2026):\n\nTANGGAL PERLU KAMU KOMIT\n• Certify principal, SKU, client and resource crosswalks\n  Project Margin Bridge · G2 · 7 Okt – 16 Okt\n• Select pilot cohort, closed month and real use case\n  Project Margin Bridge · G0 · 7 Okt – 12 Okt\n• Verify decision-relevant commercial and service terms\n  Project Margin Bridge · G2 · 12 Okt – 23 Okt\n• Certify pilot SKU physical and UOM master\n  Project Margin Bridge · G2 · 12 Okt – 30 Okt\n• Roll out accepted principal/service/month modules\n  Project Margin Bridge · G4 · 1 Feb – 26 Mar\n• Approve volume, price, mix and seasonality baseline\n  Project Margin Bridge · G5 · 4 Jan – 15 Jan\n• Approve action economics and decision framework\n  Project Margin Bridge · G4 · 16 Nov – 27 Nov\n• Accept a real terms or principal growth action memo\n  Project Margin Bridge · G4 · 25 Jan – 5 Feb\n\nBuka SAMB Project Board untuk menindaklanjuti:\nhttps://claude.ai/artifact/BP9FN3MwNzf2uNdSeZG6fP\n\nEmail ini dikirim otomatis setiap pagi hari kerja. Tidak ada email kalau tidak ada yang perlu kamu lakukan."
+  }
+ },
+ "digestAll": {
+  "date": "2026-10-07",
+  "workday": true,
+  "paused": false,
+  "reason": null,
+  "emails": [],
+  "skipped": [
+   {
+    "memberId": "m-david",
+    "name": "David",
+    "reason": "Belum ada email"
+   },
+   {
+    "memberId": "m-dika",
+    "name": "Dika",
+    "reason": "Belum ada email"
+   },
+   {
+    "memberId": "m-muti",
+    "name": "Muti",
+    "reason": "Belum ada email"
+   },
+   {
+    "memberId": "m-yani",
+    "name": "Yani",
+    "reason": "Belum ada email"
+   }
+  ]
+ },
+ "calendar": [
+  {
+   "date": "2026-10-07",
+   "isWork": true,
+   "holiday": null
+  },
+  {
+   "date": "2026-10-10",
+   "isWork": false,
+   "holiday": null
+  },
+  {
+   "date": "2026-10-11",
+   "isWork": false,
+   "holiday": null
+  },
+  {
+   "date": "2026-12-24",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Natal"
+   }
+  },
+  {
+   "date": "2026-12-25",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Natal"
+   }
+  },
+  {
+   "date": "2026-12-28",
+   "isWork": true,
+   "holiday": null
+  },
+  {
+   "date": "2027-01-01",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Tahun Baru Masehi"
+   }
+  },
+  {
+   "date": "2027-01-05",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Isra Mikraj"
+   }
+  },
+  {
+   "date": "2027-02-05",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Imlek"
+   }
+  },
+  {
+   "date": "2027-02-06",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Tahun Baru Imlek"
+   }
+  },
+  {
+   "date": "2027-03-08",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Hari Suci Nyepi"
+   }
+  },
+  {
+   "date": "2027-03-09",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Idul Fitri"
+   }
+  },
+  {
+   "date": "2027-03-10",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Idul Fitri"
+   }
+  },
+  {
+   "date": "2027-03-11",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Idul Fitri"
+   }
+  },
+  {
+   "date": "2027-03-12",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Idul Fitri"
+   }
+  },
+  {
+   "date": "2027-03-15",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Idul Fitri"
+   }
+  },
+  {
+   "date": "2027-03-25",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Wafat Yesus"
+   }
+  },
+  {
+   "date": "2027-03-26",
+   "isWork": false,
+   "holiday": {
+    "type": "libur",
+    "name": "Wafat Yesus Kristus"
+   }
+  },
+  {
+   "date": "2027-05-18",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Idul Adha"
+   }
+  },
+  {
+   "date": "2027-05-19",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Waisak"
+   }
+  },
+  {
+   "date": "2027-12-24",
+   "isWork": false,
+   "holiday": {
+    "type": "cuti",
+    "name": "Cuti bersama Natal"
+   }
+  },
+  {
+   "date": "2027-12-27",
+   "isWork": true,
+   "holiday": null
+  }
+ ],
+ "calendar_ranges": [
+  {
+   "from": "2026-10-05",
+   "to": "2026-10-30",
+   "workdays": 20
+  },
+  {
+   "from": "2026-12-01",
+   "to": "2026-12-31",
+   "workdays": 21
+  },
+  {
+   "from": "2027-03-01",
+   "to": "2027-03-31",
+   "workdays": 15
+  }
+ ]
+}
