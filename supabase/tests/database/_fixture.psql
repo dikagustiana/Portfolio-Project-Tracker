@@ -8,6 +8,16 @@
 --   Mira   officer on MAM only    Bimo  pm on BMG (no David, Muti or Yani there)
 --   Gita   group_viewer, no memberships
 
+-- Start from an empty board whatever the database holds (the test's transaction rolls it back).
+alter table public.app_roles disable trigger app_roles_keep_one_owner;
+delete from public.projects;
+delete from public.people;
+delete from public.app_roles;
+delete from public.pending_app_roles;
+delete from public.email_log;
+delete from auth.users;
+alter table public.app_roles enable trigger app_roles_keep_one_owner;
+
 -- Deterministic ids, usable inside dollar-quoted test SQL.
 create function pg_temp.u(n text) returns uuid language sql immutable as $$ select md5('user:' || n)::uuid $$;
 create function pg_temp.p(n text) returns uuid language sql immutable as $$ select md5('person:' || n)::uuid $$;

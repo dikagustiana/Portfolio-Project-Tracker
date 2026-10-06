@@ -35,6 +35,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - name: Type-check Edge Functions (Deno)
+        run: npm run fn:check
       - run: npm test
       - run: npm run build
 
@@ -75,7 +77,7 @@ jobs:
         run: npx supabase stop --no-backup
 
   integration:
-    name: Integration (seed import, DB parity, API and Realtime isolation)
+    name: Integration (seed import, DB parity, isolation, Realtime, daily digest)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -88,8 +90,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Start local Supabase (database, auth, REST, Realtime)
-        run: npx supabase start -x studio,imgproxy,logflare,vector,supavisor,storage-api,postgres-meta,edge-runtime
+      - name: Start local Supabase (database, auth, REST, Realtime, Edge Functions)
+        run: npx supabase start -x studio,imgproxy,logflare,vector,supavisor,storage-api,postgres-meta
 
       # The local stack uses the CLI's well-known demo keys; nothing here is a real secret.
       - name: Export local endpoints
@@ -106,8 +108,8 @@ jobs:
       - name: Seed import and verification report (BRIEF section 7)
         run: node scripts/import-seed.ts run --db-url "$SUPABASE_DB_URL"
 
-      - name: Parity through the database and isolation through the API
-        run: npx vitest run tests/integration
+      - name: Parity through the database, isolation through API and Realtime, digest dry run
+        run: npx vitest run tests/integration --no-file-parallelism
 
       - name: Stop local Supabase
         if: always()

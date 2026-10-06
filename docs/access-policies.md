@@ -17,6 +17,7 @@ Generated from the database catalog by `scripts/access-report.sql` (`npm run db:
 | `holidays` | on | delete, insert, select, update |
 | `milestones` | on | select |
 | `org_settings` | on | select, update |
+| `pending_app_roles` | on | delete, insert, select, update |
 | `people` | on | delete, insert, select, update |
 | `people_contact` | on | delete, insert, select, update |
 | `project_members` | on | delete, insert, select, update |
@@ -46,6 +47,7 @@ Generated from the database catalog by `scripts/access-report.sql` (`npm run db:
 | `milestones` | milestones_read | select | `(project_id IN ( SELECT private.readable_project_ids() AS readable_project_ids))` |  |
 | `org_settings` | org_settings_owner_update | update | `( SELECT private.is_owner() AS is_owner)` | `( SELECT private.is_owner() AS is_owner)` |
 | `org_settings` | org_settings_read | select | `true` |  |
+| `pending_app_roles` | pending_app_roles_owner | all | `( SELECT private.is_owner() AS is_owner)` | `( SELECT private.is_owner() AS is_owner)` |
 | `people` | people_owner_write | all | `( SELECT private.is_owner() AS is_owner)` | `( SELECT private.is_owner() AS is_owner)` |
 | `people` | people_read | select | `(id IN ( SELECT private.visible_person_ids() AS visible_person_ids))` |  |
 | `people_contact` | people_contact_owner_write | all | `( SELECT private.is_owner() AS is_owner)` | `( SELECT private.is_owner() AS is_owner)` |
@@ -69,6 +71,7 @@ All are `SECURITY DEFINER` with an empty `search_path`; each checks visibility, 
 
 | Function | Arguments | Executable by |
 |---|---|---|
+| `admin_people_status` |  | authenticated |
 | `close_project` | p_project uuid, p_note text, p_decider_name text, p_forum text, p_decided_on date | authenticated |
 | `commit_task_dates` | p_task uuid, p_start date, p_end date | authenticated |
 | `create_project` | p jsonb | authenticated |

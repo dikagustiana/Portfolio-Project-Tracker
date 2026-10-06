@@ -28,5 +28,5 @@ supabase/.branches
 *.local
 
 # Local agent worktrees and scratch files
-.claude/
+.claude/worktrees/
 .shots.mjs
