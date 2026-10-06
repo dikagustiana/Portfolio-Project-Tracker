@@ -2,6 +2,7 @@
 // holiday, writes an email_log that matches the golden digest. Needs a local stack with the seed
 // imported and the function reachable at DIGEST_URL (default: SUPABASE_URL/functions/v1/daily-digest).
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Database } from '../../src/data/database.types.ts'
 import { createDomain } from '../../src/domain/index.ts'
@@ -35,7 +36,7 @@ interface Logged {
 }
 
 describe.skipIf(!local)('daily digest dry run (email_provider = none)', () => {
-  const admin = createClient<Database>(url, service, { auth: { persistSession: false } })
+  let admin: SupabaseClient<Database>
   const golden = readJson<Golden>('reference/golden/prototype-golden.json')
   const legacyOf = new Map<string, string>()
   let savedContacts: { person_id: string; email: string }[] = []
@@ -57,6 +58,7 @@ describe.skipIf(!local)('daily digest dry run (email_provider = none)', () => {
   }
 
   beforeAll(async () => {
+    admin = createClient<Database>(url, service, { auth: { persistSession: false } })
     const people = await admin.from('people').select('id, legacy_id').not('legacy_id', 'is', null)
     for (const p of people.data ?? []) if (p.legacy_id) legacyOf.set(p.id, p.legacy_id)
     const ids = [...legacyOf.keys()]
