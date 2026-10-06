@@ -19,17 +19,20 @@ The project must be new and used only for SAMB data (BRIEF §2.2).
 |---|---|
 | Sign In / Providers → Email | **enabled** (magic links need it) |
 | Allow new users to sign up | **off** (invite-only; the database also refuses unknown e-mails) |
-| URL Configuration → Site URL | the Vercel URL, e.g. `https://samb-project-board.vercel.app` |
-| URL Configuration → Redirect URLs | the same URL, plus `http://localhost:5173` for development |
+| URL Configuration → Site URL | `https://project-tracker.dikagustiana.com` |
+| URL Configuration → Redirect URLs | `https://project-tracker.dikagustiana.com/**`, plus `http://localhost:5173/**` for development |
 | SMTP Settings | a company mailbox or relay. Without it, Supabase only e-mails members of the Supabase team, so colleagues will not receive login links. Until then, use **Admin → Orang → Buat link** and pass the link on by hand. |
 
 ## 3. Vercel project (owner, or Claude Code with the Vercel connector)
 
-1. Import the GitHub repository. Vercel detects Vite from `vercel.json`.
+1. **Add New → Project**, import `Portfolio-Project-Tracker`. Vercel detects Vite from `vercel.json`; leave the build settings as they are.
 2. Environment variables for Production and Preview:
    - `VITE_SUPABASE_URL` = Project URL (Supabase → Project Settings → API)
    - `VITE_SUPABASE_PUBLISHABLE_KEY` = the publishable key (`sb_publishable_…`)
+
+   Without them the app still deploys and shows a "not configured yet" notice. After adding or changing them, redeploy: Vite bakes them in at build time.
 3. Never add the service-role or secret key to Vercel.
+4. **Settings → Domains → Add** `project-tracker.dikagustiana.com`. The DNS for `dikagustiana.com` is managed at Hostinger, so add the record Vercel shows there: hPanel → Domains → DNS / Nameservers → add a **CNAME**, name `project-tracker`, target the value Vercel shows (usually `cname.vercel-dns.com`). Vercel issues the HTTPS certificate once the record resolves, usually within minutes.
 
 ## 4. Database
 
@@ -58,7 +61,7 @@ Run once in the SQL editor. The values come from Project Settings → API and st
 ```sql
 select vault.create_secret('https://<ref>.supabase.co/functions/v1/daily-digest', 'digest_function_url');
 select vault.create_secret('<service role key>', 'digest_service_key');
-update public.org_settings set app_url = 'https://<vercel url>';
+update public.org_settings set app_url = 'https://project-tracker.dikagustiana.com';
 ```
 
 The `daily-digest` cron job (weekdays, 07.00 WIB) was created by the migration. With `email_provider = 'none'` it only writes `email_log`.
