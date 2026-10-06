@@ -56,8 +56,19 @@ jobs:
       - name: Start local Postgres and apply migrations
         run: npx supabase db start
 
-      - name: Run pgTAP suite
+      - name: Run pgTAP suite (security guard, access matrix A1–A17, workflow)
         run: npx supabase test db
+
+      - name: Lint database functions (plpgsql_check)
+        run: npm run db:lint
+
+      - name: Access policy report is current
+        run: |
+          npm run db:report
+          git diff --exit-code docs/access-policies.md || {
+            echo "::error::docs/access-policies.md is out of date. Run npm run db:report and commit it."
+            exit 1
+          }
 
       - name: Stop local Postgres
         if: always()

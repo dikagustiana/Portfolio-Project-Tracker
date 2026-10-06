@@ -18,7 +18,9 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "check": "npm run lint && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "db:report": "psql \"${SUPABASE_DB_URL:-postgresql://postgres:postgres@127.0.0.1:54322/postgres}\" -X -q -f scripts/access-report.sql > docs/access-policies.md",
+    "db:lint": "supabase db lint --level warning --fail-on warning"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
