@@ -1,22 +1,22 @@
--- Shared fixture for the access matrix (BRIEF §3) and the workflow tests.
+-- Shared fixture for the access matrix (BRIEF §3, ARCHITECTURE §D) and the workflow tests.
 -- Included with \ir inside each test's transaction; everything rolls back.
 --
---   Dika   owner; pm on Margin Bridge (MB)
---   David  pm on MB and on MAM
---   Muti   officer on MB          Yani  officer on MB
---   Vera   viewer on MB           Rina  officer on MB, no login
---   Mira   officer on MAM only    Bimo  pm on BMG (no David, Muti or Yani there)
---   Gita   group_viewer, no memberships
+--   Dika   super admin; project_admin on Margin Bridge (MB)
+--   David  project_admin on MB and on MAM
+--   Muti   member on MB            Yani  member on MB
+--   Vera   viewer on MB            Rina  member on MB, no login
+--   Mira   member on MAM only      Bimo  project_admin on BMG (no David, Muti or Yani there)
+--   Gita   a login without any membership (the old group viewer is retired)
 
 -- Start from an empty board whatever the database holds (the test's transaction rolls it back).
-alter table public.app_roles disable trigger app_roles_keep_one_owner;
+alter table public.profiles disable trigger profiles_keep_one_super_admin;
 delete from public.projects;
+delete from public.invitations;
 delete from public.people;
-delete from public.app_roles;
-delete from public.pending_app_roles;
+delete from public.pending_system_roles;
 delete from public.email_log;
 delete from auth.users;
-alter table public.app_roles enable trigger app_roles_keep_one_owner;
+alter table public.profiles enable trigger profiles_keep_one_super_admin;
 
 -- Deterministic ids, usable inside dollar-quoted test SQL.
 create function pg_temp.u(n text) returns uuid language sql immutable as $$ select md5('user:' || n)::uuid $$;
@@ -50,51 +50,49 @@ insert into public.people_contact (person_id, email)
 select pg_temp.p(n), n || '@samb.test'
   from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'mira', 'bimo', 'gita', 'rina']) n;
 
-insert into public.pending_app_roles (email, role) values ('dika@samb.test', 'owner');
+insert into public.pending_system_roles (email, system_role) values ('dika@samb.test', 'super_admin');
 
 insert into auth.users (id, email)
 select pg_temp.u(n), n || '@samb.test'
   from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'mira', 'bimo', 'gita']) n;
 
-insert into public.app_roles (user_id, role) values (pg_temp.u('gita'), 'group_viewer');
-
-insert into public.projects (id, name, entity_code) values
-  (pg_temp.prj('MB'), 'Project Margin Bridge', 'SAMB'),
-  (pg_temp.prj('MAM'), 'Project MAM', 'MAM'),
-  (pg_temp.prj('BMG'), 'Project BMG', 'BMG');
+insert into public.projects (id, name, entity_code, code) values
+  (pg_temp.prj('MB'), 'Project Margin Bridge', 'SAMB', 'MB'),
+  (pg_temp.prj('MAM'), 'Project MAM', 'MAM', 'MAM'),
+  (pg_temp.prj('BMG'), 'Project BMG', 'BMG', 'BMG');
 
 insert into public.project_members (project_id, person_id, role) values
-  (pg_temp.prj('MB'), pg_temp.p('dika'), 'pm'),
-  (pg_temp.prj('MB'), pg_temp.p('david'), 'pm'),
-  (pg_temp.prj('MB'), pg_temp.p('muti'), 'officer'),
-  (pg_temp.prj('MB'), pg_temp.p('yani'), 'officer'),
+  (pg_temp.prj('MB'), pg_temp.p('dika'), 'project_admin'),
+  (pg_temp.prj('MB'), pg_temp.p('david'), 'project_admin'),
+  (pg_temp.prj('MB'), pg_temp.p('muti'), 'member'),
+  (pg_temp.prj('MB'), pg_temp.p('yani'), 'member'),
   (pg_temp.prj('MB'), pg_temp.p('vera'), 'viewer'),
-  (pg_temp.prj('MB'), pg_temp.p('rina'), 'officer'),
-  (pg_temp.prj('MAM'), pg_temp.p('david'), 'pm'),
-  (pg_temp.prj('MAM'), pg_temp.p('mira'), 'officer'),
-  (pg_temp.prj('BMG'), pg_temp.p('bimo'), 'pm');
+  (pg_temp.prj('MB'), pg_temp.p('rina'), 'member'),
+  (pg_temp.prj('MAM'), pg_temp.p('david'), 'project_admin'),
+  (pg_temp.prj('MAM'), pg_temp.p('mira'), 'member'),
+  (pg_temp.prj('BMG'), pg_temp.p('bimo'), 'project_admin');
 
 update public.projects set pm_person_id = pg_temp.p('dika') where id = pg_temp.prj('MB');
 update public.projects set pm_person_id = pg_temp.p('david') where id = pg_temp.prj('MAM');
 update public.projects set pm_person_id = pg_temp.p('bimo') where id = pg_temp.prj('BMG');
 
-insert into public.milestones (id, project_id, code, title, sort_order, approver_person_id) values
-  (pg_temp.ms('MB-G1'), pg_temp.prj('MB'), 'G1', 'Mapping disetujui', 1, null),
-  (pg_temp.ms('MB-G2'), pg_temp.prj('MB'), 'G2', 'Pilot berjalan', 2, pg_temp.p('david')),
-  (pg_temp.ms('MAM-M1'), pg_temp.prj('MAM'), null, 'Data MAM lengkap', 1, null),
-  (pg_temp.ms('BMG-B1'), pg_temp.prj('BMG'), null, 'Costing BMG disetujui', 1, null);
+insert into public.milestones (id, project_id, code, ref, title, sort_order, approver_person_id) values
+  (pg_temp.ms('MB-G1'), pg_temp.prj('MB'), 'G1', 'G1', 'Mapping disetujui', 1, null),
+  (pg_temp.ms('MB-G2'), pg_temp.prj('MB'), 'G2', 'G2', 'Pilot berjalan', 2, pg_temp.p('david')),
+  (pg_temp.ms('MAM-M1'), pg_temp.prj('MAM'), null, 'M1', 'Data MAM lengkap', 1, null),
+  (pg_temp.ms('BMG-B1'), pg_temp.prj('BMG'), null, 'M1', 'Costing BMG disetujui', 1, null);
 
-insert into public.tasks (id, project_id, milestone_id, title, start_date, end_date, assignee_person_id, validator_person_id, proof_requested) values
-  (pg_temp.t('muti'), pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'Task Muti', '2026-10-07', '2026-10-09', pg_temp.p('muti'), pg_temp.p('david'), 'File'),
-  (pg_temp.t('yani'), pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'Task Yani', '2026-10-07', '2026-10-09', pg_temp.p('yani'), pg_temp.p('david'), 'File'),
-  (pg_temp.t('rina'), pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'Task Rina', '2026-10-07', '2026-10-09', pg_temp.p('rina'), pg_temp.p('dika'), 'File'),
-  (pg_temp.t('davidpic'), pg_temp.prj('MB'), pg_temp.ms('MB-G2'), 'Task David', '2026-10-12', '2026-10-14', pg_temp.p('david'), null, 'File'),
-  (pg_temp.t('mam'), pg_temp.prj('MAM'), pg_temp.ms('MAM-M1'), 'Task MAM', '2026-10-07', '2026-10-09', pg_temp.p('mira'), pg_temp.p('david'), 'File'),
-  (pg_temp.t('bmg'), pg_temp.prj('BMG'), pg_temp.ms('BMG-B1'), 'Task BMG', '2026-10-07', '2026-10-09', null, null, 'File');
+insert into public.tasks (id, project_id, milestone_id, ref, title, start_date, end_date, assignee_person_id, validator_person_id, proof_requested) values
+  (pg_temp.t('muti'), pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'MB01', 'Task Muti', '2026-10-07', '2026-10-09', pg_temp.p('muti'), pg_temp.p('david'), 'File'),
+  (pg_temp.t('yani'), pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'MB02', 'Task Yani', '2026-10-07', '2026-10-09', pg_temp.p('yani'), pg_temp.p('david'), 'File'),
+  (pg_temp.t('rina'), pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'MB03', 'Task Rina', '2026-10-07', '2026-10-09', pg_temp.p('rina'), pg_temp.p('dika'), 'File'),
+  (pg_temp.t('davidpic'), pg_temp.prj('MB'), pg_temp.ms('MB-G2'), 'MB04', 'Task David', '2026-10-12', '2026-10-14', pg_temp.p('david'), null, 'File'),
+  (pg_temp.t('mam'), pg_temp.prj('MAM'), pg_temp.ms('MAM-M1'), 'MAM01', 'Task MAM', '2026-10-07', '2026-10-09', pg_temp.p('mira'), pg_temp.p('david'), 'File'),
+  (pg_temp.t('bmg'), pg_temp.prj('BMG'), pg_temp.ms('BMG-B1'), 'BMG01', 'Task BMG', '2026-10-07', '2026-10-09', null, null, 'File');
 
-insert into public.asks (id, project_id, question, due) values
-  (pg_temp.ask('MB'), pg_temp.prj('MB'), 'Alokasi pakai pallet-days atau CBM?', '2026-10-09'),
-  (pg_temp.ask('BMG'), pg_temp.prj('BMG'), 'Costing standar atau aktual?', '2026-10-09');
+insert into public.asks (id, project_id, ref, question, due) values
+  (pg_temp.ask('MB'), pg_temp.prj('MB'), 'K01', 'Alokasi pakai pallet-days atau CBM?', '2026-10-09'),
+  (pg_temp.ask('BMG'), pg_temp.prj('BMG'), 'K01', 'Costing standar atau aktual?', '2026-10-09');
 
 insert into public.decisions (project_id, milestone_id, kind, status, note) values
   (pg_temp.prj('MB'), pg_temp.ms('MB-G1'), 'gate', 'rescope', 'Catatan MB'),
