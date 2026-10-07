@@ -13,7 +13,7 @@ logic code. The owner corrects them after the build. Config keys are given in `c
 | 3 | Pallet | 1,1 × 1,2 m footprint, **load height 1,0 m excluding the 15 cm wooden pallet** (total 1,15 m); the tall rule is 1,8 m load height | `PALLET_RULES.*.heightM`, `.woodHeightM` | Rack stacks, pool "Gudang", panel "Aturan palet" |
 | 4 | Truck allocation | Divide by m³ loaded (toggle **Dasar bagi truk → Kapasitas normal** shows "Kapasitas truk tak terpakai") | `Toggles.truckBasis`, `NORMAL_LOAD_FACTOR = 0.85` | Truck panel, unallocated line |
 | 5 | Cost of capital | 12 % (slider 0–20 %, labelled "asumsi") | `DEFAULT_TOGGLES.costOfCapital` | Metrics bar, invoice traces |
-| 6 | Nav visibility | Owner only, like Admin | `Shell.tsx` (`viewer.isOwner`) | Sidebar button "Simulasi proses" |
+| 6 | Nav visibility | Super admin (Owner) only, like Admin | `Shell.tsx` (`viewer.isSuperAdmin`) | Sidebar button "Lab · Simulasi" |
 
 ## Dummy world parameters (all DUMMY, world 1)
 

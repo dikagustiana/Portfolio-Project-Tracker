@@ -11,6 +11,7 @@ import type { PortfolioFilterKey } from '../app/ui.ts'
 import { useBoard } from '../data/board-context.ts'
 import { fmt, fmtLong, MS_LABEL, P_LABEL } from '../domain/index.ts'
 import type { PortfolioRow, Tone } from '../domain/index.ts'
+import { useEntityLabel } from './entity.ts'
 import { VcModules } from './project/ValueChain.tsx'
 import { ProgBar, RecordLine, Section, Tag, TaskLine, Timeline } from './record/parts.tsx'
 import { ago } from './record/status.ts'
@@ -36,6 +37,7 @@ export function Portfolio() {
   const ui = useUI()
   const { d, board, viewer, today } = useBoard()
   const flows = useFlows()
+  const ent = useEntityLabel()
   const rows = d.portfolio()
   const shown = d.portfolioFilter(rows, ui.pf, ui.pq)
   const active = rows.filter((r) => d.pActive(r.p))
@@ -146,7 +148,7 @@ export function Portfolio() {
                     <span style={{ minWidth: 0 }}>
                       <b>{r.p.name}</b>
                       <small>
-                        {r.p.code} · {r.p.entity}
+                        {r.p.code} · {ent(r.p.entity)}
                       </small>
                     </span>
                   </span>
