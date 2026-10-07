@@ -196,23 +196,50 @@ begin
 end
 $$;
 
-create function private.events_immutable() returns trigger
+-- Append-only history (project_events, comments, decisions, task_commitments). Rows are never
+-- edited or deleted directly. Two changes come from elsewhere and are allowed:
+--   * a foreign key clearing a reference when what it points to is deleted (ON DELETE SET NULL):
+--     only the columns named in the trigger arguments may become null, nothing else may change;
+--   * cascading deletes, when the project or record the history belongs to is deleted
+--     (those run inside the foreign key's own trigger, so the trigger depth is above 1).
+create function private.history_append_only() returns trigger
 language plpgsql security definer set search_path = ''
 as $$
+declare
+  v_old jsonb;
+  v_new jsonb;
+  i int;
 begin
-  -- Deleting a person nulls their id here (ON DELETE SET NULL); the line keeps its name snapshot.
   if tg_op = 'UPDATE' then
-    if new.actor_person_id is null and (to_jsonb(new) - 'actor_person_id') = (to_jsonb(old) - 'actor_person_id') then
+    v_old := to_jsonb(old);
+    v_new := to_jsonb(new);
+    for i in 0 .. tg_nargs - 1 loop
+      if v_new -> tg_argv[i] = 'null'::jsonb then
+        v_old := v_old - tg_argv[i];
+        v_new := v_new - tg_argv[i];
+      end if;
+    end loop;
+    if v_old = v_new then
       return new;
     end if;
+  elsif tg_op = 'DELETE' and pg_trigger_depth() > 1 then
+    return old;
   end if;
-  raise exception 'Riwayat project hanya bisa ditambah, tidak bisa diubah.' using errcode = '42501';
+  raise exception 'Riwayat hanya bisa ditambah, tidak bisa diubah atau dihapus (%).', tg_table_name using errcode = '42501';
 end
 $$;
-create trigger project_events_no_update before update on public.project_events
-  for each row execute function private.events_immutable();
+create trigger project_events_append_only before update or delete on public.project_events
+  for each row execute function private.history_append_only('actor_person_id');
 create trigger project_events_no_truncate before truncate on public.project_events
-  for each statement execute function private.events_immutable();
+  for each statement execute function private.history_append_only();
+create trigger decisions_append_only before update or delete on public.decisions
+  for each row execute function private.history_append_only('milestone_id', 'ask_id', 'recorded_by');
+create trigger decisions_no_truncate before truncate on public.decisions
+  for each statement execute function private.history_append_only();
+create trigger task_commitments_append_only before update or delete on public.task_commitments
+  for each row execute function private.history_append_only('committed_by');
+create trigger task_commitments_no_truncate before truncate on public.task_commitments
+  for each statement execute function private.history_append_only();
 
 -- ---------------------------------------------------------------------------------------
 -- Task history: events, review rounds and commitments from task state changes
@@ -455,20 +482,12 @@ $$;
 create trigger projects_event after insert on public.projects
   for each row execute function private.project_event();
 
--- Comments are append-only; blockers keep their history.
-create function private.comments_immutable() returns trigger
-language plpgsql security definer set search_path = ''
-as $$
-begin
-  -- Deleting a person nulls the author id (ON DELETE SET NULL); the text and time stay.
-  if new.author_person_id is null and (to_jsonb(new) - 'author_person_id') = (to_jsonb(old) - 'author_person_id') then
-    return new;
-  end if;
-  raise exception 'Komentar tidak bisa diubah.' using errcode = '42501';
-end
-$$;
-create trigger comments_no_update before update on public.comments
-  for each row execute function private.comments_immutable();
+-- Comments are append-only (deleting their author clears the id; text and time stay); blockers
+-- keep their history as rows that are resolved, not deleted.
+create trigger comments_append_only before update or delete on public.comments
+  for each row execute function private.history_append_only('author_person_id');
+create trigger comments_no_truncate before truncate on public.comments
+  for each statement execute function private.history_append_only();
 
 -- A blocker "needed from" person must belong to the project, so they can see it.
 create function private.blockers_integrity() returns trigger
@@ -477,8 +496,8 @@ as $$
 begin
   if new.needed_from_person_id is not null
      and (tg_op = 'INSERT' or new.needed_from_person_id is distinct from old.needed_from_person_id)
-     and private.person_role(new.needed_from_person_id, new.project_id) is null then
-    raise exception 'Orang yang dibutuhkan harus anggota project ini.' using errcode = '23514';
+     and not private.can_judge(new.needed_from_person_id, new.project_id) then
+    raise exception 'Orang yang dibutuhkan harus Project Admin atau Member project ini (Viewer tidak bisa bertindak).' using errcode = '23514';
   end if;
   return new;
 end

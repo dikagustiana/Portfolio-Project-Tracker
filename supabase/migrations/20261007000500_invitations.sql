@@ -10,6 +10,10 @@
 --     changed it since) and deletes a login that was created for it but never used.
 --   * An existing account is never re-invited: its memberships are updated directly.
 --   * Super admin: any project, any role. Project admin: own projects, member/viewer only.
+--   * A login link is a key to the account. A project admin may only obtain one (invite, link,
+--     revoke) for someone whose whole access lies inside the projects they administer, who is not
+--     a Project Admin anywhere and holds no system role (private.login_within_reach), and only for
+--     invitations they made themselves. Everyone else is invited by the super admin.
 
 create table public.invitations (
   id uuid primary key default gen_random_uuid(),
@@ -23,7 +27,10 @@ create table public.invitations (
   created_at timestamptz not null default now(),
   accepted_at timestamptz,
   revoked_at timestamptz,
-  revoked_by uuid references public.people (id) on delete set null
+  revoked_by uuid references public.people (id) on delete set null,
+  -- Whether the person already had a login when invited: a revoke deletes only a login the
+  -- invitation itself created (and that was never used).
+  login_existed boolean not null default false
 );
 create unique index invitations_one_pending on public.invitations (email) where status = 'pending';
 create index invitations_person_idx on public.invitations (person_id);
@@ -79,6 +86,23 @@ create function private.login_used(p_user uuid) returns boolean
 language sql stable security definer set search_path = ''
 as $$ select exists (select 1 from auth.users u where u.id = p_user and u.last_sign_in_at is not null) $$;
 
+-- Whether the caller may hold the keys to this person's login: the super admin always; a project
+-- admin only when every membership of the person is a Member/Viewer role in a project the caller
+-- administers, and the person holds no system role (granted or pending for their e-mail).
+create function private.login_within_reach(p_person uuid) returns boolean
+language sql stable security definer set search_path = ''
+as $$
+  select private.is_super_admin() or (
+        not exists (select 1 from public.project_members m
+                     where m.person_id = p_person
+                       and (m.role = 'project_admin' or not private.is_project_admin(m.project_id)))
+    and not exists (select 1 from public.people pe join public.profiles pr on pr.user_id = pe.user_id
+                     where pe.id = p_person and pr.system_role <> 'user')
+    and not exists (select 1 from public.people_contact c
+                      join public.pending_system_roles r on lower(r.email::text) = lower(c.email::text)
+                     where c.person_id = p_person))
+$$;
+
 -- p keys: email, name?, assignments: [{project_id, role}]. Returns
 -- { mode: 'invited' | 'updated', person_id, invitation_id? }.
 create function public.invite_member(p jsonb) returns jsonb
@@ -123,6 +147,10 @@ begin
   perform private.expire_invitations();
 
   select c.person_id into v_person from public.people_contact c where lower(c.email::text) = v_email;
+  -- An address reserved for a system role is the super admin's to invite.
+  if not v_super and exists (select 1 from public.pending_system_roles r where lower(r.email::text) = v_email) then
+    raise exception 'Email ini hanya bisa diundang oleh super admin.' using errcode = '42501';
+  end if;
   if v_person is null then
     insert into public.people (display_name, job_title)
     values (coalesce(nullif(left(v_name, 80), ''), left(split_part(v_email, '@', 1), 80)), '')
@@ -133,10 +161,16 @@ begin
 
   -- Existing account (signed in at least once): no invitation, memberships updated directly.
   if v_user is null or not private.login_used(v_user) then
+    -- An invitation leads to a login link: only for someone wholly inside the caller's projects.
+    if not private.login_within_reach(v_person) then
+      raise exception 'Orang ini juga punya akses di luar project yang kamu kelola. Minta super admin mengundangnya.'
+        using errcode = '42501';
+    end if;
     select i.id into v_inv from public.invitations i where lower(i.email::text) = v_email and i.status = 'pending';
     if v_inv is null then
-      insert into public.invitations (email, display_name, person_id, invited_by, invited_by_user)
-      values (v_email, coalesce(nullif(left(v_name, 80), ''), ''), v_person, private.current_person_id(), auth.uid())
+      insert into public.invitations (email, display_name, person_id, invited_by, invited_by_user, login_existed)
+      values (v_email, coalesce(nullif(left(v_name, 80), ''), ''), v_person, private.current_person_id(), auth.uid(),
+              v_user is not null)
       returning id into v_inv;
     else
       update public.invitations set expires_at = now() + interval '14 days', person_id = v_person where id = v_inv;
@@ -181,9 +215,20 @@ begin
   if not found or not private.can_see_invitation(v.id) then
     raise exception 'Data tidak ditemukan atau kamu tidak punya akses.' using errcode = 'P0002';
   end if;
-  if not private.is_super_admin() and exists (
-       select 1 from public.invitation_projects ip where ip.invitation_id = v.id and not private.is_project_admin(ip.project_id)) then
-    raise exception 'Undangan ini juga mencakup project lain. Minta super admin mencabutnya.' using errcode = '42501';
+  if not private.is_super_admin() then
+    if v.invited_by_user is distinct from auth.uid() then
+      raise exception 'Undangan ini dibuat orang lain. Minta dia atau super admin mencabutnya.' using errcode = '42501';
+    end if;
+    if exists (select 1 from public.invitation_projects ip
+                where ip.invitation_id = v.id
+                  and (not private.is_project_admin(ip.project_id)
+                       or ip.project_role = 'project_admin' or ip.previous_role = 'project_admin')) then
+      raise exception 'Undangan ini juga mencakup project lain atau peran Project Admin. Minta super admin mencabutnya.' using errcode = '42501';
+    end if;
+    if not private.login_within_reach(v.person_id) then
+      raise exception 'Orang ini sekarang juga punya akses di luar project yang kamu kelola. Minta super admin mencabutnya.'
+        using errcode = '42501';
+    end if;
   end if;
   if v.status <> 'pending' then
     raise exception 'Hanya undangan yang masih menunggu yang bisa dicabut.' using errcode = 'P0001';
@@ -206,16 +251,16 @@ begin
 
   update public.invitations set status = 'revoked', revoked_at = now(), revoked_by = private.current_person_id()
    where id = v.id;
-  -- A login created for this invitation but never used goes with it.
-  if v_user is not null then
+  -- A login created for this invitation (not one the person already had) and never used goes with it.
+  if v_user is not null and not v.login_existed then
     delete from auth.users u where u.id = v_user and u.last_sign_in_at is null;
   end if;
 end
 $$;
 
 -- Who may send a login link to a person (Edge Function invite-person): the super admin for any
--- person with an e-mail; a project admin for a person with a pending invitation to one of their
--- projects. Returns the e-mail address.
+-- person with an e-mail; a project admin only for their own pending invitation of someone within
+-- reach (see private.login_within_reach), checked again now. Returns the e-mail address.
 create function public.login_link_target(p_person uuid) returns jsonb
 language plpgsql security definer set search_path = ''
 as $$
@@ -228,10 +273,13 @@ begin
   perform private.expire_invitations();
   select c.email::text into v_email from public.people_contact c where c.person_id = p_person;
   select pe.user_id into v_user from public.people pe where pe.id = p_person;
-  if not private.is_super_admin() and not exists (
-       select 1 from public.invitations i join public.invitation_projects ip on ip.invitation_id = i.id
-        where i.person_id = p_person and i.status = 'pending' and private.is_project_admin(ip.project_id)) then
-    raise exception 'Hanya super admin, atau Project Admin dengan undangan yang masih menunggu, yang bisa mengirim link masuk.'
+  if not private.is_super_admin() and not (
+       exists (select 1 from public.invitations i
+                where i.person_id = p_person and i.status = 'pending' and i.invited_by_user = auth.uid()
+                  and exists (select 1 from public.invitation_projects ip
+                               where ip.invitation_id = i.id and private.is_project_admin(ip.project_id)))
+       and private.login_within_reach(p_person)) then
+    raise exception 'Hanya super admin, atau Project Admin yang mengundang orang ini ke project-nya, yang bisa mengirim link masuk.'
       using errcode = '42501';
   end if;
   if v_email is null then

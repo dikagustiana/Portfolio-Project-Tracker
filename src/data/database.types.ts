@@ -251,13 +251,13 @@ isOneToOne: false
                   ]
                 },"invitations": {
                   Row: {
-                    "accepted_at": string | null,"created_at": string,"display_name": string,"email": string,"expires_at": string,"id": string,"invited_by": string | null,"invited_by_user": string | null,"person_id": string | null,"revoked_at": string | null,"revoked_by": string | null,"status": string
+                    "accepted_at": string | null,"created_at": string,"display_name": string,"email": string,"expires_at": string,"id": string,"invited_by": string | null,"invited_by_user": string | null,"login_existed": boolean,"person_id": string | null,"revoked_at": string | null,"revoked_by": string | null,"status": string
                   }
                   Insert: {
-                    "accepted_at"?: string | null,"created_at"?: string,"display_name"?: string,"email": string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"invited_by_user"?: string | null,"person_id"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"status"?: string
+                    "accepted_at"?: string | null,"created_at"?: string,"display_name"?: string,"email": string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"invited_by_user"?: string | null,"login_existed"?: boolean,"person_id"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"status"?: string
                   }
                   Update: {
-                    "accepted_at"?: string | null,"created_at"?: string,"display_name"?: string,"email"?: string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"invited_by_user"?: string | null,"person_id"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"status"?: string
+                    "accepted_at"?: string | null,"created_at"?: string,"display_name"?: string,"email"?: string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"invited_by_user"?: string | null,"login_existed"?: boolean,"person_id"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"status"?: string
                   }
                   Relationships: [
                     {

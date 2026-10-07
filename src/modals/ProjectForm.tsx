@@ -1,5 +1,6 @@
 // Edit project (prototype openProject with an id). New projects go through the wizard. Only the
-// owner deletes a project and changes the value-chain template or the parallel-gates switch.
+// super admin deletes a project, changes the value-chain template or the parallel-gates switch,
+// and turns the review flow off (without it a PIC could tick their own work done).
 import { useState } from 'react'
 import { Tip } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
@@ -161,12 +162,21 @@ function ProjectBody({ p }: { p: Project }) {
         <summary>Pengaturan lanjutan</summary>
         <div className="in">
           <label className="toggle">
-            <input type="checkbox" id="pGate" checked={f.gate} disabled={lk} onChange={(e) => set('gate', e.target.checked)} />
+            <input
+              type="checkbox"
+              id="pGate"
+              checked={f.gate}
+              disabled={lk || (d.gated(p) && !isSuper)}
+              onChange={(e) => set('gate', e.target.checked)}
+            />
             <span>
               <b>Pakai alur pemeriksaan</b>
               <Tip k="pemeriksaan" />
               <br />
-              <span className="sub">Task selesai diajukan dengan bukti dan diterima pemeriksa.</span>
+              <span className="sub">
+                Task selesai diajukan dengan bukti dan diterima pemeriksa.
+                {d.gated(p) && !isSuper && ' Hanya super admin yang bisa mematikannya.'}
+              </span>
             </span>
           </label>
           <label className="f">

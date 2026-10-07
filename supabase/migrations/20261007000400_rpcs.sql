@@ -569,6 +569,8 @@ declare
   v_me uuid := private.current_person_id();
 begin
   perform private.assert_project(b.project_id, true);
+  -- Viewers never write, whoever raised the blocker or is named in it.
+  perform private.require_contributor(b.project_id);
   if b.resolved_at is not null then
     raise exception 'Hambatan ini sudah selesai.' using errcode = 'P0001';
   end if;
@@ -1046,6 +1048,12 @@ begin
      and not private.is_super_admin() then
     raise exception 'Hanya super admin yang bisa mengubah template value chain dan mode milestone paralel.' using errcode = '42501';
   end if;
+  -- Turning the review flow off would let a PIC tick their own work done (light mode), so only
+  -- the super admin may do it. Turning it on is always allowed.
+  if v.gate_mode and p ? 'gate_mode' and not (p ->> 'gate_mode')::boolean and not private.is_super_admin() then
+    raise exception 'Hanya super admin yang bisa mematikan alur pemeriksaan: tanpa itu PIC bisa menyelesaikan task-nya sendiri.'
+      using errcode = '42501';
+  end if;
   update public.projects set
     name = case when p ? 'name' then btrim(p ->> 'name') else name end,
     entity_code = case when p ? 'entity_code' then p ->> 'entity_code' else entity_code end,
@@ -1175,14 +1183,15 @@ begin
   end if;
   v_cur := private.person_role(p_person, p_project);
   if not private.is_super_admin() then
+    -- Someone the caller cannot see does not exist for them, whatever role is asked for.
+    if v_cur is null and not p_person in (select private.visible_person_ids()) then
+      raise exception 'Orang ini tidak ditemukan.' using errcode = 'P0002';
+    end if;
     if coalesce(p_person = private.current_person_id(), false) then
       raise exception 'Kamu tidak bisa mengubah aksesmu sendiri.' using errcode = '42501';
     end if;
     if v_cur = 'project_admin' or p_role = 'project_admin' then
       raise exception 'Hanya super admin yang bisa memberi atau mencabut peran Project Admin.' using errcode = '42501';
-    end if;
-    if v_cur is null and not p_person in (select private.visible_person_ids()) then
-      raise exception 'Orang ini tidak ditemukan.' using errcode = 'P0002';
     end if;
   end if;
   if p_role is null then
@@ -1225,10 +1234,10 @@ declare
   v_project uuid;
 begin
   select f.project_id into v_project from public.migration_flags f where f.id = p_flag;
-  if v_project is null or not private.can_read_project(v_project) then
+  -- Migration notes are visible to project admins only; to anyone else they do not exist.
+  if v_project is null or not private.is_project_admin(v_project) then
     raise exception 'Data tidak ditemukan atau kamu tidak punya akses.' using errcode = 'P0002';
   end if;
-  perform private.require_admin(v_project);
   update public.migration_flags set resolved_at = now(), resolved_by = private.current_person_id()
    where id = p_flag and resolved_at is null;
 end
