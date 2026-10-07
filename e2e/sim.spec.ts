@@ -9,13 +9,26 @@ import { adminClient, signIn } from './helpers.ts'
 
 const OWNER = `sim-owner.${Math.random().toString(36).slice(2, 8)}@e2e.test`
 
+// The database only creates logins for e-mails on file (on_auth_user_gate), so the test owner is
+// invited the way the owner screens do it: a pending 'owner' role, granted when the login appears.
+test.beforeAll(async () => {
+  const admin = adminClient()
+  const pending = await admin.from('pending_app_roles').insert({ email: OWNER, role: 'owner' })
+  if (pending.error) throw new Error(pending.error.message)
+  const created = await admin.auth.admin.createUser({ email: OWNER, email_confirm: true })
+  if (created.error) throw new Error(created.error.message)
+})
+
+test.afterAll(async () => {
+  const admin = adminClient()
+  await admin.from('pending_app_roles').delete().eq('email', OWNER)
+  const { data } = await admin.auth.admin.listUsers({ perPage: 1000 })
+  for (const u of data.users.filter((x) => x.email === OWNER)) await admin.auth.admin.deleteUser(u.id).catch(() => undefined)
+})
+
 test('world 1 #/simulasi loads, is reachable and traceable', async ({ page, baseURL }) => {
   const admin = adminClient()
   const base = baseURL ?? 'http://localhost:5173'
-  const created = await admin.auth.admin.createUser({ email: OWNER, email_confirm: true })
-  if (created.error && !/already/i.test(created.error.message)) throw new Error(created.error.message)
-  const roles = await admin.from('app_roles').insert({ user_id: created.data.user?.id ?? '', role: 'owner' })
-  if (roles.error) throw new Error(roles.error.message)
   await signIn(page, admin, OWNER, base)
 
   // Owner-only nav button → sim host → world 1.
@@ -93,8 +106,12 @@ test('prefers-reduced-motion jumps instead of animating (both worlds)', async ({
   await page.getByRole('button', { name: 'Putar' }).click()
   await expect(page.getByText(/^Hari 7:/)).toBeVisible({ timeout: 3_000 })
 
+  // World 2 (2D under reduced motion) steps an hour at a time; start late on day 6 so the jump to
+  // day 7 lands within the timeout. Its map caption reads "Hari 7, 06.00 · … order".
   await page.getByRole('tab', { name: 'Gudang B2B + B2C' }).click()
+  await expect(page.getByRole('heading', { name: 'Gudang B2B + B2C' })).toBeVisible()
   await page.getByRole('slider', { name: 'Geser hari' }).fill('6')
+  await page.getByRole('slider', { name: 'Geser jam' }).fill('21')
   await page.getByRole('button', { name: 'Putar' }).click()
-  await expect(page.getByText(/^Hari 7:/)).toBeVisible({ timeout: 3_000 })
+  await expect(page.getByText(/^Hari 7, /)).toBeVisible({ timeout: 3_000 })
 })
