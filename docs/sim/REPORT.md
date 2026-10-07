@@ -1,10 +1,11 @@
-# REPORT — Simulasi proses: world 1 "Distribusi" + world 2 "Gudang B2B + B2C"
+# REPORT — Simulasi proses: world 1 "Distribusi" + world 2 "Gudang B2B + B2C" (+ 3D, Brief 3)
 
 > ## ⚠️ Repo-visibility warning
 > `dikagustiana/Portfolio-Project-Tracker` is **PUBLIC** while the README requires the repo to be
-> private. Per ground rule §1.2 (Brief 1) nothing has been pushed: `feat/simulasi-proses`
-> (Brief 1) and `feat/simulasi-b2b-b2c` (Brief 2, branched from the Brief 1 branch) exist as
-> **local commits only**. Open both PRs after the owner makes the repo private.
+> private. Briefs 1–2 were kept as local commits under ground rule §1.2. On 7 Oct 2026 the owner
+> chose to push anyway: branch `sim-3d-b3` on `origin` carries Briefs 1, 2 and 3 (all figures
+> DUMMY). `feat/simulasi-proses` and `feat/simulasi-b2b-b2c` remain local; their commits are in
+> `sim-3d-b3`. Nothing was pushed to `main`.
 
 ## What was built
 
@@ -52,6 +53,38 @@
 
 Nothing from either brief's scope was left undone.
 
+### Brief 3 — world 2 in 3D (`sim-3d-b3`, V0–V4)
+
+- **V0** plan + asset rules ([PLAN.md](PLAN.md) "Brief 3", [ASSETS.md](ASSETS.md)): R3F + drei
+  `RoundedBox`, fully procedural, CSP-safe by construction (no models, textures, HDR, WASM, blob
+  workers, troika text, drei `<Html>`).
+- **V1** style frame: toy-like iso scene and the §4 card system. The first attempt's overlay was
+  absolutely positioned with fixed widths and collided at 1366 px (search bar wrapped into the
+  scene, zoom buttons over the selected card, timeline against the tabs card, everything stacked
+  on a phone); rebuilt as one CSS grid with fixed areas and three width modes (wide ≥ 1720,
+  medium ≥ 900, phone with a bottom sheet) measured on the container, not the viewport. One
+  camera module drives the render rig, the DOM labels and drag-to-pan (tested against three.js).
+- **V2** engine bindings: world 2 opens in 3D by default (2D when WebGL is missing, the viewer
+  prefers reduced motion, after "Tampilan 2D", or if 3D fails at runtime). KPI row, lists, order
+  tracking, object cards and the day summary come from the engine through `bindings2.ts`;
+  "Aturan alokasi", "Jejak angka" and "Detail" reuse world 2's toggles, `TraceView` and
+  `DetailPanel2`. **sim-report for both worlds byte-identical** to `2a21ed6` (before Brief 3).
+- **V3** motion: B2B trucks, couriers, inbound trucks and forklifts move with the engine's day
+  (`motion2.ts`: continuity, nose-first, timetable and one-truck-per-door tested). Buildings,
+  vehicles and the interior are clickable; "Ikuti" follows a vehicle. Display-only times are in
+  [ASSUMPTIONS.md](ASSUMPTIONS.md).
+- **V4** hardening: `e2e-sim3d` (7 Playwright tests, no Supabase) builds the preview for
+  production and serves it with the **production CSP from vercel.json** — zero violations
+  (negative control: an injected inline script is blocked and reported); toggles recompute,
+  traces verify, clicks/follow work, SimHost falls back to 2D on reduced motion and without
+  WebGL, no card overlaps. `scripts/sim3d-frames.ts` sweeps 32 screen sizes (overlap, sideways
+  spill, off-area cards, page side-scroll). `e2e/sim.spec.ts` updated for the 3D default.
+
+Fixed on the way (pre-existing): the 2D bar showed the shared warehouse cost as all B2C under
+"Tidak dibagi" (it is charged to neither channel); cost per B2C order matched orders with a
+nested scan (~60M compares per call, now a Set with identical output); the sim screen had no
+menu button below 860 px, where the app hides its sidebar (3D view only).
+
 ## Results
 
 | Check | Result |
@@ -64,6 +97,13 @@ Nothing from either brief's scope was left undone.
 | Control 8 (world 1 unchanged) | ✅ byte-identical dataset hash + report diff |
 | Determinism | world 1 hash `80ab43da`; world 2 hash stable per seed `20261107` |
 | Playwright | committed; runs where the local stack lives (Docker unavailable on the build machine) |
+| Brief 3 `npm run check` | ✅ lint 0 warnings, typecheck clean, **345 passed / 12 skipped** (new: camera, bindings, motion, card format) |
+| Brief 3 chunks | `SimHost` **3,1 kB** (1,4 gzip) · `Sim3D` **54,3 kB** (16,9) + css 13,0 kB · vendor `three` **912 kB** (242 gzip, lazy, not preloaded) · app shell unchanged (index 13,8 kB, react 254,8 kB) |
+| Brief 3 `npm run e2e:sim3d` | ✅ 7/7 against the production build under the production CSP (run with `PW_CHANNEL=msedge` here) |
+| Brief 3 layout sweep | ✅ 32 sizes, 900–1920 px desktop, app shell, tablet, phones portrait + landscape |
+| Brief 3 sim-report | ✅ world 1 and world 2 byte-identical to `2a21ed6` (SHA-256 `2bb69c4e…` / `4a64125b…`) |
+| Brief 3 frame pacing | headless Edge, production build, playing at 1× and 16×: median frame 4,2 ms, p95 ≤ 8,4 ms, no long tasks; worst single frame 25–29 ms on a day change at 16× |
+| `e2e/sim.spec.ts` (Supabase) | updated for the 3D default; **not run** — Docker is unavailable on this machine |
 
 ## sim-report highlights
 
@@ -94,10 +134,17 @@ World 2 (defaults) — `npx tsx scripts/sim-report.ts --world b2b-b2c`; the view
 
 ## Known issues
 
+- Brief 3: the "recompute sama" badge (shared `TraceView`, asserted by both e2e suites) is the one
+  English phrase left on screen; renaming it is a one-word change in `TraceView` plus the specs.
+- Brief 3: world 1 "Distribusi" has no 3D scene; its selector entry opens the 2D world.
+- Brief 3: the B2B trucks' return leg is not drawn (they leave toward "Toko" and the Truk list
+  marks them "Kembali" after four hours).
+
 - `tests/reference-sql.test.ts` fails on Windows checkouts with `core.autocrlf=true` (CRLF smudge vs
   LF generation). Pre-existing, unrelated to the sim; passes on CI/Linux. A `.gitattributes` would fix.
 
 ## Assumptions
 
 [ASSUMPTIONS.md](ASSUMPTIONS.md) — both worlds, every default with its config key and on-screen
-location. Plan: [PLAN.md](PLAN.md). Screenshots: [screenshots/](screenshots/).
+location. Plan: [PLAN.md](PLAN.md). Assets: [ASSETS.md](ASSETS.md). Screenshots: [screenshots/](screenshots/)
+(Brief 3: `s3d-*.png`).

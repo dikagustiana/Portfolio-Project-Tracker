@@ -23,7 +23,9 @@
     "db:lint": "supabase db lint --level warning --fail-on warning",
     "fn:check": "deno check --no-lock supabase/functions/*/index.ts",
     "db:types": "supabase gen types typescript --local > src/data/database.types.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:sim3d": "playwright test -c playwright.sim3d.config.ts",
+    "sim3d:frames": "node scripts/sim3d-frames.ts"
   },
   "dependencies": {
     "@react-three/drei": "10.7.9",

@@ -1,7 +1,9 @@
-// Sim screens smoke (Brief 1 §9 M4 + Brief 2 §9 N4): the owner opens both routes from the
-// signed-in shell, the worlds render with the watermark, objects are keyboard-reachable,
-// traces open with the recompute badge, the world selector switches routes, and
-// prefers-reduced-motion jumps instead of animating in both worlds.
+// Sim screens smoke (Brief 1 §9 M4 + Brief 2 §9 N4 + Brief 3 V4): the owner opens both routes
+// from the signed-in shell, the worlds render with the watermark, objects are keyboard-reachable,
+// traces open with the recompute badge, the world selector switches routes, world 2 opens in 3D
+// with "Tampilan 2D" one click away, and prefers-reduced-motion jumps instead of animating in
+// both worlds (world 2 stays 2D then). The 3D view itself is covered without Supabase by
+// e2e-sim3d (npm run e2e:sim3d).
 import { expect, test } from '@playwright/test'
 import { adminClient, signIn } from './helpers.ts'
 
@@ -47,6 +49,16 @@ test('world selector switches to #/simulasi/b2b-b2c and the second world works',
 
   await page.getByRole('tab', { name: 'Gudang B2B + B2C' }).click()
   await expect(page).toHaveURL(/#\/simulasi\/b2b-b2c/)
+
+  // Brief 3: world 2 opens in 3D with engine-bound KPI cards; a KPI opens its trace.
+  await expect(page.getByRole('group', { name: 'Ringkasan biaya' })).toBeVisible()
+  await expect(page.getByText('Ilustrasi — angka dummy, bukan data SAMB')).toBeVisible()
+  await page.getByRole('button', { name: /Biaya per order B2C/ }).click()
+  await expect(page.getByText('recompute sama')).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // The 2D world is one click away (and remembered per browser).
+  await page.getByRole('button', { name: 'Tampilan 2D' }).click()
   await expect(page.getByRole('heading', { name: 'Gudang B2B + B2C' })).toBeVisible()
   await expect(page.getByText('Ilustrasi — angka dummy, bukan data SAMB')).toBeVisible()
   await expect(page.getByRole('group', { name: 'Metrik utama gudang B2B+B2C' })).toBeVisible()

@@ -196,3 +196,13 @@ with the reference pending the owner attaching `reference-waretrack.png`. Stop f
   the camera follows the vehicle until it leaves the map or the viewer drags.
 - Pace: one simulated hour per second at 1× (a day in 16 s; a month in 30 s at 16×), slower
   than the 2D world's 2,2 s per day so vehicles can be followed by eye.
+
+### V4 as built — hardening
+
+- `npm run e2e:sim3d` (`playwright.sim3d.config.ts`, `e2e-sim3d/`): builds the preview page for
+  production (`vite.sim3d.config.ts`) and serves it with the CSP copied from `vercel.json`; seven
+  tests cover rendering without CSP violations, toggles, traces, pins/lists/search, vehicles and
+  "Ikuti", SimHost's 2D fallbacks, and the overlay at 1366×768 and 390×844. No Supabase needed.
+- `npm run sim3d:frames -- --tag=…`: the 32-size layout sweep plus style frames in `.sim-local/`.
+- `e2e/sim.spec.ts` (Supabase stack) follows the 3D default; not runnable here without Docker.
+- Results and numbers: [REPORT.md](REPORT.md).

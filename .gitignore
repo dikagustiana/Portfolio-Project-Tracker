@@ -2,6 +2,7 @@
 node_modules
 dist
 dist-ssr
+dist-sim3d
 coverage
 *.tsbuildinfo
 
