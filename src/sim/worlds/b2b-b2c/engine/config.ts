@@ -41,6 +41,10 @@ export const PLATFORMS: Platform[] = [
   { id: 'WEB', label: 'Website', feePct: 0.025, settlementDays: 3, orderShare: 0.12, cutoffHour: 16 },
 ]
 
+/** DUMMY — B2C retail markup over the wholesale piece price (B2B carton price ÷ pieces), set
+ *  by the owner on 7 Oct 2026. The goods' cost (HPP) stays the wholesale cost. */
+export const B2C_RETAIL_MARKUP = 0.15
+
 /** DUMMY — B2C order volume per day before platform shares. */
 export const ORDERS_PER_DAY = 260
 

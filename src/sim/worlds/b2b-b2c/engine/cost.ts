@@ -3,8 +3,9 @@
 // split by pick lines × standard minutes (toggle: shared vs separate). ISD lands only on
 // P0/P1 orders. B2C order economics per §4.3; B2B reuses world 1's trip chain and cash
 // clock (assumption 7). Both channels earn on the same basis: B2B starts from world 1's gross
-// profit (value × SKU margin), B2C subtracts the goods' cost (HPP = item GMV × (1 − SKU
-// margin)). Every pool reconciles down to the orders and principals that carry it.
+// profit (value × SKU margin), B2C subtracts the goods' cost (HPP = pieces × the wholesale
+// cost per piece; B2C sells at a retail markup over it). Every pool reconciles down to the
+// orders and principals that carry it.
 
 import { DAYS, POOLS, SEPARATE_TEAM_OVERHEAD, STANDARD_MINUTES, TICKETS_PER_ORDER, PLATFORMS } from './config.ts'
 import type { PlatformId, Toggles2 } from './config.ts'
@@ -46,7 +47,7 @@ export interface OrderEconomics {
    *  shared warehouse cost by each item's own principal and m³. */
   byPrincipal: Partial<Record<PrincipalId, { revenue: number; cogs: number; cost: number }>>
   revenue: number
-  /** Cost of the goods sold (HPP): item GMV × (1 − SKU margin), the same basis as B2B. */
+  /** Cost of the goods sold (HPP): pieces × wholesale cost per piece, the same basis as B2B. */
   cogs: number
   fee: number
   sellerShipping: number
@@ -298,7 +299,7 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
     const retDeskOrder = o.returned && retPiecesTotal > 0 ? retTotal * (o.items.reduce((s, x) => s + x.pieces, 0) / retPiecesTotal) : 0
     const principal = must(o.items[0], 'item').principal
     const revenue = o.gmv - o.voucher
-    const itemCogs = o.items.map((x) => x.gmv * (1 - must(world.skus[x.sku], `sku ${x.sku}`).margin))
+    const itemCogs = o.items.map((x) => x.pieces * must(world.pieceCost[x.sku], `piece cost ${x.sku}`))
     const cogs = itemCogs.reduce((s, x) => s + x, 0)
     const teamCost = outboundCost + isdCost + replenishCost + csOrder + shopOrder + retDeskOrder
     const orderLevelCost = o.fee + sellerShipping + o.boxCost + returnCost + teamCost + capital

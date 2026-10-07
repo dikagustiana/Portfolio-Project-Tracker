@@ -129,17 +129,17 @@ World 2 (defaults) — `npx tsx scripts/sim-report.ts --world b2b-b2c`; the view
 - **Where channels separate**: outbound regular teams split by standard minutes — pick lines plus
   dispatch per package/carton (B2B 21.340 vs B2C 51.657 min; picker cost B2B 15,8 jt vs B2C
   38,2 jt), ISD Rp 40 jt lands only on P0/P1.
-- **One B2C order**: cost to serve Rp 94–117 rb/order by priority, goods cost (HPP) ≈ Rp 700 rb on
-  ≈ Rp 760 rb revenue; the order waterfall walks GMV − voucher − fee − HPP − kemasan − retur − tim
+- **One B2C order**: cost to serve Rp 102–126 rb/order by priority, goods cost (HPP) ≈ Rp 700 rb on
+  ≈ Rp 875 rb revenue; the order waterfall walks GMV − voucher − fee − HPP − kemasan − retur − tim
   − gudang − modal.
-- **Price of speed**: P0 Rp 117,4 rb/order and P1 Rp 115,2 rb vs P2 Rp 93,9 rb — the ISD premium is
-  ≈ Rp 21–24 rb/order.
-- **Contribution** (both channels after the goods' cost): B2B positive for every principal (B
-  Rp 219,4 jt … E Rp 3,3 jt); **B2C negative for A, C, E, F** (C −Rp 110 jt) and barely positive for
-  B (Rp 5,4 jt); per platform MP-A −Rp 68,2 jt … Website −Rp 6,5 jt. Reason: the dummy generator
-  prices B2C pieces at the B2B carton price ÷ pieces (wholesale), so B2C earns only the SKU's
-  8–12 % margin while its cost to serve plus platform fee is ≈ 18–21 % of GMV. F's voucher leakage
-  stays visible before any operating cost.
+- **Price of speed**: P0 Rp 125,6 rb/order and P1 Rp 122,9 rb vs P2 Rp 102,3 rb (cost to serve) —
+  the ISD premium is ≈ Rp 21–23 rb/order; contribution per order P0 Rp 51,7 rb, P1 Rp 51,9 rb, P2
+  Rp 75 rb.
+- **Contribution** (both channels after the goods' cost, B2C at a 15 % retail markup): B2B
+  B Rp 219,4 jt … E Rp 3,3 jt; B2C C Rp 183,7 jt, B Rp 156,5 jt, F Rp 103,9 jt, A Rp 68 jt, E
+  Rp 26,6 jt (D is B2B only); per platform MP-A Rp 122,4 jt … MP-D Rp 43,5 jt (highest fee).
+  Without the markup B2C was loss-making for A, C, E, F, because pieces sold at the wholesale price
+  earn only the SKU's 8–12 % margin. F's voucher leakage stays visible before any operating cost.
 
 ### PR #3 review fixes (world 2 engine)
 
@@ -166,8 +166,11 @@ World 1 `sim-report` stays byte-identical; the world-1 golden test still passes.
 - **Same basis for both channels**: B2C now subtracts the goods' cost (HPP = item GMV × (1 − SKU
   margin)), as B2B starts from world 1's gross profit (value × margin). HPP shows on the order
   and channel waterfalls, the platform panel and `sim-report`; KPI "Biaya per order B2C" and the
-  price of speed stay cost-to-serve figures. Consequence above: B2C is loss-making at wholesale
-  prices — a B2C retail-price assumption would be a new dummy parameter for the owner to set.
+  price of speed stay cost-to-serve figures. At wholesale prices B2C was loss-making for A, C, E, F.
+- **B2C retail markup 15 %** (`B2C_RETAIL_MARKUP`, DUMMY): B2C pieces sell at the wholesale piece
+  price × 1,15; HPP stays the wholesale cost (stored per piece, `World2.pieceCost`), so the markup
+  is B2C's extra margin. GMV, fees, vouchers, settlements and capital follow the new prices; the
+  order stream is otherwise identical (same seed draws).
 - The trace badge reads **"hitung ulang sama"** (was "recompute sama").
 
 ## Known issues

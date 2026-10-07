@@ -160,11 +160,17 @@ describe('world 2 controls for every toggle combination', () => {
       const orderContribution = sum(alloc.perOrder.map((x) => x.contribution))
       expect(near(sum(pc.map((x) => x.b2c)), orderContribution), 'principal B2C = orders').toBe(true)
       expect(near(sum(Object.values(alloc.platform).map((x) => x.contribution)), orderContribution), 'platforms = orders').toBe(true)
-      // Both channels on one basis: B2C goods cost = item GMV × (1 − SKU margin), as B2B's
-      // gross profit = value × margin; priority views split it out of the cost to serve.
+      // Both channels on one basis: B2C goods cost = pieces × the wholesale cost per piece
+      // (carton price × (1 − margin) ÷ pieces), as B2B's gross profit = value × margin; the
+      // B2C price carries the retail markup on top. Priority views split HPP out of the cost
+      // to serve.
       for (const [i, o] of alloc.perOrder.entries()) {
         const order = must(world.orders.filter((x) => x.shipDay <= world.days)[i], 'order')
-        expect(near(o.cogs, sum(order.items.map((it) => it.gmv * (1 - must(world.skus[it.sku], 'sku').margin))))).toBe(true)
+        const expected = sum(order.items.map((it) => {
+          const sku = must(world.skus[it.sku], 'sku')
+          return (it.pieces * sku.pricePerCarton * (1 - sku.margin)) / must(world.piecesPerCarton[it.sku], 'pieces')
+        }))
+        expect(near(o.cogs, expected)).toBe(true)
       }
       for (const pr of alloc.priority) expect(near(pr.avgRevenue - pr.avgCogs - pr.avgCost, pr.avgContribution)).toBe(true)
       expect(near(sum(pc.map((x) => x.cogsB2c)), sum(alloc.perOrder.map((x) => x.cogs))), 'principal HPP').toBe(true)

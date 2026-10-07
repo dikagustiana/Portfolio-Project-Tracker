@@ -42,7 +42,7 @@ test('renders the 3D world under the production CSP, with engine numbers', async
   // WebGL really drew: the canvas has a live context.
   expect(await page.evaluate(() => !!document.querySelector<HTMLCanvasElement>('.s3-root canvas')?.getContext('webgl2'))).toBe(true)
   await expect(page.getByText('Ilustrasi — angka dummy, bukan data SAMB')).toBeVisible()
-  expect(await kpis(page)).toEqual(['Rp 97.366', 'Rp 204.869', 'Rp 230,0 jt'])
+  expect(await kpis(page)).toEqual(['Rp 105.444', 'Rp 204.869', 'Rp 230,0 jt'])
   await expect(page.locator('.s3-clock')).toContainText('Hari 8 · 10.45')
   await page.waitForTimeout(500)
   expect(await problems()).toEqual([])
@@ -54,7 +54,7 @@ test('"Aturan alokasi" recomputes every card and resets', async ({ page }) => {
   await page.getByRole('button', { name: '⚙ Aturan alokasi' }).click()
   await page.getByRole('radio', { name: 'Penjual' }).click()
   await expect.poll(() => kpis(page)).not.toEqual(before)
-  expect((await kpis(page))[0]).toBe('Rp 144.726')
+  expect((await kpis(page))[0]).toBe('Rp 152.803')
   await page.getByRole('radio', { name: 'Tidak dibagi' }).click()
   await expect(page.locator('.s3-kpi').nth(2)).toContainText('tidak dibagi')
   await page.getByRole('button', { name: 'Kembalikan ke bawaan' }).click()

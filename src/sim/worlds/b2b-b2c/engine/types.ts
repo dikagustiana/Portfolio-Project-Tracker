@@ -83,7 +83,10 @@ export interface World2 {
   piecesPerCarton: Record<string, number>
   pieceVolumeCm3: Record<string, number>
   pieceKg: Record<string, number>
+  /** B2C selling price per piece: wholesale (carton price ÷ pieces) plus the retail markup. */
   piecePrice: Record<string, number>
+  /** Goods cost per piece (HPP): carton price × (1 − SKU margin) ÷ pieces, as for B2B. */
+  pieceCost: Record<string, number>
   stores: Store[]
   orders: B2cOrder[]
   manifests: Manifest[]

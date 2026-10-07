@@ -3,7 +3,7 @@
 // package per order, courier manifests, returns, and platform settlements. Both channels
 // draw from ONE shared stock pool — the piece ledger subtracts both outs from one balance.
 
-import { BOXES, CHARGEABLE_VOLUME_DIVISOR_CM3_PER_KG, COURIERS, DAYS, ORDERS_PER_DAY, PRIORITY, RESTOCK_SHARE, RETURN_RATE, SEED, VOUCHER_SHARE, PLATFORMS, B2C_VALUE_SHARE } from './config.ts'
+import { B2C_RETAIL_MARKUP, BOXES, CHARGEABLE_VOLUME_DIVISOR_CM3_PER_KG, COURIERS, DAYS, ORDERS_PER_DAY, PRIORITY, RESTOCK_SHARE, RETURN_RATE, SEED, VOUCHER_SHARE, PLATFORMS, B2C_VALUE_SHARE } from './config.ts'
 import type { B2cOrder, Manifest, OrderItem, PieceLedgerDay, PickFaceDay, World2 } from './types.ts'
 import { generateWorld } from '../../distribusi/engine/generate.ts'
 import type { PrincipalId } from '../../../core/colors.ts'
@@ -14,13 +14,16 @@ const PIDS: PrincipalId[] = ['A', 'B', 'C', 'D', 'E', 'F']
 type Rng = ReturnType<typeof mulberry32>
 
 /** World 2 adds piece attributes derived deterministically from each SKU's carton. */
-function pieceAttributes(sku: { m3PerCarton: number; kgPerCarton: number; pricePerCarton: number }): { pieces: number; cm3: number; kg: number; price: number } {
+function pieceAttributes(sku: { m3PerCarton: number; kgPerCarton: number; pricePerCarton: number; margin: number }): { pieces: number; cm3: number; kg: number; price: number; cost: number } {
   const pieces = Math.max(2, Math.round(64 / Math.cbrt(sku.m3PerCarton * 1_000_000) / 2) * 2)
   const perPieceVolume = (sku.m3PerCarton * 1_000_000) / pieces
   const cm3 = Math.round(perPieceVolume)
   const kg = Math.round((sku.kgPerCarton / pieces) * 100) / 100
-  const price = Math.round(sku.pricePerCarton / pieces)
-  return { pieces, cm3, kg, price }
+  // B2C sells at the wholesale piece price plus the retail markup; the goods cost what they
+  // cost B2B: the carton price less its margin, per piece.
+  const price = Math.round((sku.pricePerCarton / pieces) * (1 + B2C_RETAIL_MARKUP))
+  const cost = (sku.pricePerCarton * (1 - sku.margin)) / pieces
+  return { pieces, cm3, kg, price, cost }
 }
 
 function pickHour(rng: Rng): number {
@@ -64,12 +67,14 @@ export function generateWorld2(seed = SEED): World2 {
   const pieceVolumeCm3: Record<string, number> = {}
   const pieceKg: Record<string, number> = {}
   const piecePrice: Record<string, number> = {}
+  const pieceCost: Record<string, number> = {}
   for (const code of Object.keys(skus)) {
     const a = pieceAttributes(must(skus[code], `sku ${code}`))
     piecesPerCarton[code] = a.pieces
     pieceVolumeCm3[code] = a.cm3
     pieceKg[code] = a.kg
     piecePrice[code] = a.price
+    pieceCost[code] = a.cost
   }
 
   // --- B2C orders (§3.3 C1–C2): value weighted by the principal B2C profiles; D is B2B only.
@@ -254,7 +259,7 @@ export function generateWorld2(seed = SEED): World2 {
   }
 
   return {
-    days: DAYS, b2b, skus, piecesPerCarton, pieceVolumeCm3, pieceKg, piecePrice,
+    days: DAYS, b2b, skus, piecesPerCarton, pieceVolumeCm3, pieceKg, piecePrice, pieceCost,
     stores: b2b.stores, orders, manifests, ledger, pickFace, quarantinedPieces,
   }
 }
