@@ -20,7 +20,7 @@ import { useFlows } from './flows.ts'
 import { useActionCount } from './hooks.ts'
 import { QuickFind } from './QuickFind.tsx'
 import { ShellCtx } from './shell-context.ts'
-import { applyTheme, go, useTheme, useUI } from './ui.ts'
+import { addrPath, applyTheme, go, useTheme, useUI } from './ui.ts'
 import type { View } from './ui.ts'
 
 // Super-admin screens load on demand, so everyone else's bundle stays smaller.
@@ -91,7 +91,7 @@ export function Shell() {
               <Admin />
             </Suspense>
           ) : view === 'record' && ui.rec ? (
-            <RecordPage a={ui.rec} />
+            <RecordPage key={addrPath(ui.rec)} a={ui.rec} />
           ) : view === 'project' ? (
             p ? <ProjectView p={p} /> : <NoProject />
           ) : (
@@ -147,7 +147,13 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
     const g = d.prog(p.id)
     return g.n ? `${g.p}%` : '–'
   }
-  const roleLabel = viewer.isSuperAdmin ? 'Owner · Super Admin' : me ? 'Anggota' : ''
+  const roleLabel = viewer.isSuperAdmin
+    ? 'Owner · Super Admin'
+    : board.projects.some((p) => d.isAdminIn(p.id))
+      ? 'Project Admin'
+      : me
+        ? 'Anggota'
+        : ''
   const item = (v: View, label: string, icon: Parameters<typeof Icon>[0]['name'], extra?: React.ReactNode) => (
     <button className={ui.view === v ? 'on' : ''} onClick={() => nav({ view: v })}>
       <Icon name={icon} />

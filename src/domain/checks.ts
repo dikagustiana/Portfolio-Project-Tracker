@@ -49,11 +49,13 @@ export function makeChecks(
   const { isDone, gated, msNo, msState, seqConflict, needsCommit, durDays } = rules
   const depsOf = (t: Task): Task[] => t.deps.map((id) => ix.task(id)).filter((d): d is Task => !!d)
 
+  // Over both kinds of prerequisite, like the database's cycle check (task_deps_no_cycle).
   const reaches = (from: Id, target: Id, seen = new Set<Id>()): boolean => {
     if (from === target) return true
     if (seen.has(from)) return false
     seen.add(from)
-    return (ix.task(from)?.deps ?? []).some((d) => reaches(d, target, seen))
+    const t = ix.task(from)
+    return [...(t?.deps ?? []), ...(t?.acceptDeps ?? [])].some((d) => reaches(d, target, seen))
   }
 
   return {

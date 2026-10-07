@@ -400,7 +400,7 @@ export function makeViews(deps: {
       })
     // Packages whose sub-tasks are all accepted: the PIC submits the package.
     for (const t of board.tasks)
-      if (live(t.projectId) && rules.gated(ix.project(t.projectId)) && rules.packageReady(t) && isP(who, t.assignee))
+      if (live(t.projectId) && rules.gated(ix.project(t.projectId)) && rules.packageReady(t) && !t.rejectReason && isP(who, t.assignee))
         out.push({
           key: `p${t.id}`,
           kind: 'submit-package',
@@ -418,7 +418,7 @@ export function makeViews(deps: {
     for (const b of board.blockers) {
       if (b.resolvedAt !== null || !live(b.projectId)) continue
       const t = ix.task(b.taskId)
-      if (!t) continue
+      if (!t || rules.isDone(t)) continue
       // Named → that person; unnamed → the project's own admins (members, not the super admin's
       // implicit reach), except the PIC who raised it.
       const mine =
@@ -580,7 +580,7 @@ export function makeViews(deps: {
     board.blockers
       .filter((b) => b.resolvedAt === null && live(b.projectId) && (!projectId || b.projectId === projectId))
       .map((b) => ({ b, t: ix.task(b.taskId) }))
-      .filter((x): x is { b: Blocker; t: Task } => !!x.t)
+      .filter((x): x is { b: Blocker; t: Task } => !!x.t && !rules.isDone(x.t))
       .sort((a, b) => a.b.raisedAt - b.b.raisedAt)
 
   const waitingReview = (projectId?: Id): Task[] =>
@@ -684,11 +684,12 @@ export function makeViews(deps: {
     }
     const MOVED = new Set(['task_accepted', 'task_completed', 'task_submitted', 'task_rejected', 'task_reopened', 'gate_passed', 'gate_stopped', 'gate_rescoped', 'decision_made', 'blocker_raised', 'blocker_resolved', 'project_closed', 'project_stopped', 'project_reopened', 'task_created', 'task_deleted'])
     const moved = board.events.filter((e) => inScope(e.projectId) && MOVED.has(e.verb) && inWindow(e.at)).sort((a, b) => b.at - a.at)
+    // Commitments that moved later during the window: open leaf work, recommitted in the window.
     const slipped = board.tasks
-      .filter((t) => inScope(t.projectId) && !rules.isDone(t))
+      .filter((t) => inScope(t.projectId) && rules.isLeaf(t) && !rules.isDone(t))
       .map((t) => ({ t, s: rules.slip(t) }))
-      .filter((x) => !!x.s && x.s.days > 0)
-      .map(({ t, s }) => ({ t, from: s?.baseline.end ?? t.end, to: t.end, days: s?.days ?? 0 }))
+      .filter((x) => !!x.s && x.s.days > 0 && inWindow(x.s.latest.at))
+      .map(({ t, s }) => ({ t, from: s?.baseline.end ?? t.end, to: s?.latest.end ?? t.end, days: s?.days ?? 0 }))
       .sort((a, b) => b.days - a.days)
     const nextStart = addDays(until, 1)
     const nextEnd = addDays(until, 7)

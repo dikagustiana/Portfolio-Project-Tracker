@@ -216,8 +216,9 @@ export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): R
     leaves: (projectId) => ix.ptasks(projectId).filter(isLeaf),
     msProg: (m) => progOf(ix.mtasks(m.id)),
     taskProg: (t) => (hasChildren(t) ? progOf(ix.children(t.id)) : pct(isDone(t) ? 1 : 0, 1)),
-    blocker: (t) => ix.openBlocker(t.id),
-    isBlocked: (t) => !!ix.openBlocker(t.id),
+    // A blocker only counts while its task is open: once accepted, it no longer blocks anything.
+    blocker: (t) => (isDone(t) ? undefined : ix.openBlocker(t.id)),
+    isBlocked: (t) => !isDone(t) && !!ix.openBlocker(t.id),
     isDraft: (t) => gated(ix.project(t.projectId)) && !isDone(t) && (!t.assignee || !t.proof.trim()),
     waitingToStart: (t) => open(t.deps),
     waitingToAccept: (t) => [...open(t.deps), ...open(t.acceptDeps), ...ix.children(t.id).filter((c) => !isDone(c))],
@@ -227,7 +228,9 @@ export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): R
       const baseline = cs[0]
       const latest = cs[cs.length - 1]
       if (!baseline || !latest) return null
-      return { baseline, latest, days: dn(t.end) - dn(baseline.end), count: cs.length }
+      // Slip is between commitments (ARCHITECTURE §F): latest committed end − first committed end.
+      // A plan date moved without a new commitment is not a slip of the commitment.
+      return { baseline, latest, days: dn(latest.end) - dn(baseline.end), count: cs.length }
     },
     gated,
     pActive,

@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { Icon } from '../../app/bits.tsx'
 import { useShell } from '../../app/shell-context.ts'
 import { openFull, resolveAddr } from '../../app/nav.ts'
-import { go, setUI, useUI } from '../../app/ui.ts'
+import { addrPath, go, setUI, useUI } from '../../app/ui.ts'
 import type { Addr } from '../../app/ui.ts'
 import { useBoard } from '../../data/board-context.ts'
 import { AskRecord } from './AskRecord.tsx'
@@ -60,7 +60,7 @@ export function RecordPage({ a }: { a: Addr }) {
         )}
       </div>
       <div style={{ maxWidth: 860 }}>
-        <Body a={a} zoom="full" />
+        <Body key={addrPath(a)} a={a} zoom="full" />
       </div>
     </>
   )
@@ -74,8 +74,8 @@ export function PeekHost() {
   useEffect(() => {
     if (!a) return
     const onKey = (e: KeyboardEvent) => {
-      // A dialog above the peek handles its own Escape first.
-      if (e.key === 'Escape' && !document.querySelector('#modalRoot .scrim')) setUI({ peek: null })
+      // A dialog or Quick Find above the peek handles its own Escape first.
+      if (e.key === 'Escape' && !document.querySelector('#modalRoot .scrim, .qf-scrim')) setUI({ peek: null })
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)

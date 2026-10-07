@@ -168,7 +168,7 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
               </button>
             </>
           )}
-          {!g && (
+          {!g && (pic || d.isAdminIn(t.projectId)) && !(openKids.length > 0 && !done) && (
             <button className="btn primary" disabled={busy} onClick={() => flows.onCheck(t.id)}>
               {done ? 'Buka lagi' : 'Tandai selesai'}
             </button>

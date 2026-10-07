@@ -49,8 +49,9 @@ export interface UIState {
   pf: PortfolioFilterKey
   pq: string
   sel: string
-  /** Tinjauan mingguan: days back from today. */
+  /** Tinjauan mingguan: days back from today, and the project in scope ('' = all). */
   rvDays: number
+  rvSel: string
   simWorld: SimWorld
   simView: SimView
 }
@@ -74,6 +75,7 @@ const DEFAULTS: UIState = {
   pq: '',
   sel: '',
   rvDays: 7,
+  rvSel: '',
   simWorld: 'distribusi',
   simView: '3d',
 }

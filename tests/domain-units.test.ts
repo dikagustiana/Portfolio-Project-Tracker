@@ -155,6 +155,13 @@ describe('reaches (dependency cycle check)', () => {
     expect(d.reaches('MB01', 'MB03')).toBe(true)
     expect(d.reaches('MB01', 'MB04')).toBe(false)
   })
+
+  it('follows acceptance-only prerequisites too, as the database does', () => {
+    const b = prototypeBoard()
+    must(b.tasks.find((t) => t.id === 'MB05'), 'MB05').acceptDeps = ['MB04']
+    const d = domain(b)
+    expect(d.reaches('MB05', 'MB04')).toBe(true)
+  })
 })
 
 describe('dates and text', () => {

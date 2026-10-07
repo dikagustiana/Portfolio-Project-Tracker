@@ -12,10 +12,18 @@ export function Review() {
   const ui = useUI()
   const { d, board, today } = useBoard()
   const since = addDays(today, -ui.rvDays)
-  const scopeId = ui.sel && d.resolveProject(ui.sel) ? d.resolveProject(ui.sel) : ''
+  // Its own scope (not Portofolio's selection); a project no longer active falls back to all.
+  const picked = ui.rvSel ? d.resolveProject(ui.rvSel) : ''
+  const scopeId = picked && d.pActive(d.project(picked)) ? picked : ''
   const ids = scopeId ? [scopeId] : undefined
   const r = d.review(since, today, ids)
   const active = board.projects.filter((p) => d.pActive(p))
+  // Accepted work, counted in leaf tasks like every progress number (not packages).
+  const accepted = r.moved.filter((e) => {
+    if (e.verb !== 'task_accepted' && e.verb !== 'task_completed') return false
+    const t = d.task(e.objectId)
+    return !t || !d.hasChildren(t)
+  }).length
   return (
     <>
       <Head
@@ -30,7 +38,7 @@ export function Review() {
                 </button>
               ))}
             </div>
-            <select className="inp" style={{ width: 'auto' }} value={scopeId ? (d.project(scopeId)?.code ?? '') : ''} onChange={(e) => setUI({ sel: e.target.value })} aria-label="Project">
+            <select className="inp" style={{ width: 'auto' }} value={scopeId ? (d.project(scopeId)?.code ?? '') : ''} onChange={(e) => setUI({ rvSel: e.target.value })} aria-label="Project">
               <option value="">Semua project</option>
               {active.map((p) => (
                 <option key={p.id} value={p.code}>
@@ -43,7 +51,7 @@ export function Review() {
       />
       <div className="metrics">
         <div className="metric">
-          <b>{r.moved.filter((e) => e.verb === 'task_accepted' || e.verb === 'task_completed').length}</b>
+          <b>{accepted}</b>
           <span>Task diterima</span>
         </div>
         <div className={`metric${r.slipped.length ? ' alert tone-amber' : ''}`}>

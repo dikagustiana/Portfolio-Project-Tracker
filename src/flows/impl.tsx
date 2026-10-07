@@ -9,6 +9,7 @@ import { peek } from '../app/nav.ts'
 import type { ModalOpts } from '../app/overlay-context.ts'
 import { getUI } from '../app/ui.ts'
 import { messageOf } from '../data/actions.ts'
+import type { Domain, Stage, Task } from '../domain/index.ts'
 import { AskDialog } from '../modals/AskDialog.tsx'
 import { BlockerDialog, EscalateDialog, ResolveBlockerDialog } from '../modals/BlockerDialogs.tsx'
 import { CalDialog } from '../modals/CalDialog.tsx'
@@ -30,6 +31,17 @@ export interface FlowDeps {
   store: BoardStore
   toast: (msg: string) => void
   open: (content: ReactNode, opts?: ModalOpts) => void
+}
+
+/**
+ * Why a light-mode stage change would be refused ('' when allowed): only the PIC or a project
+ * admin moves a task, and a package is done only when its sub-tasks are (as set_task_stage).
+ */
+function lightBlock(d: Domain, t: Task, stage: Stage): string {
+  if (!d.canAct(t.assignee, t.projectId) && !d.isAdminIn(t.projectId)) return 'Hanya PIC atau Project Admin yang bisa mengubah tahap task ini.'
+  if (d.hasChildren(t) && stage === 'done' && d.children(t.id).some((k) => !d.isDone(k))) return 'Paket selesai setelah semua sub-task-nya selesai.'
+  if (d.hasChildren(t) && stage !== 'done') return 'Tahap paket mengikuti sub-task-nya.'
+  return ''
 }
 
 export function makeFlows({ store, toast, open }: FlowDeps): Flows {
@@ -100,6 +112,8 @@ export function makeFlows({ store, toast, open }: FlowDeps): Flows {
       if (d.locked(t)) return lockMsg()
       if (!d.gated(d.project(t.projectId))) {
         const done = !d.isDone(t)
+        const why = lightBlock(d, t, done ? 'done' : 'progress')
+        if (why) return toast(why)
         const note = reopenNote(d, t, { milestoneId: t.milestoneId, stage: done ? 'done' : 'progress' })
         void exec(() => actions.setTaskStage(id, done ? 'done' : 'progress'), withNote(done ? 'Task selesai ✓' : 'Task dibuka lagi', note))
         return
@@ -114,6 +128,8 @@ export function makeFlows({ store, toast, open }: FlowDeps): Flows {
       if (!t || t.stage === stage) return
       if (d.locked(t)) return lockMsg()
       if (!d.gated(d.project(t.projectId))) {
+        const why = lightBlock(d, t, stage)
+        if (why) return toast(why)
         const note = reopenNote(d, t, { milestoneId: t.milestoneId, stage })
         void exec(() => actions.setTaskStage(id, stage), note || undefined)
         return
@@ -130,6 +146,8 @@ export function makeFlows({ store, toast, open }: FlowDeps): Flows {
         if (d.canValidate(t)) flows.openTask(id)
         return
       }
+      // A package follows its sub-tasks; it is not started or paused by hand.
+      if (d.hasChildren(t)) return toast('Tahap paket mengikuti sub-task-nya. Ajukan paket setelah semua sub-task diterima.')
       if (t.stage === 'review') {
         if (!d.canAct(t.assignee, t.projectId)) return toast('Hanya PIC yang bisa menarik pengajuan.')
         void exec(async () => {

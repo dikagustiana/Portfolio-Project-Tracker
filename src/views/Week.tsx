@@ -21,7 +21,9 @@ export function Week() {
   useEffect(() => {
     if (ui.asWho === '' && !me) setUI({ asWho: '*' })
   }, [ui.asWho, me])
-  const who: Id = ui.asWho || (me ? '' : '*')
+  // A saved "Lihat sebagai" person who is no longer visible falls back to me (or everyone).
+  const known = ui.asWho === '' || ui.asWho === '*' || board.people.some((m) => m.id === ui.asWho)
+  const who: Id = (known && ui.asWho) || (me ? '' : '*')
   const isP = (id: Id) => who === '*' || (who ? id === who : !!me && id === me.id)
 
   const ws = addDays(weekStartOf(today), ui.wkOff * 7)

@@ -151,15 +151,37 @@ describe('packages and dependencies', () => {
 })
 
 describe('history: commitment slip', () => {
-  it('original 10 Okt, current 17 Okt: slip 7 days', () => {
+  const at = (day: string) => Date.parse(`${day}T10:00:00+07:00`)
+  const c = (seq: number, end: string, when: string, start = '2026-10-05'): Commitment => ({
+    id: `c${seq}`,
+    seq,
+    projectId: PROJECT_ID,
+    taskId: 'MB05',
+    start,
+    end,
+    by: 'm-yani',
+    at: at(when),
+  })
+
+  it('original 10 Okt, current 17 Okt: slip 7 days, listed in the review of the week it moved', () => {
     const b = prototypeBoard()
     const t = must(b.tasks.find((x) => x.id === 'MB05'))
     t.end = '2026-10-17'
-    const c = (seq: number, end: string): Commitment => ({ id: `c${seq}`, seq, projectId: PROJECT_ID, taskId: 'MB05', start: t.start, end, by: 'm-yani', at: seq })
-    b.commitments = [c(1, '2026-10-10'), c(2, '2026-10-17')]
+    b.commitments = [c(1, '2026-10-10', '2026-09-20'), c(2, '2026-10-17', '2026-10-05')]
     const s = must(domain(b).slip(t))
     expect([s.baseline.end, s.latest.end, s.days, s.count]).toEqual(['2026-10-10', '2026-10-17', 7, 2])
     expect(domain(b).review('2026-10-01', '2026-10-07').slipped.map((x) => [x.t.id, x.from, x.to, x.days])).toEqual([['MB05', '2026-10-10', '2026-10-17', 7]])
+    // A review of an earlier window does not list a move made later.
+    expect(domain(b).review('2026-09-14', '2026-09-30').slipped).toEqual([])
+  })
+
+  it('a plan date moved without a new commitment is not a slip', () => {
+    const b = prototypeBoard()
+    const t = must(b.tasks.find((x) => x.id === 'MB05'))
+    t.end = '2026-12-31'
+    b.commitments = [c(1, '2026-10-10', '2026-10-02')]
+    expect(must(domain(b).slip(t)).days).toBe(0)
+    expect(domain(b).review('2026-10-01', '2026-10-07').slipped).toEqual([])
   })
 })
 
@@ -201,6 +223,29 @@ describe('views (ARCHITECTURE §H)', () => {
     expect(d.actions('m-dika').some((a) => a.kind === 'blocker')).toBe(true)
     expect(d.actions('m-yani').some((a) => a.kind === 'blocker')).toBe(false)
     expect(d.waiting('m-yani').map((w) => [w.kind, w.ref, w.onLabel])).toContainEqual(['blocker', 'MB05', 'Butuh Project Admin'])
+  })
+
+  it('a blocker left open on an accepted task no longer counts anywhere', () => {
+    const b = prototypeBoard()
+    b.blockers = [blocker('MB05')]
+    const mb05 = must(b.tasks.find((t) => t.id === 'MB05'))
+    mb05.stage = 'done'
+    mb05.acceptedAt = Date.parse('2026-10-06T10:00:00+07:00')
+    const d = domain(b)
+    expect(d.isBlocked(mb05)).toBe(false)
+    expect(d.actions('m-dika').some((a) => a.kind === 'blocker')).toBe(false)
+    expect(d.blockedList()).toEqual([])
+    expect(d.portfolio()[0]?.blocked).toBe(0)
+  })
+
+  it('a rejected package whose sub-tasks are accepted is one action (rework), not two', () => {
+    const b = withPackage()
+    const mb05 = must(b.tasks.find((t) => t.id === 'MB05'))
+    must(b.tasks.find((t) => t.id === 'MB05.3')).stage = 'done'
+    mb05.rejectReason = 'Bukti kurang'
+    mb05.rejectedAt = Date.parse('2026-10-06T10:00:00+07:00')
+    const acts = domain(b).actions('m-yani').filter((a) => a.ref === 'MB05')
+    expect(acts.map((a) => a.kind)).toEqual(['rework'])
   })
 
   it('the viewer\'s badge view equals the list it opens', () => {
