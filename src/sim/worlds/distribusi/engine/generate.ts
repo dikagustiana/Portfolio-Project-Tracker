@@ -14,7 +14,14 @@ import type { DeliveryOrder, DoLine, InvoiceGen, InvoiceSent, Po, Principal, Sku
 /** Days on which the commercial team re-checks order needs (§3 step 2). */
 const PO_CHECK_DAYS = [1, 8, 15, 22]
 
-export function generateWorld(seed = SEED): World {
+export interface GenOptions {
+  /** Multiplies every store's daily demand (world 2 runs the B2B exit at a smaller scale).
+   *  Absent/1 keeps the exact reference dataset. */
+  demandScale?: number
+}
+
+export function generateWorld(seed = SEED, opts: GenOptions = {}): World {
+  const demandScale = opts.demandScale ?? 1
   const rng = mulberry32(seed)
 
   // --- Stores: Toko 01–24, spread over the zones, with a "MT besar" group per zone.
@@ -70,7 +77,7 @@ export function generateWorld(seed = SEED): World {
         const presence = offMt ? p.skus.demandPresence * (1 - p.skus.mtBias) : p.skus.demandPresence
         for (const code of must(principalOf.get(p.id), `principal ${p.id}`).skus) {
           const sku = skuOf(code)
-          const expected = rng.range(p.skus.demandPerStoreDay[0], p.skus.demandPerStoreDay[1]) * zf * (offMt ? 1 - p.skus.mtBias : 1)
+          const expected = rng.range(p.skus.demandPerStoreDay[0], p.skus.demandPerStoreDay[1]) * zf * (offMt ? 1 - p.skus.mtBias : 1) * demandScale
           const floor = p.skus.demandPresence >= 0.99 || offMt ? 1 : 0
           const cartons = Math.max(floor, Math.round(expected))
           if (rng.chance(presence) && cartons > 0) {

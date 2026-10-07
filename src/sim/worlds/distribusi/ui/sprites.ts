@@ -7,7 +7,7 @@
 import type { PrincipalId } from '../engine/config.ts'
 import { formatM3, formatNumber, formatRpShort } from '../../../core/format.ts'
 import { PRINCIPAL_COLOR } from '../../../core/colors.ts'
-import type { ThemeColors } from '../../../core/colors.ts'
+import type { ThemeColors } from '../../../core/theme.ts'
 import { ARRIVAL_PATH, DOCK_TO_RACK, ROADS, RACK_TO_STAGE, storePos } from './objects.ts'
 import { project } from '../../../core/iso.ts'
 import type { Computed } from '../engine/index.ts'
