@@ -114,6 +114,61 @@ export function buildCoin(ink: Ink): THREE.Group {
   return p.build('coin')
 }
 
+// ---- Factory Yard's covered delivery truck (buildVan) -------------------------------------------
+/** A box body, rear swing doors, its tag (destination, stream) on the roof so it reads from above;
+ *  `reefer` adds a refrigeration unit on the front of the box. Pallets ride in one row. */
+export const VAN_SLOTS = [-4.4, -6.9, -9.4, -11.9]
+export const VAN_DECK = 1.3
+export const VAN_LEN = 13.4
+export const VAN_BH = 2.85
+export function buildBoxTruck(ink: Ink, tag: string, reefer = false): THREE.Group {
+  const g = new THREE.Group()
+  g.name = 'boxTruck'
+  const p = new Part(ink)
+  const B0 = -VAN_LEN
+  const BL = 10.4
+  const D = VAN_DECK
+  const BH = VAN_BH
+  p.box(-12.9, -0.8, 0.5, 12.6, 1.6, 0.4)
+  p.box(-0.4, -1.3, 0.35, 0.4, 2.6, 0.55)
+  p.box(-2.8, -1.25, 0.85, 2.6, 2.5, 2.25)
+  p.box(-2.9, -1.3, 3.1, 2.7, 2.6, 0.18)
+  const fr = SIDE(-0.2, 1.25, 3.1)
+  p.fill2(fr, 0.25, 0.25, 2.0, 0.95).rect2(fr, 0.25, 0.25, 2.0, 0.95, 'line').draw(fr, [0.4, 1.7, 2.1, 1.7, 0.4, 1.95, 2.1, 1.95])
+  p.fill2(FRONT(-2.8, 1.25, 3.1), 1.2, 0.3, 1.1, 0.85).rect2(FRONT(-2.8, 1.25, 3.1), 1.2, 0.3, 1.1, 0.85, 'line')
+  p.fill2(FRONT(-2.8, -1.25, 3.1), 1.2, 0.3, 1.1, 0.85, 'glass', -0.03).rect2(FRONT(-2.8, -1.25, 3.1), 1.2, 0.3, 1.1, 0.85, 'line', -0.04)
+  p.box(B0, -1.4, D - 0.35, BL, 2.8, 0.35)
+  p.box(B0, 1.25, D, BL, 0.15, BH).box(B0, -1.4, D, BL, 0.15, BH)
+  p.box(-3.15, -1.4, D, 0.15, 2.8, BH)
+  p.box(B0, -1.4, D + BH, BL, 2.8, 0.15)
+  const ribs: number[] = []
+  for (let u = 1.3; u < BL - 0.2; u += 1.3) ribs.push(u, 0.1, u, BH + 0.1)
+  p.draw(FRONT(B0, 1.4, D + BH + 0.15), ribs).draw(FRONT(B0, -1.4, D + BH + 0.15), ribs, 'detail', -0.04)
+  // the destination on the roof
+  const R = TOP(B0 + 0.6, -1.0, D + BH + 0.15)
+  p.fill2(R, 0, 0, 7.4, 2.0, 'paper', 0.02).text(R, tag.toUpperCase(), 3.7, 1.45, 1.0, 'hi', 'middle', 0.05)
+  if (reefer) {
+    p.box(-3.1, -1.0, D + BH - 1.2, 0.5, 2.0, 1.25, 'k')
+    p.draw(SIDE(-2.6, 1.0, D + BH + 0.05), [0.3, 0.3, 1.7, 0.3, 0.3, 0.6, 1.7, 0.6, 0.3, 0.9, 1.7, 0.9], 'koline')
+  }
+  for (const x of [-1.7, -10.7]) {
+    p.cylY(x, 1.0, 0.55, 0.55, 0.42, 12)
+    p.cylY(x, -1.42, 0.55, 0.55, 0.42, 12)
+  }
+  lights(p, 0, [0.9, -0.9], 0.5)
+  g.add(p.build('boxTruckBody'))
+  for (const [n, y, s] of [['doorL', 1.4, -1], ['doorR', -1.4, 1]] as const) {
+    const d = new Part(ink)
+    const y0 = s < 0 ? -1.4 : 0
+    d.box(-0.08, y0, 0, 0.08, 1.4, BH + 0.12)
+    for (const k of [0.35, 1.05]) d.seg('line', W(-0.09, y0 + k, 0.2), W(-0.09, y0 + k, BH - 0.1))
+    const dg = d.build(n)
+    dg.position.copy(W(B0, y, D))
+    g.add(dg)
+  }
+  return g
+}
+
 // ---- trees and street furniture (Factory Yard's tree, lampPost) --------------------------------
 const crown = new THREE.IcosahedronGeometry(1, 0)
 const yaw = (a: number): THREE.Quaternion => new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), a)

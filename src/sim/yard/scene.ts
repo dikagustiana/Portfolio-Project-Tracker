@@ -227,12 +227,35 @@ export class YardScene {
     for (const l of this.labels) l.el.remove()
     this.labels = defs.map((def) => {
       const el = document.createElement('div')
-      el.className = 'y-place'
+      el.className = `y-place${def.lens ? ' y-only' : ''}`
+      if (def.lens) el.dataset.lens = def.lens
+      // the key and the name apart, so a narrow map can show the key alone
       const name = document.createElement('b')
-      name.textContent = def.key ? `${def.key} · ${def.label}` : def.label
+      const key = document.createElement('i')
+      key.textContent = def.key
+      const nm = document.createElement('em')
+      nm.textContent = def.key ? ` · ${def.label}` : def.label
+      if (def.key) name.append(key)
+      name.append(nm)
       const drv = document.createElement('span')
       drv.textContent = def.driver
       el.append(name, drv)
+      if (def.ready) {
+        // the readiness bar: ADA, SEBAGIAN, BELUM in proportion, with their counts
+        const bar = document.createElement('i')
+        bar.className = 'y-ready'
+        bar.title = `ADA ${def.ready[0]} · SEBAGIAN ${def.ready[1]} · BELUM ${def.ready[2]}`
+        ;(['r-ada', 'r-seb', 'r-bel'] as const).forEach((tone, k) => {
+          const n = def.ready?.[k] ?? 0
+          if (!n) return
+          const seg = document.createElement('em')
+          seg.className = tone
+          seg.style.flexGrow = String(n)
+          seg.textContent = String(n)
+          bar.append(seg)
+        })
+        el.append(bar)
+      }
       this.stage.append(el)
       return { def, el }
     })
@@ -248,18 +271,28 @@ export class YardScene {
   private placeLabels(): void {
     const w = this.stage.clientWidth
     const h = this.stage.clientHeight
+    this.stage.classList.toggle('narrow', w < 560)
     const taken: [number, number, number, number][] = []
     for (const { def, el } of this.labels) {
-      const [x, y] = this.screenAt(W(...def.at))
-      let hide = x < -40 || x > w + 40 || y < -20 || y > h + 40
+      const at = this.screenAt(W(...def.at))
+      const y = at[1]
+      let x = at[0]
+      let hide = x < -40 || x > w + 40 || y < -20 || y > h + 40 || (!!def.lens && def.lens !== this.lens)
       if (!hide) {
         el.hidden = false
-        el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`
         const bw = el.offsetWidth
         const bh = el.offsetHeight
-        const r: [number, number, number, number] = [x - bw / 2, y - bh, x + bw / 2, y]
-        hide = taken.some(([a, b, c, d]) => r[0] < c && r[2] > a && r[1] < d && r[3] > b)
-        if (!hide) taken.push(r)
+        // kept inside the map; over its spot if there is room, else nudged above or below it, else stepped back
+        x = Math.max(bw / 2 + 4, Math.min(w - bw / 2 - 4, x))
+        const dy = [0, -(bh + 2), bh + 2, -2 * (bh + 2), 2 * (bh + 2)].find((d) => {
+          const r = [x - bw / 2, y + d - bh, x + bw / 2, y + d]
+          return !taken.some(([a, b, c, e]) => (r[0] ?? 0) < c && (r[2] ?? 0) > a && (r[1] ?? 0) < e && (r[3] ?? 0) > b)
+        })
+        hide = dy === undefined
+        if (dy !== undefined) {
+          taken.push([x - bw / 2, y + dy - bh, x + bw / 2, y + dy])
+          el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y + dy)}px) translate(-50%, -100%)`
+        }
       }
       el.hidden = hide
     }

@@ -82,8 +82,9 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
       stage.dataset.nowebgl = 'true'
       return
     }
-    const runtime = def.build(scene, { day: initialDay, hour: initialHour, seed, reduced })
+    // the world's labels go up first, so its build can replace them (with live counts, …)
     scene.setLabels(def.labels)
+    const runtime = def.build(scene, { day: initialDay, hour: initialHour, seed, reduced })
     ctl.attach({ scene, runtime })
     for (const id of open ?? []) scene.forceOpen.add(id)
     if (initialLens) {
@@ -191,7 +192,7 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
             </li>
           ))}
         </ul>
-        <div className="yd-lenses">
+        <div className={`yd-lenses${def.lenses.length > 1 ? ' many' : ''}`}>
           {def.lenses.map((l) => (
             <button key={l.id} type="button" className="yd-lens" aria-pressed={lens === l.id} onClick={() => setLens(lens === l.id ? null : l.id)} title={l.title}>
               {l.label}
@@ -462,7 +463,37 @@ function BlockView({ block: b }: { block: Block }) {
     }
     case 'waterfall':
       return <WaterfallView block={b} />
+    case 'steps':
+      return <StepsView block={b} />
   }
+}
+
+/** items behind tabs: the first is open; a tab shows another (the card re-renders keep the choice) */
+function StepsView({ block: b }: { block: Extract<Block, { kind: 'steps' }> }) {
+  const [open, setOpen] = useState(b.items[0]?.key ?? '')
+  const item = b.items.find((x) => x.key === open) ?? b.items[0]
+  return (
+    <section className="yd-block">
+      <span className="yd-kicker">{b.title}</span>
+      {b.items.length > 1 && (
+        <div className="yd-tabs" role="tablist" aria-label={b.title}>
+          {b.items.map((x) => (
+            <button key={x.key} type="button" role="tab" aria-selected={x.key === item?.key} aria-pressed={x.key === item?.key} onClick={() => setOpen(x.key)}>
+              {x.key}
+            </button>
+          ))}
+        </div>
+      )}
+      {item && (
+        <div className="yd-stepbody" role="tabpanel" aria-label={item.label}>
+          <h3 className="yd-steptitle">{item.label}</h3>
+          {item.blocks.map((x, i) => (
+            <BlockView key={`${x.kind}-${x.title}-${i}`} block={x} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
 }
 
 /** A bridge drawn as floating bars on one scale: the start, each step from where the last ended,

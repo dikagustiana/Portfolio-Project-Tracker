@@ -34,6 +34,8 @@ export type Block =
   | { kind: 'bars'; title: string; items: { label: string; value: number; display: string; tone?: 'ok' | 'warn' | 'bad' | 'live' }[]; note?: string }
   /** a bridge from a start value to an end value, every step labelled (Brief B5 §3 waterfall) */
   | { kind: 'waterfall'; title: string; start: { label: string; value: number }; steps: { label: string; value: number }[]; end: { label: string; value: number }; format: (x: number) => string; note?: string }
+  /** several items behind tabs, one shown at a time (the swimlane steps an object carries) */
+  | { kind: 'steps'; title: string; items: { key: string; label: string; blocks: Block[] }[] }
 
 export interface Card {
   /** small caps line above the title */
@@ -94,6 +96,10 @@ export interface PlaceLabel {
   label: string
   at: V3
   driver: string
+  /** ADA / SEBAGIAN / BELUM counts of the data needs here, drawn as a bar under a readiness lens */
+  ready?: [number, number, number]
+  /** shown only while this lens is on (pins for divisions inside a building, …) */
+  lens?: string
 }
 
 /** A closed building that opens as a section drawing: a shell that hides the inside, and a cut. */

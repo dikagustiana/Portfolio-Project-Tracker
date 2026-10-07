@@ -115,3 +115,86 @@ test('prefers-reduced-motion still renders each world', async ({ browser }) => {
   }
   await reduced.close()
 })
+
+type Sim = { select: (id: string | null) => void; all: () => { id: string; kind: string }[] }
+const sim = (page: Page) => ({
+  select: (id: string | null) => page.evaluate((x) => (window as unknown as { sim: Sim }).sim.select(x), id),
+  all: () => page.evaluate(() => (window as unknown as { sim: Sim }).sim.all()),
+})
+async function openWorld(page: Page, world: string, query = ''): Promise<void> {
+  await page.goto(`${PREVIEW}?v=yard&world=${world}&debug=1${query}`)
+  await page.waitForFunction(() => 'sim' in window, null, { timeout: 30_000 })
+}
+const tiles = (page: Page) => page.locator('.yd-metric b').allInnerTexts()
+
+test('Pabrik singkong: BMG standard figures on the tiles, the cards and Lensa biaya; the August waterfall in Kantor pabrik', async ({ page }) => {
+  const problems = await watch(page)
+  await openWorld(page, 'pabrik-singkong')
+  await expect(page.getByText(BMG)).toBeVisible()
+  expect(await tiles(page)).toEqual(['10.929 kg', '69,7%', '0,2611 kg', '0,0153 MMBTU', '93,5/3,5/3,0', '10.219 kg'])
+  await page.getByRole('button', { name: 'Lensa biaya' }).click()
+  expect(await tiles(page)).toEqual(['Rp 22.707,7', 'Rp 23.913,4', 'Rp 28.558,4', 'Rp 4.645,0', 'Rp 9.251,8', 'Rp 4.499,6'])
+  await page.getByRole('button', { name: 'Lensa biaya' }).click()
+
+  await sim(page).select('Penggorengan')
+  const panel = page.getByRole('complementary', { name: 'Detail pilihan' })
+  await expect(panel.getByRole('heading', { name: 'Penggorengan' })).toBeVisible()
+  await expect(panel.getByText('Angka standar BMG')).toBeVisible()
+  await expect(panel.getByText('Rp 17.258,0 per kg → 4.506,3')).toBeVisible()
+  await expect(panel.getByText(/Belum ada data: jam goreng aktual harian/)).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Pelacak tahap' }).locator('[aria-current="step"]')).toHaveText(/Goreng/)
+
+  await sim(page).select('Kantor pabrik')
+  await expect(panel.getByRole('list', { name: 'Agustus 2026: standar ke aktual, Rp per kg' })).toBeVisible()
+  await expect(panel.getByText('Selisih lain (tidak dirinci di deck)')).toBeVisible()
+  await expect(panel.getByText('−18,8', { exact: true })).toBeVisible()
+  await expect(panel.getByText('21.630,6').first()).toBeVisible()
+  await expect(panel.getByText(/Selisih 0,2 karena tiap baris dibulatkan/)).toBeVisible()
+  expect(await problems()).toEqual([])
+})
+
+test('Rumah potong ayam: Lensa kesiapan data shows the swimlane totals, gates open their cards, Jalur filters', async ({ page }) => {
+  const problems = await watch(page)
+  await openWorld(page, 'rpa')
+  await expect(page.getByText(DUMMY_KGR)).toBeVisible()
+  await page.getByRole('button', { name: 'Lensa kesiapan data' }).click()
+  expect((await tiles(page)).slice(0, 5)).toEqual(['135', '9', '34', '92', '42'])
+  await sim(page).select('TBC-03')
+  const panel = page.getByRole('complementary', { name: 'Detail pilihan' })
+  await expect(panel.getByRole('heading', { name: 'TBC-03' })).toBeVisible()
+  await expect(panel.getByText('Manajer Operasional + QC')).toBeVisible()
+  await expect(panel.getByText('Kenapa penting')).toBeVisible()
+  await page.getByRole('radiogroup', { name: 'Jalur' }).getByRole('radio', { name: 'Trading' }).click()
+  await expect(page.locator('.yd-metric .yd-msub').first()).toContainText('jalur Trading')
+
+  // the swimlane card: lane, PIC role, phase, risk, control, documents, accounts, drivers, needs, gate
+  await sim(page).select('Penerimaan, holding dan timbang')
+  await page.getByRole('radiogroup', { name: 'Jalur' }).getByRole('radio', { name: 'Keduanya' }).click()
+  await expect(panel.getByRole('heading', { name: 'Penerimaan, holding dan timbang' })).toBeVisible()
+  await expect(panel.getByRole('tab', { name: '9' })).toBeVisible()
+  await panel.getByRole('tab', { name: '9' }).click()
+  await expect(panel.getByRole('tabpanel')).toContainText('Timbang masuk lini')
+  await expect(panel.getByRole('tabpanel')).toContainText('BASIS YIELD dan denominator Pool A')
+  await expect(panel.getByRole('tabpanel')).toContainText('TBC-36')
+  expect(await problems()).toEqual([])
+})
+
+test('Rumah potong ayam: no card shows a free-text note or a personal name', async ({ page }) => {
+  await openWorld(page, 'rpa')
+  // every entity's card, every step behind its tabs included, as the panel would render it
+  const cards = await page.evaluate(() => {
+    const w = window as unknown as { sim: { scene: { entities: { id: string; card: () => unknown }[] } } }
+    return w.sim.scene.entities.map((e) => [e.id, JSON.stringify(e.card())] as [string, string])
+  })
+  expect(cards.length).toBeGreaterThan(30)
+  const honorific = /\b(pak|bu|ibu|bapak|mas|mbak)\s+[a-z]+/i
+  for (const [id, text] of cards) {
+    expect(text, id).not.toMatch(honorific)
+    expect(text, id).not.toMatch(/Catatan:/)
+  }
+  // and the panel as drawn, for one card
+  await sim(page).select('Divisi Purchasing')
+  const panel = page.getByRole('complementary', { name: 'Detail pilihan' })
+  await expect(panel.getByRole('heading', { name: 'Divisi Purchasing' })).toBeVisible()
+  expect(await panel.innerText()).not.toMatch(honorific)
+})

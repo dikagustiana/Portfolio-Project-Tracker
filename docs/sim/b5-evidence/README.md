@@ -12,3 +12,4 @@ After each step the same two commands are run again and compared with `cmp`:
 | Step | World 1 | World 2 |
 |---|---|---|
 | W0 (shell refactor, world switcher, routes) | identical | identical |
+| W1 (style frames: Pabrik singkong and Rumah potong ayam staged, the swimlane snapshot) | identical | identical |

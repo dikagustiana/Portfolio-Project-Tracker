@@ -3,7 +3,7 @@
 // W2 drives the same actors from the plant's day.
 import * as THREE from 'three'
 import { Part, TOP, glow, pose } from '../../../yard/kernel.ts'
-import { buildForklift, buildPerson, buildSeated, buildDesk } from '../../../yard/models.ts'
+import { VAN_DECK, VAN_LEN, VAN_SLOTS, buildBoxTruck, buildDesk, buildForklift, buildPerson, buildSeated } from '../../../yard/models.ts'
 import type { Entity, YardScene } from '../../../yard/scene.ts'
 import type { Card } from '../../../yard/types.ts'
 import { formatNumber } from '../../../core/format.ts'
@@ -12,7 +12,7 @@ import { ELEMEN, PRODUKSI_NORMAL_KG } from '../data/standar-fcc.ts'
 import { GAP, cardCuci, cardGoreng, cardGudang, cardHall, cardKantor, cardKemas, cardKupas, cardPenerimaan, cardSortir, dec1 } from './bind.ts'
 import { BELT_Y, RACK_BAYS, RACK_PITCH, RACK_X0, RACK_Y, buildConveyorOut, buildGround, buildGudang, buildHall, buildKantor, buildReceiving, buildSkidBay, buildStation } from './build.ts'
 import { BINS, BRIDGE, CONVEYOR_X, DOCKS, GUDANG, HALL, KANTOR, SKIDS, STATIONS } from './layout.ts'
-import { CASSAVA_TRUCK_LEN, VAN_DECK, VAN_LEN, VAN_SLOTS, buildBoxTruck, buildCassavaTruck, buildTubeSkid, cartonPallet } from './models.ts'
+import { CASSAVA_TRUCK_LEN, buildCassavaTruck, buildTubeSkid, cartonPallet } from './models.ts'
 
 const SCALE = { vehicle: 1.35, person: 1.5, desk: 1.6 }
 

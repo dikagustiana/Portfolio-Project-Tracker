@@ -120,7 +120,21 @@
 .yd .y-place b { font: 600 10.5px var(--y-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--y-ink-hi); background: color-mix(in srgb, var(--y-panel) 88%, transparent); border: 1px solid var(--y-edge); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
 .yd .y-place span { display: none; font: 500 10px var(--y-mono); color: var(--y-live); background: var(--y-panel); border: 1px dashed var(--y-live); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
 .yd .lens .y-place span { display: block; }
+/* a readiness lens shows each place's ADA / SEBAGIAN / BELUM bar instead of its cost driver */
+.yd .y-place .y-ready { display: none; min-width: 96px; height: 13px; border: 1px solid var(--y-edge); border-radius: 4px; overflow: hidden; background: var(--y-panel); font-style: normal; }
+.yd .lens[data-lens='data'] .y-place span { display: none; }
+.yd .lens[data-lens='data'] .y-place .y-ready { display: flex; }
+.yd .y-ready em { display: grid; place-items: center; min-width: 13px; font: 600 9px var(--y-mono); font-style: normal; color: var(--y-panel); }
+.yd .y-ready em { border-radius: 0; padding: 0; margin: 0; line-height: 13px; }
+.yd .y-ready em.r-ada { background: var(--y-ok); }
+.yd .y-ready em.r-seb { background: var(--y-warn); }
+.yd .y-ready em.r-bel { background: var(--y-bad); }
+.yd .y-place.y-only b { font-size: 9.5px; background: var(--y-panel); }
 .yd .y-place[hidden] { display: none; }
+.yd .y-place b i, .yd .y-place b em { font-style: normal; }
+/* a narrow map pins the number key alone; the place buttons carry the names */
+.yd .narrow .y-place b:has(i) em { display: none; }
+.yd .narrow .y-place b:has(i) { min-width: 20px; text-align: center; border-radius: 50%; padding: 1px 4px; }
 
 .yd-panel { min-height: 0; overflow: auto; border: 1px solid var(--y-edge); border-radius: 14px; padding: 12px 14px 14px; background: var(--y-panel); }
 .yd-idle p { margin: 6px 0; }
@@ -179,6 +193,9 @@
 .yd-wf li.down > div i { background: var(--y-ok); }
 .yd-wf b { font: 500 11px var(--y-mono); color: var(--y-ink-hi); text-align: right; min-width: 64px; }
 .yd-wf li.total span { color: var(--y-ink-hi); font-weight: 600; }
+.yd-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.yd-tabs button { font: 500 10.5px var(--y-mono); padding: 2px 7px; border-radius: 6px; }
+.yd-stepbody { display: grid; gap: 9px; padding-top: 4px; }
 .yd-foot button { font: 500 11px var(--y-mono); text-transform: uppercase; letter-spacing: .12em; }
 
 /* bottom: the stage tracker, and the clock controls at the right */
@@ -212,6 +229,7 @@
   .yd-switch > *, .yd-worlds > * { flex: none; }
   .yd-worldnote { margin-left: 0; }
   .yd-lenses { grid-auto-flow: column; }
+  .yd-lenses.many { grid-column: 1 / -1; grid-row: 3; justify-content: start; }
   .yd-time { margin-left: 0; }
   .yd-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(340px, 56vh) auto; }
   .yd-panel { max-height: none; overflow: visible; }
@@ -222,3 +240,4 @@
   .yd-watermark { left: 10px; right: 10px; bottom: 8px; max-width: none; font-size: 9.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .yd * { transition: none !important; scroll-behavior: auto !important; } }
+.yd-steptitle { margin: 0; font: 500 14px/1.3 var(--y-mono); color: var(--y-ink-hi); }
