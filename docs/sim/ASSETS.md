@@ -10,8 +10,9 @@ source and licence. Model budget: 3 MB total under `public/sim/models/`.
 | Ground, roads, markings, dock bays | Flat planes/boxes with vertex colours, in-scene | repo licence |
 | Warehouses, office annexes, roof ribs, roll-up doors | drei `RoundedBox` + primitives, flat materials in app-token colours | repo licence |
 | Box trucks, courier vans, forklift (with operator), container | Composed RoundedBox primitives | repo licence |
-| Pallets + kraft cartons | Instanced boxes (wood + kraft colours) | repo licence |
+| Pallets + kraft cartons | One drei `RoundedBox` per pallet and carton (wood + kraft colours); a few dozen meshes at V1 — switch to instancing when V2 drives pallet counts from stock | repo licence |
 | Trees, planters | Low-poly cones/spheres/cylinders, rounded | repo licence |
+| Interior (racks, pick faces, packing stations, ISD floor) | Primitives, shown with the warehouse cutaway ("Lihat dalam gudang") | repo licence |
 | Map pins, signposts, clock post | Extruded/flat shapes; labels are DOM overlays (CSP-safe) | repo licence |
 
 No `.glb`/`.gltf` files, no textures, no HDR environments, no WASM decoders, no `blob:` workers —

@@ -1,6 +1,9 @@
 // 3D scene palette (Brief 3 §3). Colours mirror the app tokens (light primary; dark dims the
 // ground and fog) and the reference's soft toy look: periwinkle ground, accent-blue
-// warehouses, white/kraft goods, muted teal accents. No bloom, no neon.
+// warehouses, white/kraft goods, muted teal accents. No bloom, no neon. The scene follows the
+// app theme switch (data-theme, else the device setting), like the 2D worlds.
+
+import { useEffect, useState } from 'react'
 
 export interface Palette3D {
   ground: string
@@ -25,6 +28,10 @@ export interface Palette3D {
   carton: string
   cartonAlt: string
   container: string
+  containerRib: string
+  sign: string
+  glass: string
+  planter: string
   tree: string
   treeDark: string
   trunk: string
@@ -61,6 +68,10 @@ export const LIGHT: Palette3D = {
   carton: '#d2a86f',
   cartonAlt: '#c39a5e',
   container: '#2cc4a8',
+  containerRib: '#1d9a83',
+  sign: '#ffffff',
+  glass: '#b8c6ee',
+  planter: '#b9c2d8',
   tree: '#7cc9a4',
   treeDark: '#5aa887',
   trunk: '#a8794f',
@@ -91,8 +102,35 @@ export const DARK: Palette3D = {
   tree: '#3f7a61',
   treeDark: '#2f5c49',
   isdFloor: '#3a2c1c',
+  sign: '#c9d2ea',
+  glass: '#5a6a98',
+  planter: '#4a5675',
   pin: '#7086f2',
   hemiSky: '#2a3454',
   hemiGround: '#141b30',
   fog: '#0d1222',
+}
+
+export function isDarkTheme(): boolean {
+  const t = document.documentElement.getAttribute('data-theme')
+  if (t === 'dark') return true
+  if (t === 'light') return false
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+/** Tracks the app theme at runtime (theme switch attribute + device scheme). */
+export function useDarkTheme(): boolean {
+  const [dark, setDark] = useState(isDarkTheme)
+  useEffect(() => {
+    const update = () => setDark(isDarkTheme())
+    const observer = new MutationObserver(update)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    mq.addEventListener('change', update)
+    return () => {
+      observer.disconnect()
+      mq.removeEventListener('change', update)
+    }
+  }, [])
+  return dark
 }

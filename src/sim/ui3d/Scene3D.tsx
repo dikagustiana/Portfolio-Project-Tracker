@@ -1,52 +1,32 @@
 // The 3D scene (Brief 3 §3, §5.1): full-bleed R3F canvas behind the overlay cards, world 2
 // layout for the V1 style frame — main warehouse centre, inbound left (container, dock,
 // 15.00 clock post), B2B dock front, courier bay right, office annex back, roads to the
-// "Toko" and "Konsumen" signposts. Camera: orthographic, ~35° elevation / 45° azimuth; the
-// parent owns the camera state so the overlay's map buttons drive it.
+// "Toko" and "Konsumen" signposts. The parent owns the camera state (camera3d.ts) so the
+// overlay's map buttons and the projected labels share one transform.
 
 import { Canvas, useThree } from '@react-three/fiber'
-import { useEffect, useRef } from 'react'
-import * as THREE from 'three'
+import { useLayoutEffect, useRef } from 'react'
 import { LIGHT, DARK } from './theme3d.ts'
 import type { Palette3D } from './theme3d.ts'
+import { applyCamera, panByPixels } from './camera3d.ts'
+import type { CameraState } from './camera3d.ts'
 import { Plate, Warehouse, OfficeAnnex, BoxTruck, Van, Forklift, PalletStack, Container, Tree, Planter, DashedLine, BulkRack, PickFaceShelf, PackingStation, ClockPost, Signpost } from './pieces.tsx'
 
-export interface CameraState {
-  zoom: number
-  /** 90° steps from the base azimuth. */
-  rot: number
-  panX: number
-  panZ: number
-}
-
-export const CAMERA_DEFAULT: CameraState = { zoom: 1, rot: 0, panX: 0, panZ: 1.4 }
-
-const AZ0 = Math.PI / 4
-const EL = (35 * Math.PI) / 180
-const RADIUS = 52
-
-/** Drives the canvas's own orthographic camera: R3F keeps left/right/top/bottom in sync with
- *  the pixel size, so the rig expresses zoom as pixels-per-unit and repositions on every
- *  state/size change (brief 3 §3.1: 35° elevation, 45° azimuth). */
-function CameraRig({ state, width, height }: { state: CameraState; width: number; height: number }) {
-  const camera = useThree((s) => s.camera)
-  const invalidate = useThree((s) => s.invalidate)
-  useEffect(() => {
-    const az = AZ0 + (state.rot * Math.PI) / 2
-    const viewSize = 15 / state.zoom // world units the full canvas height spans
-    const pxPerUnit = height / (viewSize * 2)
-    const oc = camera as unknown as THREE.OrthographicCamera
-    oc.zoom = pxPerUnit
-    oc.position.set(state.panX + RADIUS * Math.cos(EL) * Math.sin(az), RADIUS * Math.sin(EL), state.panZ + RADIUS * Math.cos(EL) * Math.cos(az))
-    oc.lookAt(state.panX, 0, state.panZ)
-    oc.updateProjectionMatrix()
+/** Applies the camera state to the canvas camera on every state/size change. */
+function CameraRig({ cam }: { cam: CameraState }) {
+  const get = useThree((s) => s.get)
+  const width = useThree((s) => s.size.width)
+  const height = useThree((s) => s.size.height)
+  useLayoutEffect(() => {
+    const { camera, invalidate } = get()
+    applyCamera(camera, cam, width, height)
     invalidate()
-  }, [camera, invalidate, state, width, height])
+  }, [get, cam, width, height])
   return null
 }
 
 /** The world-2 scene graph (§5.1). */
-function Scene({ palette, interior, roofOpacity }: { palette: Palette3D; interior: boolean; roofOpacity: number }) {
+function Scene({ palette, interior }: { palette: Palette3D; interior: boolean }) {
   return (
     <group>
       {/* Ground and roads (§3.2). */}
@@ -68,24 +48,26 @@ function Scene({ palette, interior, roofOpacity }: { palette: Palette3D; interio
       <Plate position={[7.6, 0.015, 4.1]} size={[3.4, 2.2]} color={palette.road} />
       <DashedLine from={[6.2, 3.3]} to={[9, 3.3]} color={palette.marking} width={0.06} dash={0.3} gap={0.3} />
 
-      {/* Main warehouse (centre) with the fadeable roof and the interior (§3.4). */}
-      <Warehouse palette={palette} position={[0, 1.7, 0]} size={[11, 3.4, 7.5]} roofOpacity={roofOpacity} />
-      <group visible={interior}>
-        <BulkRack palette={palette} position={[-2.4, 0, -1.6]} length={6.4} />
-        <BulkRack palette={palette} position={[-2.4, 0, -3.1]} length={6.4} />
-        <PickFaceShelf palette={palette} position={[-2.2, 0, 0.1]} length={5.8} />
-        <PickFaceShelf palette={palette} position={[-2.2, 0, 1]} length={5.8} />
-        <Plate position={[3.4, 0.02, -0.4]} size={[3.4, 2.6]} color={palette.isdFloor} />
-        {[0, 1, 2].map((i) => (
-          <PackingStation key={i} palette={palette} position={[3.1 + i * 1.05, 0, 1.7]} />
-        ))}
-        <Plate position={[4.4, 0.02, -2.6]} size={[1.4, 1.2]} color={palette.road} />
-        {(['K1', 'K2', 'K3'] as const).map((c, i) => (
-          <Plate key={c} position={[4.4, 0.015, -1.2 + i * 0.55]} size={[2.6, 0.4]} color={palette.road} />
-        ))}
-      </group>
+      {/* Main warehouse (centre); "Lihat dalam gudang" swaps it for the cutaway (§3.4). */}
+      <Warehouse palette={palette} position={[0, 1.7, 0]} size={[11, 3.4, 7.5]} cutaway={interior} />
+      {interior && (
+        <group>
+          <BulkRack palette={palette} position={[-2.2, 0, -1.6]} length={6} />
+          <BulkRack palette={palette} position={[-2.2, 0, -2.9]} length={6} />
+          <PickFaceShelf palette={palette} position={[-2.2, 0, 0.1]} length={5.8} />
+          <PickFaceShelf palette={palette} position={[-2.2, 0, 1]} length={5.8} />
+          <Plate position={[3.4, 0.02, -0.4]} size={[3.4, 2.6]} color={palette.isdFloor} />
+          {[0, 1, 2].map((i) => (
+            <PackingStation key={i} palette={palette} position={[2.4 + i * 1.05, 0, 1.9]} />
+          ))}
+          <Plate position={[4.4, 0.02, -2.6]} size={[1.4, 1.2]} color={palette.road} />
+          {(['K1', 'K2', 'K3'] as const).map((c, i) => (
+            <Plate key={c} position={[4, 0.025, -1.2 + i * 0.55]} size={[2.4, 0.4]} color={palette.marking} />
+          ))}
+        </group>
+      )}
 
-      {/* Pallet stacks at the dock and inside (§3.5). */}
+      {/* Pallet stacks at the dock (§3.5). */}
       <PalletStack palette={palette} position={[-3.9, 0, 4.35]} cartons={4} />
       <PalletStack palette={palette} position={[-2.6, 0, 4.35]} cartons={3} />
       <PalletStack palette={palette} position={[2.4, 0, 4.35]} cartons={4} />
@@ -108,7 +90,7 @@ function Scene({ palette, interior, roofOpacity }: { palette: Palette3D; interio
 
       {/* Courier bay (right): vans at pickup (§5.1). */}
       <Van palette={palette} position={[13.2, 0, 4.4]} rotation={[0, -Math.PI / 2, 0]} />
-      <Van palette={palette} position={[13.2, 0, 6.2]} rotation={[0, -Math.PI / 2 + 0.15, 0]} color="#e8edf9" />
+      <Van palette={palette} position={[13.2, 0, 6.2]} rotation={[0, -Math.PI / 2 + 0.15, 0]} color={palette.door} />
       <Plate position={[15.6, 0.015, 5.2]} size={[2.6, 3]} color={palette.road} />
       <DashedLine from={[15.6, 3.9]} to={[15.6, 6.5]} color={palette.marking} width={0.06} dash={0.3} gap={0.3} />
 
@@ -130,42 +112,35 @@ function Scene({ palette, interior, roofOpacity }: { palette: Palette3D; interio
       <Tree palette={palette} position={[7.9, 0, -8.2]} scale={1.1} />
       <Tree palette={palette} position={[-9.4, 0, -8.6]} scale={0.95} />
       <Planter palette={palette} position={[9.4, 0, 3.1]} />
-
     </group>
   )
 }
 
-/** Full-bleed scene canvas. The parent owns camera/interior state (driven by the overlay). */
-export function Scene3D({ dark = false, cam, setCam, interior, size }: { dark?: boolean; cam: CameraState; setCam: (f: (c: CameraState) => CameraState) => void; interior: boolean; size: { w: number; h: number } }) {
+/** Full-bleed scene canvas with drag-to-pan. Renders `view`; drags edit the user camera `cam`
+ *  (the view is `cam` shifted onto the free area). Pointer capture keeps the drag alive when
+ *  the cursor crosses an overlay card; the ground point under the cursor stays under it. */
+export function Scene3D({ dark, view, cam, setCam, interior }: { dark: boolean; view: CameraState; cam: CameraState; setCam: (c: CameraState) => void; interior: boolean }) {
   const palette = dark ? DARK : LIGHT
-  const drag = useRef<{ x: number; y: number; panX: number; panZ: number } | null>(null)
+  const drag = useRef<{ id: number; x: number; y: number; start: CameraState } | null>(null)
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    drag.current = { x: e.clientX, y: e.clientY, panX: cam.panX, panZ: cam.panZ }
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, start: cam }
   }
-  const onPointerMove = (e: React.PointerEvent) => {
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = drag.current
-    if (!d) return
-    const k = (15 / cam.zoom / size.h) * 2.1
-    const dx = (e.clientX - d.x) * k
-    const dy = (e.clientY - d.y) * k
-    const az = AZ0 + (cam.rot * Math.PI) / 2
-    const rx = Math.cos(az)
-    const rz = -Math.sin(az)
-    const fx = Math.sin(az)
-    const fz = Math.cos(az)
-    setCam((c) => ({
-      ...c,
-      panX: clamp(d.panX - dx * rx - dy * fx, -26, 26),
-      panZ: clamp(d.panZ - dx * rz - dy * fz, -26, 26),
-    }))
+    if (!d || d.id !== e.pointerId) return
+    setCam(panByPixels(d.start, e.clientX - d.x, e.clientY - d.y, e.currentTarget.clientWidth, e.currentTarget.clientHeight))
   }
-  const endDrag = () => (drag.current = null)
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (drag.current?.id === e.pointerId) drag.current = null
+  }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: palette.page, cursor: 'grab', touchAction: 'none' }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}>
-      <Canvas shadows="soft" dpr={[1, 2]} frameloop="demand" orthographic camera={{ near: 0.1, far: 400, position: [30.1, 29.8, 32.9] }} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}>
-        <CameraRig state={cam} width={size.w} height={size.h} />
+    <div className="s3-scene" style={{ background: palette.page }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
+      <Canvas shadows="percentage" dpr={[1, 2]} frameloop="demand" orthographic camera={{ near: 0.1, far: 400 }} gl={{ antialias: true, alpha: true }} aria-hidden>
+        <CameraRig cam={view} />
         <hemisphereLight args={[palette.hemiSky, palette.hemiGround, 1.1]} />
         <directionalLight
           position={[24, 34, 12]}
@@ -180,71 +155,13 @@ export function Scene3D({ dark = false, cam, setCam, interior, size }: { dark?: 
           shadow-camera-bottom={-40}
           shadow-camera-far={120}
           shadow-bias={-0.0004}
+          shadow-radius={3}
         />
         <fog attach="fog" args={[palette.fog, 60, 170]} />
-        <Scene palette={palette} interior={interior} roofOpacity={interior ? 0.12 : 1} />
+        <Scene palette={palette} interior={interior} />
       </Canvas>
       {/* Soft vignette so the ground fades into the page (no hard horizon, §3.2). */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          background: `radial-gradient(ellipse at 50% 42%, transparent 55%, ${palette.page} 100%)`,
-        }}
-      />
+      <div aria-hidden className="s3-vignette" style={{ background: `radial-gradient(ellipse at 50% 42%, transparent 55%, ${palette.page} 100%)` }} />
     </div>
   )
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, v))
-}
-
-
-
-// --- Projected DOM labels (§3.7): drei <Html> is off the table (CSP/React 19.3), so the
-// parent projects world anchors to screen space with the same camera math as the rig.
-
-export interface LabelAnchor {
-  id: string
-  at: [number, number, number]
-  text: string
-  kind: 'pin' | 'sign' | 'clock'
-}
-
-/** World-2 label anchors for the V1 frame. */
-export const LABELS2: LabelAnchor[] = [
-  { id: 'pin-warehouse', at: [0, 4.6, 0], text: 'Gudang utama', kind: 'pin' },
-  { id: 'pin-inbound', at: [-11.2, 2.4, -1.4], text: 'Inbound', kind: 'pin' },
-  { id: 'pin-courier', at: [13.2, 2.2, 5.2], text: 'Bay kurir', kind: 'pin' },
-  { id: 'pin-b2b', at: [0.6, 2, 5], text: 'Dock B2B', kind: 'pin' },
-  { id: 'sign-toko', at: [17.6, 1.75, 11.4], text: 'Toko', kind: 'sign' },
-  { id: 'sign-konsumen', at: [2.2, 1.7, 16.4], text: 'Konsumen', kind: 'sign' },
-  { id: 'clock-cutoff', at: [-9.6, 1.95, 3.1], text: '15.00', kind: 'clock' },
-]
-
-export interface ProjectedLabel extends LabelAnchor {
-  left: number
-  top: number
-}
-
-/** Builds a world→screen projector matching CameraRig's transform. */
-export function makeProjector(cam: CameraState, width: number, height: number): (at: [number, number, number]) => { left: number; top: number } {
-  const az = AZ0 + (cam.rot * Math.PI) / 2
-  const viewSize = 15 / cam.zoom
-  const pxPerUnit = height / (viewSize * 2)
-  const pos = new THREE.Vector3(cam.panX + RADIUS * Math.cos(EL) * Math.sin(az), RADIUS * Math.sin(EL), cam.panZ + RADIUS * Math.cos(EL) * Math.cos(az))
-  const target = new THREE.Vector3(cam.panX, 0, cam.panZ)
-  const dir = target.clone().sub(pos).normalize()
-  const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize()
-  const up = new THREE.Vector3().crossVectors(right, dir).normalize()
-  return (at) => {
-    const rel = new THREE.Vector3(at[0] - cam.panX, at[1], at[2] - cam.panZ)
-    return {
-      left: width / 2 + rel.dot(right) * pxPerUnit,
-      top: height / 2 - rel.dot(up) * pxPerUnit,
-    }
-  }
 }

@@ -140,5 +140,24 @@ V1 ships 100 % procedural; models stay optional.
 ## V1 gate plan
 
 Static world-2 scene per §5.1 + every overlay card with placeholder content of the right shape
-(§4), screenshots 1920×1080 + 1366×768 (light) into `.sim-local/` (git-ignored), side-by-side
+(§4), screenshots 1366×768 + a phone width (light) into `.sim-local/` (git-ignored), side-by-side
 with the reference pending the owner attaching `reference-waretrack.png`. Stop for "lanjut".
+
+### V1 as built
+
+- Files: `camera3d.ts` (the one camera transform: render rig, projected labels and drag-to-pan
+  all use it; unit-tested against three.js), `anchors2.ts` (label anchors), `theme3d.ts`
+  (palette + `useDarkTheme`, follows `data-theme` like the 2D worlds), `pieces.tsx`,
+  `Scene3D.tsx`, `overlay.tsx` + `sim3d.css`, `Sim3D.tsx`, `layoutCheck.ts`.
+- Overlay layout is one CSS grid with fixed areas (top / mid / bottom + right column), so cards
+  cannot overlap by construction. Mode comes from the measured container width, not the
+  viewport: `wide` ≥ 1720 px (KPI row and search group share one row), `medium` ≥ 900 px (search
+  group above the KPI row), `phone` below (panels share one collapsible bottom sheet). The camera
+  frames the scene in the grid's free middle area, so the warehouse is not hidden behind cards.
+- `node scripts/sim3d-frames.ts` starts Vite, sweeps 32 sizes (900–1920 px desktop, the app shell
+  next to its sidebar, tablets, phones portrait + landscape) and fails on any overlap, sideways
+  spill, card outside the sim area or page side-scroll; then writes the frames to `.sim-local/`.
+- "Lihat dalam gudang" is a cutaway (roof off, walls lowered): the warehouse body is a closed box,
+  so fading only the roof would show its own top face.
+- Not wired into SimHost yet (V2): the overlay's world selector and clock are placeholders with
+  the binding shape (`world`/`onWorld`, day/hour/speed/playing).

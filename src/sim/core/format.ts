@@ -52,11 +52,24 @@ export function formatRpShort(x: number): string {
 }
 
 /** Card money format (Brief 3 §4): ≥ Rp 1 miliar → `Rp 2,0 M`; ≥ Rp 1 juta → `Rp 230,0 jt`;
- *  smaller in full. Within one card, pass the same `tier` so rows compare at a glance. */
+ *  smaller in full. The compact tiers always show one decimal (unlike formatNumber, which drops
+ *  a trailing zero) so rows line up. Within one card, pass the same `tier` so rows compare at
+ *  a glance. */
 export function formatRpCard(x: number, tier?: 'm' | 'jt' | 'full'): string {
   const a = Math.abs(x)
   const t = tier ?? (a >= 1e9 ? 'm' : a >= 1e6 ? 'jt' : 'full')
-  if (t === 'm') return `Rp ${formatNumber(x / 1e9, 1)} M`
-  if (t === 'jt') return `Rp ${formatNumber(x / 1e6, 1)} jt`
+  if (t === 'm') return `Rp ${oneDecimal(x / 1e9)} M`
+  if (t === 'jt') return `Rp ${oneDecimal(x / 1e6)} jt`
   return formatRp(x)
+}
+
+function oneDecimal(x: number): string {
+  const s = formatNumber(x, 1)
+  return s.includes(',') ? s : `${s},0`
+}
+
+/** Hour of day → `10.45` (06.00–22.00 clock); rounds to the minute without ever printing `.60`. */
+export function formatClock(hour: number): string {
+  const minutes = Math.round(hour * 60)
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}.${String(minutes % 60).padStart(2, '0')}`
 }

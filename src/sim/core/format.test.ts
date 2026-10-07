@@ -1,6 +1,6 @@
 // Control 10 (brief §6): the house-rule formatters — period thousands, comma decimals.
 import { describe, expect, it } from 'vitest'
-import { formatDays, formatM3, formatNumber, formatPct, formatRp, formatRpShort } from './format.ts'
+import { formatClock, formatDays, formatM3, formatNumber, formatPct, formatRp, formatRpCard, formatRpShort } from './format.ts'
 
 describe('house-rule number format', () => {
   it('formats the exact case from the brief', () => {
@@ -33,5 +33,24 @@ describe('house-rule number format', () => {
     expect(formatRpShort(1_180_000)).toBe('Rp 1,2 jt')
     expect(formatRpShort(340_000_000)).toBe('Rp 340 jt')
     expect(formatRpShort(6_500_000_000)).toBe('Rp 6,5 M')
+  })
+
+  it('formats card money with a fixed decimal per tier (Brief 3 §4)', () => {
+    expect(formatRpCard(2_000_000_000)).toBe('Rp 2,0 M')
+    expect(formatRpCard(230_000_000)).toBe('Rp 230,0 jt')
+    expect(formatRpCard(230_400_000)).toBe('Rp 230,4 jt')
+    expect(formatRpCard(101_063)).toBe('Rp 101.063')
+    expect(formatRpCard(-4_250_000)).toBe('Rp -4,3 jt')
+    // One tier for a whole card so rows compare at a glance.
+    expect(formatRpCard(84_000_000, 'm')).toBe('Rp 0,1 M')
+    expect(formatRpCard(1_234_567_890, 'jt')).toBe('Rp 1.234,6 jt')
+    expect(formatRpCard(2_500_000, 'full')).toBe('Rp 2.500.000')
+  })
+
+  it('formats the intra-day clock', () => {
+    expect(formatClock(10.75)).toBe('10.45')
+    expect(formatClock(6)).toBe('06.00')
+    expect(formatClock(10.999)).toBe('11.00')
+    expect(formatClock(22)).toBe('22.00')
   })
 })

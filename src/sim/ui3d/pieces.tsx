@@ -47,11 +47,26 @@ export function RibbedRoof({ position, size, color, ribColor, ribs = 9 }: { posi
   )
 }
 
-/** Warehouse with a darker side wall, roll-up doors and a sign plate. The roof is a
- *  separate group so "Lihat dalam gudang" can fade it (opacity comes in as a prop). */
-export function Warehouse({ palette, position = [0, 0, 0], size = [11, 3.4, 7.5], roofOpacity = 1 }: { palette: Palette3D; position?: [number, number, number]; size?: [number, number, number]; roofOpacity?: number }) {
+/** Warehouse with a darker side wall, roll-up doors and a sign plate. `cutaway` ("Lihat dalam
+ *  gudang") drops the roof and lowers the walls so the interior reads from the iso camera — the
+ *  body is a closed box, so fading the roof alone would only reveal its own top face. */
+export function Warehouse({ palette, position = [0, 0, 0], size = [11, 3.4, 7.5], cutaway = false }: { palette: Palette3D; position?: [number, number, number]; size?: [number, number, number]; cutaway?: boolean }) {
   const [w, h, d] = size
   const doors = [w * 0.18, w * 0.42, w * 0.66]
+  if (cutaway) {
+    const wallH = 0.55
+    const t = 0.16
+    const y = -h / 2 + wallH / 2
+    return (
+      <group position={position}>
+        <Plate position={[0, -h / 2 + 0.012, 0]} size={[w, d]} color={palette.road} />
+        <Box position={[0, y, -d / 2 + t / 2]} size={[w, wallH, t]} color={palette.warehouse} radius={0.05} />
+        <Box position={[0, y, d / 2 - t / 2]} size={[w, wallH, t]} color={palette.warehouse} radius={0.05} />
+        <Box position={[-w / 2 + t / 2, y, 0]} size={[t, wallH, d]} color={palette.warehouseSide} radius={0.05} />
+        <Box position={[w / 2 - t / 2, y, 0]} size={[t, wallH, d]} color={palette.warehouse} radius={0.05} />
+      </group>
+    )
+  }
   return (
     <group position={position}>
       {/* Body with a darker -x side wall. */}
@@ -67,19 +82,8 @@ export function Warehouse({ palette, position = [0, 0, 0], size = [11, 3.4, 7.5]
         </group>
       ))}
       {/* Sign plate. */}
-      <Box position={[0, h * 0.38, d / 2 + 0.06]} size={[w * 0.3, 0.5, 0.1]} color="#ffffff" radius={0.08} />
-      {/* Ribbed roof, fadeable. */}
-      <group>
-        <group visible={roofOpacity > 0.98}>
-          <RibbedRoof position={[0, h / 2 + 0.12, 0]} size={[w + 0.3, 0.22, d + 0.3]} color={palette.warehouseRoof} ribColor={palette.warehouseRoofRib} />
-        </group>
-        <group visible={roofOpacity <= 0.98}>
-          <mesh position={[0, h / 2 + 0.12, 0]}>
-            <boxGeometry args={[w + 0.3, 0.22, d + 0.3]} />
-            <meshStandardMaterial color={palette.warehouseRoof} transparent opacity={roofOpacity} roughness={0.85} />
-          </mesh>
-        </group>
-      </group>
+      <Box position={[0, h * 0.38, d / 2 + 0.06]} size={[w * 0.3, 0.5, 0.1]} color={palette.sign} radius={0.08} />
+      <RibbedRoof position={[0, h / 2 + 0.12, 0]} size={[w + 0.3, 0.22, d + 0.3]} color={palette.warehouseRoof} ribColor={palette.warehouseRoofRib} />
     </group>
   )
 }
@@ -115,7 +119,7 @@ export function BoxTruck({ palette, position = [0, 0, 0], rotation = [0, 0, 0] }
     <group position={position} rotation={rotation}>
       <Box position={[-0.55, 0.85, 0]} size={[2.5, 1.5, 1.4]} color={palette.truckBox} radius={0.14} />
       <Box position={[1.05, 0.75, 0]} size={[1.1, 1.1, 1.35]} color={palette.truckCab} radius={0.18} />
-      <Box position={[1.32, 0.85, 0]} size={[0.6, 0.45, 1.2]} color="#b8c6ee" radius={0.1} />
+      <Box position={[1.32, 0.85, 0]} size={[0.6, 0.45, 1.2]} color={palette.glass} radius={0.1} />
       <Wheels palette={palette} positions={[[-1.2, 0.22, 0.72], [-1.2, 0.22, -0.72], [0.9, 0.22, 0.72], [0.9, 0.22, -0.72]]} />
     </group>
   )
@@ -126,7 +130,7 @@ export function Van({ palette, position = [0, 0, 0], rotation = [0, 0, 0], color
   return (
     <group position={position} rotation={rotation}>
       <Box position={[0, 0.62, 0]} size={[2.1, 1.05, 1.15]} color={color ?? palette.van} radius={0.2} />
-      <Box position={[0.85, 0.85, 0]} size={[0.5, 0.5, 1.05]} color="#b8c6ee" radius={0.12} />
+      <Box position={[0.85, 0.85, 0]} size={[0.5, 0.5, 1.05]} color={palette.glass} radius={0.12} />
       <Wheels palette={palette} positions={[[-0.7, 0.2, 0.6], [-0.7, 0.2, -0.6], [0.7, 0.2, 0.6], [0.7, 0.2, -0.6]]} r={0.2} />
     </group>
   )
@@ -159,7 +163,7 @@ export function Forklift({ palette, position = [0, 0, 0], rotation = [0, 0, 0] }
   )
 }
 
-/** Wooden pallet with a 2×2×2 stack of kraft cartons. */
+/** Wooden pallet with up to four kraft cartons (one layer, 2×2). */
 export function PalletStack({ palette, position = [0, 0, 0], cartons = 4, cartonColor }: { palette: Palette3D; position?: [number, number, number]; cartons?: number; cartonColor?: string }) {
   const color = cartonColor ?? palette.carton
   const slots: [number, number][] = [
@@ -184,7 +188,7 @@ export function Container({ palette, position = [0, 0, 0], rotation = [0, 0, 0] 
     <group position={position} rotation={rotation}>
       <Box size={[3.4, 1.5, 1.5]} color={palette.container} radius={0.1} />
       {[0.4, 0.9, 1.4, 1.9, 2.4, 2.9].map((x) => (
-        <Box key={x} position={[x - 1.7, 0, 0.76]} size={[0.08, 1.36, 0.02]} color="#1d9a83" radius={0.02} />
+        <Box key={x} position={[x - 1.7, 0, 0.76]} size={[0.08, 1.36, 0.02]} color={palette.containerRib} radius={0.02} />
       ))}
     </group>
   )
@@ -214,7 +218,7 @@ export function Tree({ palette, position, scale = 1 }: { palette: Palette3D; pos
 export function Planter({ palette, position }: { palette: Palette3D; position: [number, number, number] }) {
   return (
     <group position={position}>
-      <Box size={[1.1, 0.32, 0.5]} color="#b9c2d8" radius={0.1} />
+      <Box size={[1.1, 0.32, 0.5]} color={palette.planter} radius={0.1} />
       <mesh position={[-0.25, 0.4, 0]} castShadow>
         <icosahedronGeometry args={[0.22, 1]} />
         <meshStandardMaterial color={palette.tree} roughness={0.9} flatShading />
@@ -290,7 +294,7 @@ export function PickFaceShelf({ palette, position, rotation = [0, 0, 0], length 
 export function PackingStation({ palette, position, rotation = [0, 0, 0] }: { palette: Palette3D; position: [number, number, number]; rotation?: [number, number, number] }) {
   return (
     <group position={position} rotation={rotation}>
-      <Box position={[0, 0.4, 0]} size={[1.2, 0.08, 0.7]} color="#ffffff" radius={0.05} />
+      <Box position={[0, 0.4, 0]} size={[1.2, 0.08, 0.7]} color={palette.office} radius={0.05} />
       <Box position={[-0.4, 0.45, 0]} size={[0.4, 0.1, 0.55]} color={palette.carton} radius={0.04} />
       <Box position={[0.45, 0.62, -0.2]} size={[0.07, 0.42, 0.07]} color={palette.wheel} radius={0.03} />
       <Box position={[0.45, 0.86, -0.02]} size={[0.22, 0.16, 0.1]} color={palette.wheel} radius={0.04} />
@@ -308,7 +312,7 @@ export function ClockPost({ palette, position }: { palette: Palette3D; position:
       </mesh>
       <mesh position={[0, 1.95, 0]} castShadow>
         <cylinderGeometry args={[0.34, 0.34, 0.1, 24]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.8} />
+        <meshStandardMaterial color={palette.sign} roughness={0.8} />
       </mesh>
     </group>
   )
@@ -322,7 +326,7 @@ export function Signpost({ palette, position, rotation = [0, 0, 0] }: { palette:
         <cylinderGeometry args={[0.05, 0.05, 1.5, 8]} />
         <meshStandardMaterial color={palette.wheel} roughness={0.9} />
       </mesh>
-      <Box position={[0, 1.45, 0]} size={[1.3, 0.5, 0.08]} color="#ffffff" radius={0.08} />
+      <Box position={[0, 1.45, 0]} size={[1.3, 0.5, 0.08]} color={palette.sign} radius={0.08} />
     </group>
   )
 }

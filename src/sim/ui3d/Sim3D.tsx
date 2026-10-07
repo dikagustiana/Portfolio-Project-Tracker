@@ -3,17 +3,33 @@
 // cards; V2 passes engine bindings through this same shape. All labels are plain projected
 // DOM — no drei <Html>, which breaks under React 19.3 (root-unmount race).
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import './sim3d.css'
 import { Scene3D } from './Scene3D.tsx'
-import type { CameraState, ProjectedLabel } from './Scene3D.tsx'
-import { CAMERA_DEFAULT, LABELS2, makeProjector } from './Scene3D.tsx'
+import { CAMERA_DEFAULT, makeProjector, panByPixels, rotateStep, zoomBy } from './camera3d.ts'
+import type { CameraState } from './camera3d.ts'
+import { LABELS2 } from './anchors2.ts'
+import type { ProjectedLabel } from './anchors2.ts'
 import { OverlaySim3D } from './overlay.tsx'
+import type { OverlayMode, WorldId } from './overlay.tsx'
+import { useDarkTheme } from './theme3d.ts'
 
-export default function Sim3D({ dark = false }: { dark?: boolean }) {
+/** Layout mode from the measured container width (not the viewport): the KPI row and the
+ *  search group share one top row only when both fit beside the right column. */
+function modeFor(width: number): OverlayMode {
+  if (width >= 1720) return 'wide'
+  if (width >= 900) return 'medium'
+  return 'phone'
+}
+
+export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {} }: { world?: WorldId; onWorld?: (w: WorldId) => void }) {
+  const dark = useDarkTheme()
   const wrapRef = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ w: 1280, h: 720 })
+  const [size, setSize] = useState({ w: 0, h: 0 })
   const [cam, setCam] = useState<CameraState>(CAMERA_DEFAULT)
   const [interior, setInterior] = useState(false)
+  const [focus, setFocus] = useState({ x: 0, y: 0 })
+  const onFocus = useCallback((f: { x: number; y: number }) => setFocus((p) => (p.x === f.x && p.y === f.y ? p : f)), [])
 
   useEffect(() => {
     const el = wrapRef.current
@@ -23,101 +39,58 @@ export default function Sim3D({ dark = false }: { dark?: boolean }) {
     return () => ro.disconnect()
   }, [])
 
+  // The rendered view shifts the user's camera so its target lands on the free area's centre;
+  // zoom and rotation then pivot there too. Drag edits `cam`, the view follows.
+  const view = useMemo(() => (size.w ? panByPixels(cam, focus.x, focus.y, size.w, size.h) : cam), [cam, focus, size])
+
   const labels = useMemo<ProjectedLabel[]>(() => {
-    const project = makeProjector(cam, size.w, size.h)
+    if (!size.w) return []
+    const project = makeProjector(view, size.w, size.h)
     return LABELS2.map((a) => ({ ...a, ...project(a.at) }))
-  }, [cam, size])
+  }, [view, size])
+
+  const mode = modeFor(size.w)
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', width: '100%', height: '100%', minHeight: 0, overflow: 'hidden', borderRadius: 'var(--r-md)', border: '1px solid var(--line)' }}>
-      <Scene3D dark={dark} cam={cam} setCam={setCam} interior={interior} size={size} />
+    <div ref={wrapRef} className={`s3-root s3-root--${mode}`}>
+      <Scene3D dark={dark} view={view} cam={cam} setCam={setCam} interior={interior} />
       <LabelLayer labels={labels} />
-      <OverlaySim3D
-        dark={dark}
-        cam={cam}
-        setCam={setCam}
-        interior={interior}
-        setInterior={setInterior}
-        onZoom={(f) => setCam((c) => ({ ...c, zoom: Math.max(0.5, Math.min(3.5, c.zoom * f)) }))}
-        onRotate={() => setCam((c) => ({ ...c, rot: (c.rot + 1) % 4 }))}
-        onReset={() => setCam(CAMERA_DEFAULT)}
-      />
+      {size.w > 0 && (
+        <OverlaySim3D
+          mode={mode}
+          height={size.h}
+          world={world}
+          onWorld={onWorld}
+          interior={interior}
+          setInterior={setInterior}
+          onZoom={(f) => setCam((c) => zoomBy(c, f))}
+          onRotate={() => setCam(rotateStep)}
+          onReset={() => setCam(CAMERA_DEFAULT)}
+          onFocus={onFocus}
+        />
+      )}
     </div>
   )
 }
 
-/** Projected DOM labels: teardrop pins, signpost chips, the cut-off clock text. */
+/** Projected DOM labels: teardrop pins, signpost plates, the cut-off clock chip. */
 function LabelLayer({ labels }: { labels: ProjectedLabel[] }) {
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-      {labels.map((l) => {
-        if (l.kind === 'pin') {
-          return (
-            <div key={l.id} style={{ position: 'absolute', left: l.left, top: l.top, transform: 'translate(-50%, -100%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <span
-                style={{
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  borderRadius: 999,
-                  padding: '2px 10px',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  fontFamily: 'var(--f-ui)',
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 4px 14px rgba(30,42,90,0.25)',
-                }}
-              >
-                {l.text}
-              </span>
-              <svg width="14" height="12" viewBox="0 0 14 12" aria-hidden>
-                <path d="M7 12 L1 2 Q7 -3 13 2 Z" fill="var(--accent)" />
-              </svg>
-            </div>
-          )
-        }
-        if (l.kind === 'sign') {
-          return (
-            <div
-              key={l.id}
-              style={{
-                position: 'absolute',
-                left: l.left,
-                top: l.top,
-                transform: 'translate(-50%, -50%)',
-                background: '#ffffff',
-                border: '1px solid #dfe4f2',
-                borderRadius: 8,
-                padding: '3px 12px',
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#2b3548',
-                fontFamily: 'var(--f-ui)',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 4px 14px rgba(30,42,90,0.14)',
-              }}
-            >
-              {l.text}
-            </div>
-          )
-        }
-        return (
-          <div
-            key={l.id}
-            style={{
-              position: 'absolute',
-              left: l.left,
-              top: l.top,
-              transform: 'translate(-50%, -50%)',
-              fontSize: 12,
-              fontWeight: 800,
-              color: '#2b3548',
-              fontFamily: 'var(--f-ui)',
-            }}
-          >
+    <div className="s3-labels" aria-hidden>
+      {labels.map((l) =>
+        l.kind === 'pin' ? (
+          <div key={l.id} className="s3-pin" style={{ left: l.left, top: l.top }}>
+            <span>{l.text}</span>
+            <svg width="14" height="12" viewBox="0 0 14 12">
+              <path d="M7 12 L1 2 Q7 -3 13 2 Z" />
+            </svg>
+          </div>
+        ) : (
+          <div key={l.id} className={`s3-sign${l.kind === 'clock' ? ' is-clock' : ''}`} style={{ left: l.left, top: l.top }}>
             {l.text}
           </div>
-        )
-      })}
+        ),
+      )}
     </div>
   )
 }
