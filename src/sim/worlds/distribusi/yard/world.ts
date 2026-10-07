@@ -3,22 +3,20 @@
 // one moment — Hari 8, 10.45 — for the style frame; V2 drives the same actors from the engine's
 // day schedule.
 import * as THREE from 'three'
-import { Path, W, glow, pose } from '../kernel.ts'
-import type { P2, PrincipalFill, Tone } from '../kernel.ts'
-import type { Computed2 } from '../../worlds/b2b-b2c/engine/index.ts'
-import type { PrincipalId } from '../../core/colors.ts'
-import { formatNumber } from '../../core/format.ts'
+import { Path, W, glow, pose } from '../../../yard/kernel.ts'
+import type { P2, PrincipalFill, Tone } from '../../../yard/kernel.ts'
+import { buildCoin, buildDesk, buildEnvelope, buildForklift, buildPallet, buildPerson, buildSeated } from '../../../yard/models.ts'
+import type { Entity, RouteInfo, YardScene } from '../../../yard/scene.ts'
+import type { Computed2 } from '../../b2b-b2c/engine/index.ts'
+import type { PrincipalId } from '../../../core/colors.ts'
+import { formatNumber } from '../../../core/format.ts'
 import type { Card, TripView } from './bind.ts'
 import { MISSING, TEAM_SEATS, salesAdminPools, tripCard, tripsOfDay } from './bind.ts'
 import {
   buildBay, buildDockLamp, buildGround, buildGudang, buildHousing, buildKantor, buildPlant, buildPool, buildSignLamp, buildStore,
 } from './build.ts'
 import { A2, BAY, COURIER_SLOTS, GUDANG, KANTOR, LOAD_DOCKS, PLANTS, POOL_BAYS, R1, RACK_BAYS, RACK_PITCH, RACK_ROWS, RACK_X0, RECV_DOCKS, SCALE, STORES, STORE_LANES, STORE_LINK } from './layout.ts'
-import {
-  TRUCK_DECK, TRUCK_SLOTS, buildCage, buildCoin, buildCourierVan, buildDesk, buildEnvelope, buildForklift, buildInboundTruck, buildMotorbike,
-  buildPallet, buildParcel, buildPerson, buildSeated, buildTruck,
-} from './models.ts'
-import type { Entity, RouteInfo, YardScene } from './scene.ts'
+import { TRUCK_DECK, TRUCK_SLOTS, buildCage, buildCourierVan, buildInboundTruck, buildMotorbike, buildParcel, buildTruck } from './models.ts'
 
 const FLEET = ['L-01', 'L-02', 'L-03', 'M-01', 'M-02', 'M-03', 'H-01', 'H-02', 'H-03']
 

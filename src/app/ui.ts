@@ -5,7 +5,10 @@ import { useSyncExternalStore } from 'react'
 export type View = 'dash' | 'week' | 'team' | 'project' | 'admin' | 'sim'
 export type Tab = 'milestone' | 'vc' | 'list' | 'pipeline' | 'gantt'
 
-export type SimWorld = 'distribusi' | 'b2b-b2c'
+/** Brief B5: three worlds (distribusi, pabrik-singkong, rpa); b2b-b2c stays as the distribution
+ *  world's earlier route and opens it too (or world 2's 2D canvas where WebGL is missing). */
+export type SimWorld = 'distribusi' | 'b2b-b2c' | 'pabrik-singkong' | 'rpa'
+const SIM_WORLDS: SimWorld[] = ['distribusi', 'b2b-b2c', 'pabrik-singkong', 'rpa']
 /** World 2 view: the 3D scene (default when the browser supports it) or the 2D canvas. */
 export type SimView = '3d' | '2d'
 
@@ -59,7 +62,7 @@ export function fromHash(hash: string): Partial<UIState> {
   const [a, b, c] = hash.replace(/^#\/?/, '').split('/')
   if (a === 'minggu') return { view: 'week' }
   if (a === 'tim') return { view: 'team' }
-  if (a === 'simulasi') return { view: 'sim', simWorld: b === 'b2b-b2c' ? 'b2b-b2c' : 'distribusi' }
+  if (a === 'simulasi') return { view: 'sim', simWorld: SIM_WORLDS.includes(b as SimWorld) ? (b as SimWorld) : 'distribusi' }
   if (a === 'admin') return { view: 'admin', adminTab: b || 'orang' }
   if (a === 'p' && b) return { view: 'project', pid: decodeURIComponent(b), tab: TABS.includes(c as Tab) ? (c as Tab) : 'milestone' }
   return { view: 'dash' }
@@ -68,7 +71,7 @@ export function fromHash(hash: string): Partial<UIState> {
 export function toHash(s: UIState): string {
   if (s.view === 'week') return '#/minggu'
   if (s.view === 'team') return '#/tim'
-  if (s.view === 'sim') return s.simWorld === 'b2b-b2c' ? '#/simulasi/b2b-b2c' : '#/simulasi/distribusi'
+  if (s.view === 'sim') return `#/simulasi/${SIM_WORLDS.includes(s.simWorld) ? s.simWorld : 'distribusi'}`
   if (s.view === 'admin') return `#/admin/${s.adminTab}`
   if (s.view === 'project' && s.pid) return `#/p/${encodeURIComponent(s.pid)}/${s.tab}`
   return '#/'

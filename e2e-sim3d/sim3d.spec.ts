@@ -120,39 +120,7 @@ test('vehicles move with the clock, open from the map, and "Ikuti" follows them'
   expect(opened).toMatch(/^Kurir \d · MF-/)
 })
 
-test('SimHost: 3D by default, "Tampilan 2D"/"3D", and 2D on reduced motion or without WebGL', async ({ page, browser }) => {
-  await page.goto(`${PREVIEW}?host=1#/simulasi/b2b-b2c`)
-  await expect(page.locator('.s3-overlay')).toBeVisible()
-  await page.getByRole('button', { name: 'Tampilan 2D' }).click()
-  await expect(page.getByRole('heading', { name: 'Gudang B2B + B2C' })).toBeVisible()
-  await page.getByRole('button', { name: 'Tampilan 3D' }).click()
-  await expect(page.locator('.s3-overlay')).toBeVisible()
-  await page.getByRole('button', { name: 'Distribusi' }).click()
-  await expect(page).toHaveURL(/#\/simulasi\/distribusi/)
-  await expect(page.locator('.s3-overlay')).toHaveCount(0)
-
-  const reduced = await browser.newContext({ reducedMotion: 'reduce' })
-  const rp = await reduced.newPage()
-  await rp.goto(`http://localhost:5321${PREVIEW}?host=1#/simulasi/b2b-b2c`)
-  await expect(rp.getByRole('heading', { name: 'Gudang B2B + B2C' })).toBeVisible()
-  await expect(rp.locator('.s3-overlay')).toHaveCount(0)
-  await reduced.close()
-
-  const noGl = await browser.newContext()
-  await noGl.addInitScript(() => {
-    // A browser without WebGL: every webgl/webgl2 context request fails.
-    const proto = HTMLCanvasElement.prototype
-    const original = Reflect.get(proto, 'getContext') as (this: HTMLCanvasElement, ...args: unknown[]) => unknown
-    Reflect.set(proto, 'getContext', function (this: HTMLCanvasElement, id: string, ...rest: unknown[]) {
-      return id.startsWith('webgl') ? null : original.call(this, id, ...rest)
-    })
-  })
-  const np = await noGl.newPage()
-  await np.goto(`http://localhost:5321${PREVIEW}?host=1#/simulasi/b2b-b2c`)
-  await expect(np.getByRole('heading', { name: 'Gudang B2B + B2C' })).toBeVisible()
-  await expect(np.getByRole('button', { name: 'Tampilan 3D' })).toHaveCount(0)
-  await noGl.close()
-})
+// SimHost's routes and fallbacks moved to yard.spec.ts with Brief B5's world switcher.
 
 for (const size of [
   { width: 1366, height: 768 },
