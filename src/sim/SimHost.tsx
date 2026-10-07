@@ -14,8 +14,8 @@ import { Boundary3D } from './ui3d/Boundary3D.tsx'
 const Distribusi = lazy(() => import('./worlds/distribusi/ui/SimScreen.tsx').then((m) => ({ default: m.default })))
 const B2bB2c = lazy(() => import('./worlds/b2b-b2c/ui/SimScreen2.tsx').then((m) => ({ default: m.default })))
 const Sim3D = lazy(() => import('./ui3d/Sim3D.tsx').then((m) => ({ default: m.default })))
-// Brief B4 V0: Factory Yard's town, ported as it is, while the SAMB world is built on its kernel.
-const TownV0 = lazy(() => import('./yard/town/TownV0.tsx'))
+// Brief B4: SAMB's distribution network on Factory Yard's kernel, as a command centre.
+const YardScreen = lazy(() => import('./yard/YardScreen.tsx'))
 
 const WORLDS: { id: SimWorld; label: string }[] = [
   { id: 'distribusi', label: 'Distribusi' },
@@ -36,10 +36,10 @@ export function SimHost() {
 
   if (hasWebGL()) {
     return (
-      <div style={{ height: 'calc(100dvh - 76px)', minHeight: 420 }}>
+      <div className="yd-host" style={{ minHeight: 520 }}>
         <Boundary3D fallback={world2d}>
           <Suspense fallback={<div className="skel" style={{ height: '100%' }} />}>
-            <TownV0 />
+            <YardScreen onMenu={toggleDrawer} />
           </Suspense>
         </Boundary3D>
       </div>

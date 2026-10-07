@@ -1,0 +1,28 @@
+# Brief B4 frames
+
+Factory Yard's own screenshot, for comparison (not copied here):
+[docs/factory-yard.png at bbef63f](https://github.com/Khalidabdi1/factory/blob/bbef63fbf98a7209fbd358826fe0130c5de225c8/docs/factory-yard.png).
+
+All frames come from a production build served with the production Content-Security-Policy from
+`vercel.json` (the `vite.sim3d.config.ts` preview), headless Chromium on SwiftShader. Every capture
+logged zero CSP violations and zero page errors.
+
+## V0: Factory Yard's town, ported as it is
+
+| File | What it shows |
+|---|---|
+| `v0-town-1366x768.png` | The town from `vendor/factory-yard/index.html`, running as a React-mounted module with three.js from npm and the system monospace font |
+| `v0-town-warehouse-section.png` | Warehouse 01 selected: the shell gives way to the section drawing, the card on the right |
+
+## V1: style frame (gate)
+
+The still is **Hari 8, 10.45** of world 2's engine month (seed 20261107; its B2B side is the
+world-1 model at 0,4× demand). Positions are staged for the still; motion comes in V2.
+
+| File | What it shows |
+|---|---|
+| `v1-network-1366x768-light.png` | Network view with all six places (1 Kantor, 2 Prinsipal, 3 Gudang, 4 Bay kurir, 5 Toko, 6 Konsumen, plus the truck pool); the gudang open as a section drawing (racks, receiving, GR desk, staging, B2C packing); the mixed-principal truck **L-03 · TR-08-1-20** selected (four principals, 48 % load) with its route dashed and its next stop ringed; the live metrics bar; the right panel with the engine's three cost groups, the split trip → DO → SKU, cost per carton, and "Belum ada di engine" for drop time and detour; the B2B stage tracker |
+| `v1-network-1366x768-dark.png` | The same, in the board's dark theme |
+| `v1-network-390x844-light.png` | The same at phone width (full page: the map, then the panel, then the tracker) |
+| `v1-lensa-biaya-1366x768-light.png` | Lensa biaya on: the bar shows the engine's cost metrics (Rp 105.444 per B2C order, Rp 204.869 per B2B DO, Rp 230 jt shared warehouse — the same figures `main` shows for day 8), and each place names its cost driver |
+| `main-today-1366x768.png`, `main-today-390x844.png` | The simulation as it looks on `main` today (Brief 3's 3D view, world 2, Hari 8 · 10.45), captured from a clean build of `origin/main` |

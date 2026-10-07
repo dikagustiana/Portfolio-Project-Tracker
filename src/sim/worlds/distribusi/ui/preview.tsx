@@ -4,6 +4,7 @@
 //   ?world=b2b-b2c      2D world 2        ?host=1        SimHost with the world selector
 //   ?v=3d               3D world 2        ?theme=dark    dark tokens (3D follows data-theme)
 //   ?v=town             Brief B4 V0: Factory Yard's town as ported (?debug=1 → window.sim)
+//   ?v=yard             Brief B4: the SAMB command centre (&select=L-03&open=gudang, ?debug=1 → window.sim)
 //   ?shell=1            pad the main area like the app shell next to its 240 px sidebar
 //   ?day=8&hour=10.75   3D clock start (defaults: day 1, 09.00)
 // Screens load lazily and render under StrictMode, as in the app (src/main.tsx), so dev-only
@@ -19,6 +20,7 @@ const screens = {
   SimScreen2: lazy(() => import('../../b2b-b2c/ui/SimScreen2.tsx')),
   Sim3D: lazy(() => import('../../../ui3d/Sim3D.tsx')),
   TownV0: lazy(() => import('../../../yard/town/TownV0.tsx')),
+  YardScreen: lazy(() => import('../../../yard/YardScreen.tsx')),
 }
 
 // Hook for scripts/sim3d-frames.ts and e2e-sim3d: `page.evaluate('window.__s3Check()')`.
@@ -38,6 +40,8 @@ if (el) {
           <Suspense fallback={null}>
             {q.get('host') ? (
               <SimHost />
+            ) : q.get('v') === 'yard' ? (
+              <screens.YardScreen initialSelect={q.get('select') ?? undefined} openGudang={q.get('open') === 'gudang'} />
             ) : q.get('v') === 'town' ? (
               <screens.TownV0 />
             ) : q.get('v') === '3d' ? (
