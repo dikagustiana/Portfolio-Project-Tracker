@@ -6,6 +6,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    // The lazy `three` chunk (three.js + react-three-fiber, ~240 kB gzip) is the only one over
+    // 500 kB; it loads only when the owner opens the 3D sim, never with the app shell.
+    chunkSizeWarningLimit: 1000,
     rolldownOptions: {
       output: {
         // Vendor code changes rarely: separate chunks stay cached across app releases.
@@ -13,6 +16,8 @@ export default defineConfig({
           groups: [
             { name: 'supabase', test: /node_modules[\\/]@supabase/ },
             { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler|@tanstack)[\\/]/ },
+            // The 3D sim's renderer: only the lazy Sim3D chunk imports it.
+            { name: 'three', test: /node_modules[\\/](three|three-stdlib|@react-three)[\\/]/ },
           ],
         },
       },
