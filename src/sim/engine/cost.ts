@@ -224,6 +224,9 @@ export interface MetricPoint {
   costPerM3: number
   cashDays: number
   contribution: ByPrincipal
+  /** Cumulative gross profit and allocated cost per principal, for the metrics bar. */
+  gpToDate: ByPrincipal
+  costToDate: ByPrincipal
 }
 
 export interface Allocations {
@@ -537,6 +540,8 @@ export function allocate(world: World, toggles: Toggles): Allocations {
     const sentValue = sent.reduce((s, i) => s + i.value, 0)
     const sentDays = sent.reduce((s, i) => s + i.value * (i.seg1 + i.seg2 + i.seg3), 0)
     const contribution = zero()
+    const gpToDate = zero()
+    const costToDate = zero()
     for (const p of PIDS) {
       let gpAcc = 0
       let costAcc = 0
@@ -545,6 +550,8 @@ export function allocate(world: World, toggles: Toggles): Allocations {
         costAcc += must(costByDayByPrincipal.get(p), `cost day ${p}`)[d2 - 1] ?? 0
       }
       contribution[p] = gpAcc - costAcc
+      gpToDate[p] = gpAcc
+      costToDate[p] = costAcc
     }
     metrics.push({
       day,
@@ -553,6 +560,8 @@ export function allocate(world: World, toggles: Toggles): Allocations {
       costPerM3: m3Acc > 0 ? allocatedAcc / m3Acc : 0,
       cashDays: sentValue > 0 ? sentDays / sentValue : 0,
       contribution,
+      gpToDate,
+      costToDate,
     })
   }
 

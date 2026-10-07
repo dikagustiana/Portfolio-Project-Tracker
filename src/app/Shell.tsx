@@ -16,6 +16,7 @@ import type { View } from './ui.ts'
 
 // Owner-only screens load on demand, so everyone else's bundle stays smaller.
 const Admin = lazy(() => import('../views/Admin.tsx').then((m) => ({ default: m.Admin })))
+const Sim = lazy(() => import('../sim/ui/SimScreen.tsx').then((m) => ({ default: m.default })))
 
 export function Shell() {
   const ui = useUI()
@@ -36,6 +37,7 @@ export function Shell() {
   const p = ui.view === 'project' ? d.project(ui.pid) : undefined
   if (view === 'project' && !p) view = 'dash'
   if (view === 'admin' && !viewer.isOwner) view = 'dash'
+  if (view === 'sim' && !viewer.isOwner) view = 'dash'
 
   // Per project: locked (closed/stopped) or read-only role hides write buttons (.w); no plan rights hides .wp.
   const role = p ? d.roleIn(p.id) : null
@@ -64,6 +66,10 @@ export function Shell() {
             <Team />
           ) : view === 'week' ? (
             <Week />
+          ) : view === 'sim' ? (
+            <Suspense fallback={<div className="skel" />}>
+              <Sim />
+            </Suspense>
           ) : view === 'admin' ? (
             <Suspense fallback={<div className="skel" />}>
               <Admin />
@@ -136,6 +142,12 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
           <button className={ui.view === 'admin' ? 'on' : ''} onClick={() => go({ view: 'admin' })}>
             <Icon name="boxes" />
             <span className="t">Admin</span>
+          </button>
+        )}
+        {viewer.isOwner && (
+          <button className={ui.view === 'sim' ? 'on' : ''} onClick={() => go({ view: 'sim' })}>
+            <Icon name="grid" />
+            <span className="t">Simulasi proses</span>
           </button>
         )}
       </nav>
