@@ -173,6 +173,16 @@ export function generateWorld2(seed = SEED): World2 {
       }
     }
   }
+  // Restocked returns come back onto the shelf on their return day (within the month).
+  const restockBySkuDay = new Map<string, number[]>()
+  for (const o of orders) {
+    if (!o.returned || !o.restocked || o.shipDay > DAYS || o.returnDay > DAYS) continue
+    for (const it of o.items) {
+      const arr = restockBySkuDay.get(it.sku) ?? Array.from({ length: DAYS }, () => 0)
+      arr[o.returnDay - 1] = (arr[o.returnDay - 1] ?? 0) + it.pieces
+      restockBySkuDay.set(it.sku, arr)
+    }
+  }
   const pc = (code: string): number => must(piecesPerCarton[code], `pieces ${code}`)
   const ledger: PieceLedgerDay[] = []
   for (const code of Object.keys(skus)) {
@@ -194,9 +204,10 @@ export function generateWorld2(seed = SEED): World2 {
       const inPieces = arrivals.get(day) ?? 0
       const outB2b = (must(b2bCartonsBySkuDay.get(code), 'b2b day')[day - 1] ?? 0) * pc(code)
       const outB2c = must(b2cPiecesBySkuDay.get(code), 'b2c day')[day - 1] ?? 0
-      close = open + inPieces - outB2b - outB2c
+      const restocked = restockBySkuDay.get(code)?.[day - 1] ?? 0
+      close = open + inPieces + restocked - outB2b - outB2c
       if (close < 0) throw new Error(`negative shared stock for ${code} on day ${day}: ${close}`)
-      ledger.push({ sku: code, day, open, in: inPieces, outB2b, outB2c, close })
+      ledger.push({ sku: code, day, open, in: inPieces, restocked, outB2b, outB2c, close })
     }
   }
 
@@ -211,22 +222,24 @@ export function generateWorld2(seed = SEED): World2 {
     }
   }
 
-  // --- Manifests (C6–C7): one per courier per pickup per day; signed at the pickup, then closed.
+  // --- Manifests (C6–C7): one per courier per pickup per day, built from the packages that
+  // courier takes that day (orders by ship day), split across its pickups; signed at the
+  // pickup, then closed.
   const manifests: Manifest[] = []
   let mSeq = 0
-  const packagesByCourier = new Map<string, number>()
+  const packagesByCourierDay = new Map<string, number>()
   for (const o of orders) {
     if (o.shipDay > DAYS) continue
-    packagesByCourier.set(o.courier, (packagesByCourier.get(o.courier) ?? 0) + 1)
+    const key = `${o.courier}|${o.shipDay}`
+    packagesByCourierDay.set(key, (packagesByCourierDay.get(key) ?? 0) + 1)
   }
-  for (const c of COURIERS) {
-    const total = packagesByCourier.get(c.id) ?? 0
-    const perPickup = Math.ceil(total / (c.pickupsPerDay * DAYS))
-    let made = 0
-    for (let day = 1; day <= DAYS && made < total; day++) {
-      for (let p = 1; p <= c.pickupsPerDay && made < total; p++) {
-        const n = Math.min(perPickup, total - made)
-        made += n
+  for (let day = 1; day <= DAYS; day++) {
+    for (const c of COURIERS) {
+      const total = packagesByCourierDay.get(`${c.id}|${day}`) ?? 0
+      let left = total
+      for (let p = 1; p <= c.pickupsPerDay && left > 0; p++) {
+        const n = Math.ceil(left / (c.pickupsPerDay - p + 1))
+        left -= n
         mSeq += 1
         manifests.push({ id: `MF-${String(mSeq).padStart(4, '0')}`, courier: c.id, day, pickup: p, packages: n, signedDay: day, closedDay: day })
       }

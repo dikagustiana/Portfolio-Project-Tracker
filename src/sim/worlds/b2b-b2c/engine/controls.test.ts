@@ -1,5 +1,6 @@
 // World 2 controls (brief 2 §6): Brief 1's controls still hold for the embedded B2B exit;
-// these eight are the world-2 additions, run for every toggle combination.
+// these are the world-2 additions, run for every toggle combination. Control 8 (PR #3 review)
+// follows every cost down to the orders and principals that carry it.
 
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_TOGGLES, PLATFORMS } from './config.ts'
@@ -53,9 +54,12 @@ describe('world 2 controls for every toggle combination', () => {
       // Control 2 — one stock pool: B2B out + B2C out never exceeds the available balance;
       // pick-face stock never negative. (Ledger closes ≥ 0 by construction; verify.)
       for (const row of world.ledger) {
-        expect(row.open + row.in - row.outB2b - row.outB2c).toBeCloseTo(row.close, 6)
+        expect(row.open + row.in + row.restocked - row.outB2b - row.outB2c).toBeCloseTo(row.close, 6)
         expect(row.close).toBeGreaterThanOrEqual(0)
       }
+      // Restocked returns re-enter the shelf on their return day (within the month).
+      const restockedPieces = world.orders.filter((o) => o.returned && o.restocked && o.shipDay <= world.days && o.returnDay <= world.days).reduce((s, o) => s + o.items.reduce((t, i) => t + i.pieces, 0), 0)
+      expect(world.ledger.reduce((s, r) => s + r.restocked, 0)).toBe(restockedPieces)
       for (const f of world.pickFace) expect(f.stockPieces).toBeGreaterThanOrEqual(0)
 
       // Control 3 — cut-off logic: P1 ships same day, and it is only assigned when the
@@ -96,6 +100,13 @@ describe('world 2 controls for every toggle combination', () => {
       const manifestPackages = world.manifests.reduce((s, m) => s + m.packages, 0)
       expect(manifestPackages).toBe(shipped.length)
       for (const m of world.manifests) expect(m.signedDay).toBeLessThanOrEqual(m.closedDay)
+      // …and each day's manifests carry exactly that day's packages per courier.
+      for (let day = 1; day <= world.days; day++) {
+        for (const courier of ['K1', 'K2', 'K3']) {
+          const onManifests = world.manifests.filter((m) => m.day === day && m.courier === courier).reduce((s, m) => s + m.packages, 0)
+          expect(onManifests, `manifests ${courier} day ${day}`).toBe(shipped.filter((o) => o.shipDay === day && o.courier === courier).length)
+        }
+      }
 
       // Control 6 — returns never exceed delivered orders; settlement on or after complete.
       const returns = shipped.filter((o) => o.returned).length
@@ -125,8 +136,47 @@ describe('world 2 controls for every toggle combination', () => {
       const isdPool = must(alloc.pools.find((x) => x.id === 'isd'), 'isd pool')
       expect(close(isdPool.b2b, 0)).toBe(true)
       expect(close(isdPool.b2c, isdPool.total)).toBe(true)
+
+      // Control 8 — every cost reaches the orders and principals that carry it.
+      const sum = (xs: number[]): number => xs.reduce((s, x) => s + x, 0)
+      const pool = (id: string) => must(alloc.pools.find((x) => x.id === id), `pool ${id}`)
+      const near = (a: number, b: number): boolean => Math.abs(a - b) <= Math.max(1e-3, Math.abs(b) * 1e-9)
+      // B2C team pools land on the orders in full: outbound (lines + packages), ISD,
+      // replenishment, CS (incl. return tickets), shop management, returns desk.
+      const b2cTeamPools = alloc.outbound.b2cCost + alloc.isd.total + pool('replenishment').b2c + pool('cs').total + pool('shopMgmt').total + pool('returnsDesk').total
+      expect(near(sum(alloc.perOrder.map((x) => x.teamCost)), b2cTeamPools), 'B2C team pools reach orders').toBe(true)
+      // The shared warehouse's B2C share lands on the orders, once.
+      const sharedB2c = sum(alloc.pools.filter((x) => x.byPrincipal).map((x) => x.b2c))
+      expect(near(sum(alloc.perOrder.map((x) => x.sharedCost)), sharedB2c), 'shared B2C reaches orders').toBe(true)
+      // Mixed baskets: the principal split keeps every order's revenue and contribution.
+      for (const o of alloc.perOrder) {
+        const rows = Object.values(o.byPrincipal)
+        expect(near(sum(rows.map((r) => r.revenue)), o.revenue)).toBe(true)
+        expect(near(sum(rows.map((r) => r.revenue - r.cost)), o.contribution)).toBe(true)
+      }
+      const pc = Object.values(alloc.principalChannel)
+      expect(near(sum(pc.map((x) => x.revenueB2c)), sum(alloc.perOrder.map((x) => x.revenue))), 'principal B2C revenue').toBe(true)
+      // The principal view agrees with the order and platform waterfalls.
+      const orderContribution = sum(alloc.perOrder.map((x) => x.contribution))
+      expect(near(sum(pc.map((x) => x.b2c)), orderContribution), 'principal B2C = orders').toBe(true)
+      expect(near(sum(Object.values(alloc.platform).map((x) => x.contribution)), orderContribution), 'platforms = orders').toBe(true)
+      // Headline: contributions + the unsplit shared line = B2B gross profit + B2C revenue − costs.
+      const b2bGross = alloc.b2bAlloc.totals.grossProfit
+      expect(near(sum(pc.map((x) => x.b2b + x.b2c)) - alloc.sharedUnsplit, b2bGross + sum(alloc.perOrder.map((x) => x.revenue)) - alloc.totals.costs), 'totals reconcile').toBe(true)
     })
   }
+})
+
+describe('world 2 — the stock-capital toggle reaches the B2B exit', () => {
+  it('charges inventory capital to B2B contribution and to total costs when on', () => {
+    const off = computeAll2({ ...DEFAULT_TOGGLES, stockCapital: false }).alloc
+    const on = computeAll2({ ...DEFAULT_TOGGLES, stockCapital: true }).alloc
+    const stock = Object.values(on.b2bAlloc.principal).reduce((s, p) => s + p.capitalStock, 0)
+    expect(stock).toBeGreaterThan(0)
+    const b2b = (a: typeof on): number => Object.values(a.principalChannel).reduce((s, x) => s + x.b2b, 0)
+    expect(b2b(off) - b2b(on)).toBeCloseTo(stock, 3)
+    expect(on.totals.costs - off.totals.costs).toBeCloseTo(stock, 3)
+  })
 })
 
 describe('world 2 shape — the six profiles read as designed', () => {

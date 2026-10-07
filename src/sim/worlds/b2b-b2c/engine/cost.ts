@@ -2,7 +2,8 @@
 // their drivers, then split to channels by m³ shipped (toggle). Regular outbound teams
 // split by pick lines × standard minutes (toggle: shared vs separate). ISD lands only on
 // P0/P1 orders. B2C order economics per §4.3; B2B reuses world 1's trip chain and cash
-// clock (assumption 7). Every pool reconciles; every figure carries a trace.
+// clock (assumption 7). Every pool reconciles down to the orders and principals that carry
+// it; every figure carries a trace.
 
 import { DAYS, POOLS, SEPARATE_TEAM_OVERHEAD, STANDARD_MINUTES, TICKETS_PER_ORDER, PLATFORMS } from './config.ts'
 import type { PlatformId, Toggles2 } from './config.ts'
@@ -37,7 +38,12 @@ export interface OrderEconomics {
   id: string
   platform: PlatformId
   priority: string
+  /** Lead principal (first item), for colour and labels. Baskets can mix principals; the
+   *  principal views use `byPrincipal`. */
   principal: PrincipalId
+  /** The order split over its items' principals: revenue and order-level costs by item GMV,
+   *  shared warehouse cost by each item's own principal and m³. */
+  byPrincipal: Partial<Record<PrincipalId, { revenue: number; cost: number }>>
   revenue: number
   fee: number
   sellerShipping: number
@@ -103,7 +109,7 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
   const pc = (code: string): number => must(world.piecesPerCarton[code], `pieces ${code}`)
 
   // --- World 1 machinery on the embedded B2B world (trips, capital, revenue; assumption 7).
-  const b2bAlloc = allocateD1(b2b, { ...D1, costOfCapital: toggles.costOfCapital })
+  const b2bAlloc = allocateD1(b2b, { ...D1, costOfCapital: toggles.costOfCapital, stockCapital: toggles.stockCapital })
 
   // --- Driver volumes per principal.
   const asnByP = zero()
@@ -176,9 +182,12 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
     }
   })
 
-  // --- Regular outbound teams by pick lines × standard minutes (§4.2).
-  const b2bMinutes = b2b.dos.reduce((s, d) => s + d.lines.length * STANDARD_MINUTES.b2bLine, 0)
-  const b2cMinutes = ordersShipped.reduce((s, o) => s + o.items.length * STANDARD_MINUTES.b2cLine, 0)
+  // --- Regular outbound teams by standard minutes (§4.2): pick lines plus the dispatch work
+  // per B2C package and per B2B carton — the same minutes the orders and DOs are charged.
+  const b2bLineMinutes = (lines: { cartons: number }[]): number => lines.reduce((s, l) => s + STANDARD_MINUTES.b2bLine + l.cartons * STANDARD_MINUTES.b2bCarton, 0)
+  const b2cOrderMinutes = (itemCount: number): number => itemCount * STANDARD_MINUTES.b2cLine + STANDARD_MINUTES.b2cPackage
+  const b2bMinutes = b2b.dos.reduce((s, d) => s + b2bLineMinutes(d.lines), 0)
+  const b2cMinutes = ordersShipped.reduce((s, o) => s + b2cOrderMinutes(o.items.length), 0)
   const outboundPools = POOLS.filter((d) => d.stage === 'outbound').map((def) => {
     const base = def.headcount * def.costPerPerson
     const total = toggles.sharedTeams ? base : base * (1 + SEPARATE_TEAM_OVERHEAD)
@@ -242,10 +251,17 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
   // --- Per-order economics (§4.3, §4.4).
   const costPerB2cMinute = b2cMinutes > 0 ? outboundB2c / b2cMinutes : 0
   const costPerUnit = unitTotal > 0 ? repTotal / unitTotal : 0
-  const b2cM3Total = PIDS.reduce((s, p) => s + m3B2cByP[p], 0)
   // The shared-warehouse share of channel costs is only the S1–S5 pools (replenishment,
-  // CS, shop management, ISD and the returns desk belong to the channels directly).
-  const sharedB2cTotal = pools.filter((x) => x.byPrincipal).reduce((s, x) => s + x.b2c, 0)
+  // CS, shop management, ISD and the returns desk belong to the channels directly). It flows
+  // pool → principal (drivers) → channel (m³) → order item (m³ within its principal).
+  const sharedB2bByP = zero()
+  const sharedB2cByP = zero()
+  for (const p of PIDS) {
+    const m = m3B2bByP[p] + m3B2cByP[p]
+    if (toggles.sharedSplit !== 'volume' || m <= 0) continue
+    sharedB2bByP[p] = sharedCostByP[p] * (m3B2bByP[p] / m)
+    sharedB2cByP[p] = sharedCostByP[p] * (m3B2cByP[p] / m)
+  }
   const perOrder: OrderEconomics[] = []
   const platform = {} as Record<PlatformId, PlatformView>
   for (const pf of PLATFORMS) {
@@ -261,24 +277,34 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
     const reverse = o.returned ? o.shipping * RETURN_REVERSE_FACTOR : 0
     const restockOrWriteoff = o.returned ? (o.restocked ? o.items.reduce((s, x) => s + x.pieces, 0) * RESTOCK_COST_PER_PIECE : o.gmv * 0.5) : 0
     const returnCost = reverse + restockOrWriteoff
-    const outboundCost = (o.items.length * STANDARD_MINUTES.b2cLine + STANDARD_MINUTES.b2cPackage) * costPerB2cMinute
+    const outboundCost = b2cOrderMinutes(o.items.length) * costPerB2cMinute
     const isdCost = o.priority !== 'P2' ? isdPerOrder : 0
     const replenishCost = o.items.reduce((s, x) => s + x.pieces, 0) * costPerUnit
-    const orderM3 = o.items.reduce((s, x) => s + x.pieces * x.pieceVolumeCm3, 0) / 1_000_000
-    const sharedCost = b2cM3Total > 0 ? sharedB2cTotal * (orderM3 / b2cM3Total) : 0
+    const itemShared = o.items.map((x) => (m3B2cByP[x.principal] > 0 ? (sharedB2cByP[x.principal] * ((x.pieces * x.pieceVolumeCm3) / 1_000_000)) / m3B2cByP[x.principal] : 0))
+    const sharedCost = itemShared.reduce((s, x) => s + x, 0)
     const net = o.netSettlement - sellerShipping
     const capital = (toggles.costOfCapital * Math.max(0, net) * pfConf.settlementDays) / 365
-    const csOrder = ticketsByPlat[o.platform] > 0 ? csByPlat[o.platform] * (TICKETS_PER_ORDER / ticketsByPlat[o.platform]) : 0
+    const tickets = TICKETS_PER_ORDER + (o.returned ? 1 : 0)
+    const csOrder = ticketsByPlat[o.platform] > 0 ? csByPlat[o.platform] * (tickets / ticketsByPlat[o.platform]) : 0
     const shopOrder = ordersByPlat[o.platform] > 0 ? shopByPlat[o.platform] / ordersByPlat[o.platform] : 0
     const retDeskOrder = o.returned && retPiecesTotal > 0 ? retTotal * (o.items.reduce((s, x) => s + x.pieces, 0) / retPiecesTotal) : 0
     const principal = must(o.items[0], 'item').principal
     const revenue = o.gmv - o.voucher
-    const contribution = revenue - o.fee - sellerShipping - o.boxCost - returnCost - outboundCost - isdCost - replenishCost - sharedCost - csOrder - shopOrder - retDeskOrder - capital
+    const teamCost = outboundCost + isdCost + replenishCost + csOrder + shopOrder + retDeskOrder
+    const orderLevelCost = o.fee + sellerShipping + o.boxCost + returnCost + teamCost + capital
+    const contribution = revenue - orderLevelCost - sharedCost
+    const byPrincipal: OrderEconomics['byPrincipal'] = {}
+    o.items.forEach((it, i) => {
+      const w = o.gmv > 0 ? it.gmv / o.gmv : 1 / o.items.length
+      const row = byPrincipal[it.principal] ?? { revenue: 0, cost: 0 }
+      row.revenue += revenue * w
+      row.cost += orderLevelCost * w + (itemShared[i] ?? 0)
+      byPrincipal[it.principal] = row
+    })
     perOrder.push({
-      id: o.id, platform: o.platform, priority: o.priority, principal,
+      id: o.id, platform: o.platform, priority: o.priority, principal, byPrincipal,
       revenue, fee: o.fee, sellerShipping, packaging: o.boxCost, returnCost,
-      teamCost: outboundCost + isdCost + replenishCost + csOrder + shopOrder + retDeskOrder,
-      sharedCost, capital, contribution,
+      teamCost, sharedCost, capital, contribution,
     })
     const v = must(platform[o.platform], 'platform view')
     v.orders += 1
@@ -308,15 +334,20 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
   const principalChannel = {} as Record<PrincipalId, { b2b: number; b2c: number; revenueB2b: number; revenueB2c: number }>
   for (const p of PIDS) {
     const gp1 = b2bAlloc.principal[p]
-    const b2bOutboundByP = b2b.dos.reduce((s, d) => s + d.lines.filter((l) => must(world.skus[l.sku], 'sku').principal === p).length * STANDARD_MINUTES.b2bLine, 0) * (outboundB2b / (b2bMinutes || 1))
-    const b2bRep = unitTotal > 0 ? (repB2b * piecesB2bByP[p]) / b2bUnits : 0
-    const sharedB2bP = toggles.sharedSplit === 'volume' ? sharedCostByP[p] * (m3B2bByP[p] / Math.max(1e-9, m3B2bByP[p] + m3B2cByP[p])) : 0
-    const sharedB2cP = toggles.sharedSplit === 'volume' ? sharedCostByP[p] - sharedB2bP : 0
-    const b2cRev = perOrder.filter((x) => x.principal === p).reduce((s, x) => s + x.revenue, 0)
-    const b2cCost = perOrder.filter((x) => x.principal === p).reduce((s, x) => s + x.fee + x.sellerShipping + x.packaging + x.returnCost + x.teamCost + x.sharedCost + x.capital, 0)
+    const b2bOutboundByP = b2b.dos.reduce((s, d) => s + b2bLineMinutes(d.lines.filter((l) => must(world.skus[l.sku], 'sku').principal === p)), 0) * (outboundB2b / (b2bMinutes || 1))
+    const b2bRep = b2bUnits > 0 ? (repB2b * piecesB2bByP[p]) / b2bUnits : 0
+    // B2C: each order's share for this principal; its shared cost is already inside.
+    let b2cRev = 0
+    let b2cCost = 0
+    for (const x of perOrder) {
+      const row = x.byPrincipal[p]
+      if (!row) continue
+      b2cRev += row.revenue
+      b2cCost += row.cost
+    }
     principalChannel[p] = {
-      b2b: gp1.grossProfit - gp1.tripCost - gp1.capitalCash - b2bOutboundByP - b2bRep - sharedB2bP,
-      b2c: b2cRev - b2cCost - sharedB2cP,
+      b2b: gp1.grossProfit - gp1.tripCost - gp1.capitalCash - gp1.capitalStock - b2bOutboundByP - b2bRep - sharedB2bByP[p],
+      b2c: b2cRev - b2cCost,
       revenueB2b: gp1.revenue,
       revenueB2c: b2cRev,
     }
@@ -338,9 +369,12 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
     priority,
     principalChannel,
     capitalB2c,
+    // World-2 cost model: world 1's trips and capital for the B2B exit (its warehouse pools are
+    // replaced by world 2's), every world-2 pool in full (channel-allocated or not), and each
+    // B2C order's direct costs. Team and shared costs on orders are pool shares, not added again.
     totals: {
       revenue: b2bAlloc.totals.revenue + perOrder.reduce((s, x) => s + x.revenue, 0),
-      costs: b2bAlloc.totals.costs + perOrder.reduce((s, x) => s + x.fee + x.sellerShipping + x.packaging + x.returnCost + x.teamCost + x.sharedCost + x.capital, 0),
+      costs: b2bAlloc.totals.trips + b2bAlloc.totals.capital + pools.reduce((s, x) => s + x.total, 0) + perOrder.reduce((s, x) => s + x.fee + x.sellerShipping + x.packaging + x.returnCost + x.capital, 0),
       ordersB2c: ordersShipped.length,
       dosB2b: doCount,
     },

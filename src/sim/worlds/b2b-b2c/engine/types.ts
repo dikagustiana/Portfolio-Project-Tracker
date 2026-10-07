@@ -67,6 +67,8 @@ export interface PieceLedgerDay {
   day: number
   open: number
   in: number
+  /** Returned pieces put back on the shelf that day (restocked returns). */
+  restocked: number
   outB2b: number
   outB2c: number
   close: number
@@ -85,7 +87,7 @@ export interface World2 {
   stores: Store[]
   orders: B2cOrder[]
   manifests: Manifest[]
-  /** Shared stock ledger in pieces: opening + in − (B2B out + B2C out) = closing. */
+  /** Shared stock ledger in pieces: opening + in + restocked − (B2B out + B2C out) = closing. */
   ledger: PieceLedgerDay[]
   pickFace: PickFaceDay[]
   quarantinedPieces: Record<string, number>

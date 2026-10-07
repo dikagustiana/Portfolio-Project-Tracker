@@ -66,3 +66,14 @@ uses them (`sim-report` for both worlds is byte-identical before and after Brief
 | Inbound POs | Dock from **08.00**, one every two hours (last 18.00); unloading two hours | `inboundHour` | Dock list status (Dijadwalkan / Bongkar / Masuk rak) |
 | Order flow within the ship day | Pick from 30 min after the order (07.00 for next-day orders), packing from 90 min; handed over at the courier's first pickup after that; "Selesai" three hours after a same-day handover | `orderStep`, `handoverHour` | "Pelacakan alur" steps, Order list status |
 | Vehicles on the map (V3) | Each B2B trip loads at a dock door for 1,5 h before it leaves, then takes 1 h to drive off the map toward "Toko"; couriers drive in 1 h, wait 1 h at their bay slot, leave at the pickup and take 1 h to reach "Konsumen"; inbound trucks drive in 1 h, unload 2 h beside the west wall, leave by the back road in 1 h; forklifts shuttle while a truck loads or unloads | `vehicles2` and its constants (`src/sim/ui3d/motion2.ts`) | Moving trucks, vans and forklifts; vehicle cards; "Ikuti" |
+
+## PR #3 review — world-2 model clarifications
+
+| What | Rule now | Where defined |
+|---|---|---|
+| Outbound allocation base | Standard minutes = pick lines (B2B 1,2 / B2C 2,5 min) + dispatch per B2C package (1,8 min) and per B2B carton (0,4 min); orders, DOs and principals are charged the same minutes | `STANDARD_MINUTES`, `allocate2` |
+| Mixed baskets | An order's revenue and order-level costs split over its items' principals by item GMV; shared warehouse cost by each item's own principal and m³. The order keeps its first item's principal as "lead" for colour/labels | `OrderEconomics.byPrincipal` |
+| CS tickets | 0,08 per order plus one per return, charged to the order that raised it | `TICKETS_PER_ORDER` |
+| Restocked returns | Back on the shelf on the return day (shared ledger `restocked`); non-restocked returns stay quarantined | `generateWorld2` |
+| Manifests | Per courier per ship day, the day's packages split across that courier's pickups | `generateWorld2` |
+| Stock capital (toggle) | Charged to the B2B exit's principal contribution and to total costs | `allocate2` |

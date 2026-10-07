@@ -97,11 +97,11 @@ menu button below 860 px, where the app hides its sidebar (3D view only).
 | Control 8 (world 1 unchanged) | ✅ byte-identical dataset hash + report diff |
 | Determinism | world 1 hash `80ab43da`; world 2 hash stable per seed `20261107` |
 | Playwright | committed; runs where the local stack lives (Docker unavailable on the build machine) |
-| Brief 3 `npm run check` | ✅ lint 0 warnings, typecheck clean, **345 passed / 12 skipped** (new: camera, bindings, motion, card format) |
+| Brief 3 `npm run check` | ✅ lint 0 warnings, typecheck clean, **346 passed / 12 skipped** (new: camera, bindings, motion, card format; world-2 control 8 after the PR #3 review) |
 | Brief 3 chunks | `SimHost` **3,1 kB** (1,4 gzip) · `Sim3D` **54,3 kB** (16,9) + css 13,0 kB · vendor `three` **912 kB** (242 gzip, lazy, not preloaded) · app shell unchanged (index 13,8 kB, react 254,8 kB) |
 | Brief 3 `npm run e2e:sim3d` | ✅ 7/7 against the production build under the production CSP (run with `PW_CHANNEL=msedge` here) |
 | Brief 3 layout sweep | ✅ 32 sizes, 900–1920 px desktop, app shell, tablet, phones portrait + landscape |
-| Brief 3 sim-report | ✅ world 1 and world 2 byte-identical to `2a21ed6` (SHA-256 `2bb69c4e…` / `4a64125b…`) |
+| Brief 3 sim-report | ✅ world 1 and world 2 byte-identical to `2a21ed6` (SHA-256 `2bb69c4e…` / `4a64125b…`) through V4; the PR #3 review fixes then changed world 2 deliberately (see below), world 1 still identical |
 | Brief 3 frame pacing | headless Edge, production build, playing at 1× and 16×: median frame 4,2 ms, p95 ≤ 8,4 ms, no long tasks; worst single frame 25–29 ms on a day change at 16× |
 | `e2e/sim.spec.ts` (Supabase) | updated for the 3D default; **not run** — Docker is unavailable on this machine |
 
@@ -121,16 +121,40 @@ F               27       120      2.446      1.811   53,8 m³      3%    1      
 
 World 2 (defaults) — `npx tsx scripts/sim-report.ts --world b2b-b2c`; the viewer's five questions:
 
+(Figures after the PR #3 review fixes below; world 1 is unchanged.)
+
 - **Shared stock → channels**: S1–S5 pools split B2B/B2C by m³ shipped (e.g. Simpan Rp 90 jt →
-  B2B 56 jt / B2C 34 jt), toggle "Tidak dibagi" keeps the whole Rp 230 jt as "Biaya gudang bersama".
-- **Where channels separate**: outbound regular teams split by minutes (B2B 15,4 jt vs B2C 38,6 jt
-  picker cost), ISD Rp 40 jt lands only on P0/P1.
-- **One B2C order**: cost/order Rp 97–121 rb by priority; the order waterfall walks GMV − voucher −
+  B2B 55,9 jt / B2C 34,1 jt), toggle "Tidak dibagi" keeps the whole Rp 230 jt as "Biaya gudang
+  bersama".
+- **Where channels separate**: outbound regular teams split by standard minutes — pick lines plus
+  dispatch per package/carton (B2B 21.340 vs B2C 51.657 min; picker cost B2B 15,8 jt vs B2C
+  38,2 jt), ISD Rp 40 jt lands only on P0/P1.
+- **One B2C order**: cost/order Rp 94–117 rb by priority; the order waterfall walks GMV − voucher −
   fee − kemasan − retur − tim − gudang − modal.
-- **Price of speed**: P0 Rp 121,5 rb/order and P1 Rp 118,9 rb vs P2 Rp 97,5 rb — the ISD premium is
-  ≈ Rp 22–24 rb/order.
-- **Contribution**: per principal×channel (C: B2C Rp 2 M; D: B2B only Rp 100,9 jt), per platform
-  (MP-A Rp 1,2 M … Website Rp 639,9 jt), F's voucher leakage visible before any operating cost.
+- **Price of speed**: P0 Rp 117,4 rb/order and P1 Rp 115,2 rb vs P2 Rp 93,9 rb — the ISD premium is
+  ≈ Rp 21–24 rb/order.
+- **Contribution**: per principal×channel (C: B2C Rp 1,8 M; D: B2B only Rp 100,3 jt), per platform
+  (MP-A Rp 1,2 M … Website Rp 643,3 jt), F's voucher leakage visible before any operating cost.
+
+### PR #3 review fixes (world 2 engine)
+
+Codex review on PR #3 found eight real defects in the world-2 engine (Brief 2), all fixed and
+covered by a new control 8 that follows every cost to the orders and principals carrying it
+(run for all 26 toggle states; against the old engine the gaps were Rp 26,8 jt of B2C team cost
+charged twice over and Rp 92,9 jt of shared cost subtracted twice):
+
+| # | Defect | Fix |
+|---|---|---|
+| 1 | Orders were charged package minutes the outbound rate never counted (over-allocation) | Allocation base = pick lines + dispatch per B2C package / B2B carton (`STANDARD_MINUTES.b2bCarton` was defined but unused) |
+| 2 | Principal B2C contribution subtracted the shared warehouse cost twice | Shared cost flows pool → principal → channel → order item once |
+| 3 | `totals.costs` mixed world 1's warehouse pools with world 2's and missed the B2B pool shares | Trips + capital from world 1, every world-2 pool in full, B2C direct costs |
+| 4 | Mixed baskets credited the whole order to the first item's principal | Orders split over item principals (`byPrincipal`): revenue/order costs by item GMV, shared by item m³ |
+| 5 | Return tickets were in the CS driver but never charged to the returning order | The order carries its return ticket |
+| 6 | Restocked returns never re-entered the shared ledger | `restocked` inflow on the return day |
+| 7 | Manifests spread monthly totals evenly, not each day's packages | Manifests built per courier per ship day |
+| 8 | The stock-capital toggle never reached the B2B allocation | Forwarded, and inventory capital charged to B2B contribution |
+
+World 1 `sim-report` stays byte-identical; the world-1 golden test still passes.
 
 ## Known issues
 
