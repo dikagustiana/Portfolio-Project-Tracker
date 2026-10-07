@@ -7,12 +7,12 @@ import type { UIState } from '../../app/ui.ts'
 
 /**
  * The prototype's RO for this project: no write access at all (no linked person and not the
- * owner, or a viewer/non-member here). Officers are not read-only: they act on their own tasks.
+ * super admin, or a viewer/non-member here). Members are not read-only: they act on their own tasks.
  */
 export function useReadOnly(p: Project): boolean {
   const { d, viewer } = useBoard()
   const role = d.roleIn(p.id)
-  return (!viewer.isOwner && !viewer.personId) || !role || role === 'viewer'
+  return (!viewer.isSuperAdmin && !viewer.personId) || !role || role === 'viewer'
 }
 
 /** Navigate like the prototype's data-go / data-proj: close the drawer and scroll to the top. */

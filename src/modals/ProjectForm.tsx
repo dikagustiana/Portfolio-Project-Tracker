@@ -10,7 +10,7 @@ import { useBoard } from '../data/board-context.ts'
 import { GRADS, MATURITY } from '../domain/index.ts'
 import type { Id, Maturity, Project } from '../domain/index.ts'
 import { useBad, useSubmit } from './form.ts'
-import { LOCK_MSG, pick, pmPeople } from './logic.ts'
+import { LOCK_MSG, pick, adminPeople } from './logic.ts'
 import { Gone, PersonOptions } from './parts.tsx'
 
 export function ProjectForm({ id }: { id: Id }) {
@@ -39,7 +39,7 @@ function ProjectBody({ p }: { p: Project }) {
   const { close } = useOverlay()
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
-  const pms = pmPeople(board, p.id)
+  const pms = adminPeople(board, p.id)
   const isOwner = viewer.isOwner
   const lk = !d.pActive(p)
   const [f, setF] = useState<Fields>(() => ({

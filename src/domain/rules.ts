@@ -4,7 +4,7 @@ import { stageName } from './constants.ts'
 import { dn, fmt } from './dates.ts'
 import type { BoardIndex } from './lookup.ts'
 import type { Permissions } from './permissions.ts'
-import type { DateStr, DecisionSource, Id, Milestone, MsState, Project, Task } from './types.ts'
+import type { Blocker, Commitment, DateStr, DecisionSource, Id, Milestone, MsState, Project, Task } from './types.ts'
 
 export interface SeqConflict {
   /** The previous milestone, which has not passed. */
@@ -29,12 +29,27 @@ export interface Health {
   items: string[]
 }
 
+/**
+ * Progress over leaf tasks (ARCHITECTURE §E): a task with sub-tasks is a package and counts only
+ * through its sub-tasks. Without sub-tasks every task is a leaf, which is the prototype's rule.
+ */
 export interface Progress {
-  /** Tasks done. */
+  /** Leaf tasks accepted (done). */
   d: number
+  /** Leaf tasks. */
   n: number
   /** Percent done, rounded. */
   p: number
+}
+
+/** Commitment history of a task: the first commitment is the baseline. */
+export interface Slip {
+  baseline: Commitment
+  latest: Commitment
+  /** Calendar days between the baseline end and the current end (positive = later). */
+  days: number
+  /** Number of commitments made. */
+  count: number
 }
 
 /** Chip classes used by the prototype (`chip ok`, `chip rv`, …); '' is the neutral stage chip. */
@@ -69,6 +84,29 @@ const CLOSED_STATES: readonly MsState[] = ['lulus', 'stop']
 
 export interface Rules {
   isDone: (t: Task) => boolean
+  /** The task has sub-tasks (a package). */
+  hasChildren: (t: Task) => boolean
+  /** A unit of progress and commitment: a task without sub-tasks. */
+  isLeaf: (t: Task) => boolean
+  /** Leaf tasks of a project. */
+  leaves: (projectId: Id) => Task[]
+  /** Progress of a gate over its leaf tasks. */
+  msProg: (m: Milestone) => Progress
+  /** Progress of a package over its sub-tasks (a leaf reports itself: 0/1 or 1/1). */
+  taskProg: (t: Task) => Progress
+  /** The task's open blocker. */
+  blocker: (t: Task) => Blocker | undefined
+  isBlocked: (t: Task) => boolean
+  /** Planning fields still missing in a gated project (PIC, requested proof): a draft. */
+  isDraft: (t: Task) => boolean
+  /** Unaccepted prerequisites that keep the task from starting ('start' dependencies). */
+  waitingToStart: (t: Task) => Task[]
+  /** Unaccepted prerequisites and sub-tasks that keep the task from being accepted. */
+  waitingToAccept: (t: Task) => Task[]
+  /** A package whose sub-tasks are all accepted and which itself is still open. */
+  packageReady: (t: Task) => boolean
+  /** Baseline versus latest commitment, when the task has been committed at least once. */
+  slip: (t: Task) => Slip | null
   /** Gate mode (review flow) on; false for a missing project. */
   gated: (p: Project | null | undefined) => boolean
   pActive: (p: Project | null | undefined) => boolean
@@ -103,11 +141,20 @@ export interface Rules {
   commitAfterEdit: (nt: Task, old: Task | null, commit: CommitIntent) => CommitResult
 }
 
+const pct = (d: number, n: number): Progress => ({ d, n, p: n ? Math.round((d / n) * 100) : 0 })
+
 export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): Rules {
   const isDone = (t: Task): boolean => t.stage === 'done'
+  const hasChildren = (t: Task): boolean => ix.children(t.id).length > 0
+  const isLeaf = (t: Task): boolean => !hasChildren(t)
   const gated = (p: Project | null | undefined): boolean => !!p && p.gateMode
   const pActive = (p: Project | null | undefined): boolean => !!p && (p.status || 'aktif') === 'aktif'
-  const msNo = (m: Milestone): string => m.code || `M${ix.pms(m.projectId).findIndex((x) => x.id === m.id) + 1}`
+  const msNo = (m: Milestone): string => m.code || m.ref || `M${ix.pms(m.projectId).findIndex((x) => x.id === m.id) + 1}`
+  const progOf = (ts: readonly Task[]): Progress => {
+    const leaves = ts.filter(isLeaf)
+    return pct(leaves.filter(isDone).length, leaves.length)
+  }
+  const open = (ids: readonly Id[]): Task[] => ids.map((id) => ix.task(id)).filter((d): d is Task => !!d && !isDone(d))
   const msState = (m: Milestone): MsState => {
     if (m.status) return m.status
     const ts = ix.mtasks(m.id)
@@ -132,12 +179,12 @@ export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): R
   const readiness = (p: Project): Readiness | null => {
     const m = currentMs(p)
     if (!m || !gated(p)) return null
-    const ts = ix.mtasks(m.id)
+    const ts = ix.mtasks(m.id).filter(isLeaf)
     const ok = ts.filter((t) => isDone(t) || (t.committed && !!t.assignee)).length
     return { m, ok, n: ts.length, ready: ts.length > 0 && ok === ts.length }
   }
   const isLate = (t: Task): boolean => !isDone(t) && t.end < today
-  const needsCommit = (t: Task): boolean => gated(ix.project(t.projectId)) && !isDone(t) && !t.committed
+  const needsCommit = (t: Task): boolean => gated(ix.project(t.projectId)) && !isDone(t) && !t.committed && isLeaf(t)
   const readyToClose = (p: Project): boolean => {
     const ms = ix.pms(p.id)
     return pActive(p) && ms.length > 0 && ms.every((m) => msState(m) === 'lulus')
@@ -164,6 +211,24 @@ export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): R
 
   return {
     isDone,
+    hasChildren,
+    isLeaf,
+    leaves: (projectId) => ix.ptasks(projectId).filter(isLeaf),
+    msProg: (m) => progOf(ix.mtasks(m.id)),
+    taskProg: (t) => (hasChildren(t) ? progOf(ix.children(t.id)) : pct(isDone(t) ? 1 : 0, 1)),
+    blocker: (t) => ix.openBlocker(t.id),
+    isBlocked: (t) => !!ix.openBlocker(t.id),
+    isDraft: (t) => gated(ix.project(t.projectId)) && !isDone(t) && (!t.assignee || !t.proof.trim()),
+    waitingToStart: (t) => open(t.deps),
+    waitingToAccept: (t) => [...open(t.deps), ...open(t.acceptDeps), ...ix.children(t.id).filter((c) => !isDone(c))],
+    packageReady: (t) => hasChildren(t) && !isDone(t) && t.stage !== 'review' && ix.children(t.id).every(isDone),
+    slip(t) {
+      const cs = ix.commitmentsOf(t.id)
+      const baseline = cs[0]
+      const latest = cs[cs.length - 1]
+      if (!baseline || !latest) return null
+      return { baseline, latest, days: dn(t.end) - dn(baseline.end), count: cs.length }
+    },
     gated,
     pActive,
     locked: (x) => !pActive(ix.project('projectId' in x ? x.projectId : x.id)),
@@ -184,8 +249,11 @@ export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): R
       if (!pActive(p)) return null
       const bad: string[] = []
       const warn: string[] = []
-      const late = ix.ptasks(p.id).filter((t) => !isDone(t) && isLate(t)).length
+      const leaves = ix.ptasks(p.id).filter(isLeaf)
+      const late = leaves.filter((t) => !isDone(t) && isLate(t)).length
       if (late) bad.push(`${late} task telat`)
+      const blocked = ix.ptasks(p.id).filter((t) => !isDone(t) && ix.openBlocker(t.id)).length
+      if (blocked) bad.push(`${blocked} task terhambat`)
       for (const m of ix.pms(p.id)) {
         if (msState(m) === 'stop') bad.push(`${msNo(m)} dihentikan`)
         if (msLate(m)) bad.push(`${msNo(m)} lewat target`)
@@ -200,11 +268,7 @@ export function makeRules(ix: BoardIndex, today: DateStr, perms: Permissions): R
       const label = { bad: 'Bermasalah', warn: 'Perlu perhatian', ok: 'Sehat' }[level]
       return { level, label, items: [...bad, ...warn] }
     },
-    prog(projectId) {
-      const ts = ix.ptasks(projectId)
-      const d = ts.filter(isDone).length
-      return { d, n: ts.length, p: ts.length ? Math.round((d / ts.length) * 100) : 0 }
-    },
+    prog: (projectId) => progOf(ix.ptasks(projectId)),
     due,
     statusChip: (t) => due(t) ?? { kind: '', text: stageName(t.stage) },
     mname,

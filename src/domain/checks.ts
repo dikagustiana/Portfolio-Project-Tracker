@@ -14,7 +14,7 @@ export type Flag = [FlagLevel, string]
 
 /** What the "Langkah berikutnya" row offers (the prototype rendered these as buttons). */
 export type NextStepAction =
-  | { kind: 'team' }
+  | { kind: 'members' }
   | { kind: 'editProject' }
   | { kind: 'newMs' }
   | { kind: 'newTask'; milestoneId: Id }
@@ -60,6 +60,8 @@ export function makeChecks(
     taskFlags(t, p) {
       if (isDone(t)) return []
       const F: Flag[] = []
+      const b = ix.openBlocker(t.id)
+      if (b) F.push([0, `Terhambat: ${b.reason}`])
       if (t.rejectReason && t.stage !== 'review') F.push([0, `Ditolak: ${t.rejectReason}`])
       if (gated(p) && perms.selfAccept(t)) F.push([0, 'Pemeriksa sama dengan PIC, pilih pemeriksa lain'])
       const deps = depsOf(t)
@@ -74,6 +76,10 @@ export function makeChecks(
       if (needsCommit(t) && t.stage !== 'review') F.push([2, 'Tanggal belum dikomit PIC'])
       const blocked = deps.filter((d) => !isDone(d))
       if (blocked.length) F.push([2, `Menunggu: ${blocked.map((d) => d.title).join(', ')}`])
+      const par = t.parentId ? ix.task(t.parentId) : undefined
+      if (par && (t.start < par.start || t.end > par.end)) F.push([1, `Di luar jadwal paket ${par.ref || par.title}`])
+      const acc = t.acceptDeps.map((id) => ix.task(id)).filter((d): d is Task => !!d && !isDone(d))
+      if (acc.length) F.push([2, `Diterima setelah: ${acc.map((d) => d.ref || d.title).join(', ')}`])
       return F.sort((a, b) => a[0] - b[0])
     },
 
@@ -136,11 +142,11 @@ export function makeChecks(
         .map((id) => ix.person(id))
         .filter((x): x is Person => !!x)
       const unlinked = people.filter((m) => !m.userId)
-      const admin = perms.isAdmin()
+      const admin = perms.isAdminIn(p.id)
       const edit: NextStepAction = { kind: 'editProject' }
       const L: NextStep[] = []
       // Prototype: "S.members.length > 0". Members are per project now, so count this project's memberships.
-      L.push({ ok: ix.memberCount(p.id) > 0, text: 'Project Manager menambahkan anggota tim', action: admin ? { kind: 'team' } : null })
+      L.push({ ok: ix.memberCount(p.id) > 0, text: 'Project Admin menambahkan anggota tim', action: admin ? { kind: 'members' } : null })
       L.push({ ok: !!p.outcome, text: 'Tulis hasil akhir', action: edit })
       L.push({ ok: !!p.measure, text: 'Tulis cara tahu sudah tercapai', action: edit })
       L.push({ ok: !!perms.pmOf(p), text: 'Tentukan PM', action: edit })
@@ -177,12 +183,12 @@ export function makeChecks(
         L.push({
           ok: people.length > 0 && !unlinked.length,
           text: unlinked.length
-            ? `${unlinked.length} orang belum dihubungkan ke akunnya oleh Project Manager (${unlinked
+            ? `${unlinked.length} orang belum punya akun: undang lewat Anggota (${unlinked
                 .slice(0, 3)
                 .map((m) => m.name)
                 .join(', ')})`
             : 'Semua yang terlibat sudah terhubung ke akunnya',
-          action: unlinked.length && admin ? { kind: 'team' } : null,
+          action: unlinked.length && admin ? { kind: 'members' } : null,
         })
       return L
     },

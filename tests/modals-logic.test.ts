@@ -9,7 +9,8 @@ import {
   newTask,
   picPeople,
   pick,
-  pmPeople,
+  adminPeople,
+  judgePeople,
   reopenNote,
   taskPayload,
   taskSaveError,
@@ -22,7 +23,7 @@ import type { WzState } from '../src/modals/logic.ts'
 import { PROJECT_ID, PROTOTYPE_URL, prototypeBoard } from './fixtures/prototype-board.ts'
 
 const TODAY = '2026-10-07'
-const dika: Viewer = { userId: 'u-dika', personId: 'm-dika', isOwner: true, isGroupViewer: false }
+const dika: Viewer = { userId: 'u-dika', personId: 'm-dika', isSuperAdmin: true }
 const withLogins = (b: Board): Board => ({ ...b, people: b.people.map((p) => ({ ...p, userId: `u-${p.id.slice(2)}` })) })
 const domain = (board: Board, viewer: Viewer | null = dika): Domain => createDomain(board, { today: TODAY, appUrl: PROTOTYPE_URL, viewer })
 const must = <T>(x: T | null | undefined): T => {
@@ -34,13 +35,16 @@ const d = domain(withLogins(base))
 const task = (id: string): Task => must(d.task(id))
 
 describe('people pickers follow per-project roles', () => {
-  it('PIC: PM and officer members; PM, pemeriksa, pemutus: PM members only', () => {
+  it('PIC, pemeriksa, pemutus: admins and members; the project PM: project admins only', () => {
     expect(picPeople(base, PROJECT_ID).map((p) => p.id)).toEqual(['m-david', 'm-dika', 'm-muti', 'm-yani'])
-    expect(pmPeople(base, PROJECT_ID).map((p) => p.id)).toEqual(['m-david', 'm-dika'])
+    expect(judgePeople(base, PROJECT_ID).map((p) => p.id)).toEqual(['m-david', 'm-dika', 'm-muti', 'm-yani'])
+    expect(adminPeople(base, PROJECT_ID).map((p) => p.id)).toEqual(['m-david', 'm-dika'])
     expect(picPeople(base, 'other-project')).toEqual([])
+    const viewer = { ...base, memberships: base.memberships.map((m) => (m.personId === 'm-yani' ? { ...m, role: 'viewer' as const } : m)) }
+    expect(judgePeople(viewer, PROJECT_ID).map((p) => p.id)).toEqual(['m-david', 'm-dika', 'm-muti'])
   })
   it('a value outside the options becomes empty (prototype pmOpts(pmOnly(x)))', () => {
-    const pms = pmPeople(base, PROJECT_ID)
+    const pms = adminPeople(base, PROJECT_ID)
     expect(pick(pms, 'm-david')).toBe('m-david')
     expect(pick(pms, 'm-yani')).toBe('')
     expect(pick(pms, '')).toBe('')

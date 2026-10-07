@@ -20,15 +20,19 @@ import type { BoardIndex } from './lookup.ts'
 import { makePermissions } from './permissions.ts'
 import type { Permissions } from './permissions.ts'
 import { makeRules } from './rules.ts'
+import { makeAddressing } from './search.ts'
+import type { Addressing } from './search.ts'
 import type { Rules } from './rules.ts'
 import type { Board, DateStr, DomainContext, Id } from './types.ts'
 import { makeValueChain } from './valuechain.ts'
 import type { ValueChain } from './valuechain.ts'
+import { makeViews } from './views.ts'
+import type { Views } from './views.ts'
 import { makeWzTaskDefaults } from './wizard.ts'
 import type { WzTaskDefaults } from './wizard.ts'
 
 export interface Domain
-  extends HolidayCalendar, Permissions, Rules, Checks, ValueChain, DigestApi, CalendarLinks {
+  extends HolidayCalendar, Permissions, Rules, Checks, ValueChain, DigestApi, CalendarLinks, Views, Addressing {
   readonly board: Board
   readonly today: DateStr
   readonly appUrl: string
@@ -40,6 +44,18 @@ export interface Domain
   ptasks: BoardIndex['ptasks']
   pms: BoardIndex['pms']
   mtasks: BoardIndex['mtasks']
+  ask: BoardIndex['ask']
+  fn: BoardIndex['fn']
+  children: BoardIndex['children']
+  pasks: BoardIndex['pasks']
+  roleOf: BoardIndex['roleOf']
+  openBlocker: BoardIndex['openBlocker']
+  blockersOf: BoardIndex['blockersOf']
+  reviewsOf: BoardIndex['reviewsOf']
+  commitmentsOf: BoardIndex['commitmentsOf']
+  commentsOf: BoardIndex['commentsOf']
+  projectEvents: BoardIndex['projectEvents']
+  recordEvents: BoardIndex['recordEvents']
   /** '' = the viewer, '*' = everyone, a person id = as that person. */
   inbox: (who?: Id) => Inbox
   wzTaskDefaults: WzTaskDefaults
@@ -53,8 +69,10 @@ export function createDomain(board: Board, ctx: DomainContext): Domain {
   const checks = makeChecks(ix, cal, perms, rules, ctx.viewer !== null)
   const vc = makeValueChain(ix, rules)
   const inbox = makeInbox(ix, perms, rules, ctx.viewer)
-  const digest = makeDigest({ ix, cal, rules, inbox, today: ctx.today, appUrl: ctx.appUrl })
-  const links = makeCalendarLinks(ix, perms, rules, ctx.appUrl)
+  const views = makeViews({ ix, perms, rules, inbox, today: ctx.today, viewer: ctx.viewer })
+  const addressing = makeAddressing(ix, rules, ctx.appUrl, (pid) => views.involved(pid))
+  const digest = makeDigest({ ix, cal, rules, inbox, views, urlOf: addressing.urlOf, today: ctx.today, appUrl: ctx.appUrl })
+  const links = makeCalendarLinks(ix, perms, rules, addressing.urlOf)
   return {
     board,
     today: ctx.today,
@@ -66,12 +84,26 @@ export function createDomain(board: Board, ctx: DomainContext): Domain {
     ptasks: ix.ptasks,
     pms: ix.pms,
     mtasks: ix.mtasks,
+    ask: ix.ask,
+    fn: ix.fn,
+    children: ix.children,
+    pasks: ix.pasks,
+    roleOf: ix.roleOf,
+    openBlocker: ix.openBlocker,
+    blockersOf: ix.blockersOf,
+    reviewsOf: ix.reviewsOf,
+    commitmentsOf: ix.commitmentsOf,
+    commentsOf: ix.commentsOf,
+    projectEvents: ix.projectEvents,
+    recordEvents: ix.recordEvents,
     ...cal,
     ...perms,
     ...rules,
     ...checks,
     ...vc,
     inbox,
+    ...views,
+    ...addressing,
     ...digest,
     ...links,
     wzTaskDefaults: makeWzTaskDefaults(cal, ctx.today),
@@ -132,7 +164,27 @@ export type {
   Readiness,
   Rules,
   SeqConflict,
+  Slip,
 } from './rules.ts'
-export type { ValueChain, VcStat, VcSteps } from './valuechain.ts'
+export type { ValueChain, VcModule, VcStat, VcState, VcSteps } from './valuechain.ts'
+export { VIEWS, daysSince } from './views.ts'
+export type {
+  ActionItem,
+  ActionKind,
+  FunctionLoad,
+  PortfolioFilter,
+  PortfolioRow,
+  RecordKind,
+  RecordTarget,
+  ReviewSections,
+  ScheduleItem,
+  Tone,
+  ViewId,
+  ViewSpec,
+  Views,
+  WaitItem,
+} from './views.ts'
+export { projectPath, recordPath } from './search.ts'
+export type { Addressing, HitKind, SearchHit } from './search.ts'
 export type { TaskDates, WzTaskDefaults } from './wizard.ts'
 export type * from './types.ts'

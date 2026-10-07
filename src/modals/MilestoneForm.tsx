@@ -7,7 +7,7 @@ import { TwoStep } from '../app/overlay.tsx'
 import { useBoard } from '../data/board-context.ts'
 import type { Id, Milestone, Project } from '../domain/index.ts'
 import { useBad, useSubmit } from './form.ts'
-import { ACTIVITY, pick, pmPeople } from './logic.ts'
+import { ACTIVITY, pick, judgePeople } from './logic.ts'
 import { Gone, PersonOptions } from './parts.tsx'
 
 export function MilestoneForm({ projectId, id }: { projectId: Id; id?: Id }) {
@@ -35,7 +35,7 @@ function MsBody({ p, m }: { p: Project; m: Milestone | null }) {
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
   const ms = d.pms(p.id)
-  const pms = pmPeople(board, p.id)
+  const pms = judgePeople(board, p.id)
   const [f, setF] = useState<Fields>(() => ({
     title: m?.title ?? '',
     target: m?.target ?? '',

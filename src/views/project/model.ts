@@ -91,17 +91,17 @@ export function vcSelected(d: Domain, p: Project, vcStep: string): string {
   return vcAll(d, p).some((s) => s.code === vcStep) ? vcStep : ''
 }
 
-/** Value chain tab groups (prototype viewVC), only those with rows. */
+/** Value chain tab groups (prototype viewVC), only those with rows. Leaf tasks, like the step progress. */
 export function vcGroups(d: Domain, p: Project, ts: readonly Task[], sel: string): VcGroup[] {
   const groups: VcGroup[] = vcAll(d, p)
     .filter((s) => !sel || s.code === sel)
-    .map((s) => ({ step: s, title: d.vcLabel(s), need: s.need, rows: ts.filter((t) => d.vcOf(t).includes(s.code)) }))
+    .map((s) => ({ step: s, title: d.vcLabel(s), need: s.need, rows: ts.filter((t) => d.isLeaf(t) && d.vcOf(t).includes(s.code)) }))
   if (!sel)
     groups.push({
       step: null,
       title: 'Tidak masuk value chain',
       need: 'Paket fondasi, BAU dan planning',
-      rows: ts.filter((t) => !d.vcOf(t).length),
+      rows: ts.filter((t) => d.isLeaf(t) && !d.vcOf(t).length),
     })
   return groups.filter((g) => g.rows.length > 0)
 }

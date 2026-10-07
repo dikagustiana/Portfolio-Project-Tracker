@@ -51,6 +51,8 @@ const src = (s: DecisionSourceInput = {}) => ({
 export interface TaskInput {
   id?: string
   project_id?: string
+  parent_task_id?: string
+  owner_function_id?: string
   milestone_id?: string
   title?: string
   description?: string
@@ -60,7 +62,8 @@ export interface TaskInput {
   validator_person_id?: string
   proof_requested?: string
   stage?: string
-  deps?: string[]
+  /** Prerequisites: ids (start dependencies) or {task_id, kind}. */
+  deps?: (string | { task_id: string; kind: 'start' | 'accept' })[]
   steps?: string[]
   commit?: 'on' | 'off'
 }
@@ -81,12 +84,37 @@ export interface AskInput {
   id?: string
   project_id?: string
   question?: string
+  context?: string
+  options?: string[]
+  recommendation?: string
   decider_person_id?: string
   due?: string
   milestone_id?: string
+  task_ids?: string[]
+}
+
+export interface BlockerInput {
+  reason: string
+  need?: string
+  fromPerson?: string
+  fromFunction?: string
+  target?: string
+}
+
+export interface InviteInput {
+  email: string
+  name?: string
+  assignments: { project_id: string; role: 'project_admin' | 'member' | 'viewer' }[]
+}
+export interface InviteResult {
+  mode: 'invited' | 'updated'
+  person_id: string
+  invitation_id: string | null
 }
 export interface ProjectInput {
   id?: string
+  /** New projects only: the short code (else derived from the name). */
+  code?: string
   name?: string
   entity_code?: string
   outcome?: string
@@ -124,9 +152,9 @@ export function makeActions(supa: Supa) {
       call(supa, 'decide_gate', { p_milestone: id, p_decision: decision, p_note: note, ...src(s) }),
 
     saveAsk: (p: AskInput) => call(supa, 'save_ask', { p: p as unknown as Json }),
-    decideAsk: (id: string, answer: string, s?: DecisionSourceInput) =>
-      call(supa, 'decide_ask', { p_ask: id, p_answer: answer, ...src(s) }),
-    reopenAsk: (id: string) => call(supa, 'reopen_ask', { p_ask: id }),
+    decideAsk: (id: string, answer: string, s?: DecisionSourceInput, rationale?: string) =>
+      call(supa, 'decide_ask', { p_ask: id, p_answer: answer, ...src(s), ...(rationale ? { p_rationale: rationale } : {}) }),
+    reopenAsk: (id: string, reason?: string) => call(supa, 'reopen_ask', { p_ask: id, ...(reason ? { p_reason: reason } : {}) }),
     deleteAsk: (id: string) => call(supa, 'delete_ask', { p_ask: id }),
 
     createProject: (p: WizardInput) => call(supa, 'create_project', { p: p as unknown as Json }),
@@ -137,6 +165,27 @@ export function makeActions(supa: Supa) {
     deleteProject: (id: string) => call(supa, 'delete_project', { p_project: id }),
 
     createReminder: (taskId: string, message: string) => call(supa, 'create_reminder', { p_task: taskId, p_message: message }),
+
+    raiseBlocker: (taskId: string, b: BlockerInput) =>
+      call(supa, 'raise_blocker', {
+        p_task: taskId,
+        p_reason: b.reason,
+        p_need: b.need ?? '',
+        ...(b.fromPerson ? { p_from_person: b.fromPerson } : {}),
+        ...(b.fromFunction ? { p_from_function: b.fromFunction } : {}),
+        ...(b.target ? { p_target: b.target } : {}),
+      }),
+    resolveBlocker: (id: string, resolution?: string) => call(supa, 'resolve_blocker', { p_blocker: id, p_resolution: resolution ?? '' }),
+    escalateBlocker: (id: string, p: { question?: string; context?: string; decider_person_id?: string; due?: string }) =>
+      call(supa, 'escalate_blocker', { p_blocker: id, p: p as unknown as Json }),
+    addComment: (target: 'task' | 'ask', id: string, body: string) => call(supa, 'add_comment', { p_target: target, p_id: id, p_body: body }),
+
+    setMemberRole: (projectId: string, personId: string, role: 'project_admin' | 'member' | 'viewer' | null) =>
+      call(supa, 'set_member_role', { p_project: projectId, p_person: personId, p_role: role as string }),
+    setSystemRole: (personId: string, role: 'super_admin' | 'user') => call(supa, 'set_system_role', { p_person: personId, p_role: role }),
+    inviteMember: async (p: InviteInput) => (await call(supa, 'invite_member', { p: p as unknown as Json })) as unknown as InviteResult,
+    revokeInvitation: (id: string) => call(supa, 'revoke_invitation', { p_invitation: id }),
+    resolveMigrationFlag: (id: number) => call(supa, 'resolve_migration_flag', { p_flag: id }),
 
     /** Private calendar record (prototype calRecord), own rows only (RLS). */
     calRecord: async (taskId: string, end: string, title: string, provider?: 'google' | 'outlook365') => {
