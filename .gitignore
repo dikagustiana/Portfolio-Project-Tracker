@@ -32,3 +32,6 @@ supabase/.branches
 .shots.mjs
 test-results/
 playwright-report/
+
+# Brief 3: local style-frame screenshots (never committed)
+.sim-local/

@@ -98,3 +98,47 @@ world 1. World 2 then generates B2C orders, and one **shared** stock ledger is b
   by chosen box; returns (reverse handling + restock/quarantine); CS by tickets; shop management by
   orders per platform; B2C capital cost over platform settlement days; B2B uses the world 1 clock.
 - Contribution views: principal × channel, per platform, cost to serve per priority (P0/P1/P2).
+
+---
+
+# Brief 3 plan (V0) — 3D isometric rebuild
+
+## What is reused (unchanged)
+
+- `src/sim/core/` and both `worlds/*/engine/` — config, generators, allocation, traces,
+  formatters, controls: untouched. **Proof at V2: `sim-report` for both worlds byte-identical**
+  (the world-1 golden test already guards world 1 continuously).
+- Routes and SimHost; the existing 2D Canvas worlds stay as the fallback (WebGL unavailable,
+  `prefers-reduced-motion`, and the "Tampilan 2D" toggle).
+- `scripts/sim-report.ts`, `docs/sim/*`.
+
+## What is added
+
+- `src/sim/ui3d/` — the 3D layer: `theme3d.ts` (token colours → scene palette), `Scene3D.tsx`
+  (R3F Canvas: ortho camera ~35°/45°, sun + hemisphere lights, ground/roads/buildings/vehicles,
+  roof fade), `overlay.tsx` (the §4 card system: KPI row, top-centre search + world selector +
+  clock chip, selected-object card, "Pelacakan alur", tabs list, slim timeline, map controls,
+  drawers, watermark), `Sim3D.tsx` (composition; takes a bindings prop at V2).
+- Dependencies (pinned): `three`, `@react-three/fiber@9`, `@react-three/drei@10`. Nothing else.
+  No `Environment`/HDR, no troika `<Text>`, no GLB textures, no WASM decoders, no blob workers —
+  CSP-safe by construction (§2.2): procedural geometry from `RoundedBox` primitives + vertex/flat
+  colours; labels are DOM (`drei Html` / absolutely positioned).
+- Models: none for V1 — everything is procedural (CC0-equivalent: authored in-repo). If real
+  models are added later, they must be CC0 (Kenney/Quaternius) under 3 MB total in
+  `public/sim/models/` and recorded in `ASSETS.md`.
+
+## Asset shortlist (for later milestones, all CC0)
+
+| Source | Candidate | Licence | URL |
+|---|---|---|---|
+| Kenney | "Toy Car Kit" / "City Kit" | CC0 | https://kenney.nl/assets |
+| Quaternius | "Ultimate Modular Buildings", "Vehicles" packs | CC0 | https://quaternius.com |
+| In-repo procedural | RoundedBox buildings/trucks/forklifts/pallets (V1 approach) | repo licence | — |
+
+V1 ships 100 % procedural; models stay optional.
+
+## V1 gate plan
+
+Static world-2 scene per §5.1 + every overlay card with placeholder content of the right shape
+(§4), screenshots 1920×1080 + 1366×768 (light) into `.sim-local/` (git-ignored), side-by-side
+with the reference pending the owner attaching `reference-waretrack.png`. Stop for "lanjut".

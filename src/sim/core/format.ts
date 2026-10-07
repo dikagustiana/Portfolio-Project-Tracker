@@ -50,3 +50,13 @@ export function formatRpShort(x: number): string {
   if (a >= 1_000) return `Rp ${formatNumber(x / 1_000, 0)} rb`
   return formatRp(x)
 }
+
+/** Card money format (Brief 3 §4): ≥ Rp 1 miliar → `Rp 2,0 M`; ≥ Rp 1 juta → `Rp 230,0 jt`;
+ *  smaller in full. Within one card, pass the same `tier` so rows compare at a glance. */
+export function formatRpCard(x: number, tier?: 'm' | 'jt' | 'full'): string {
+  const a = Math.abs(x)
+  const t = tier ?? (a >= 1e9 ? 'm' : a >= 1e6 ? 'jt' : 'full')
+  if (t === 'm') return `Rp ${formatNumber(x / 1e9, 1)} M`
+  if (t === 'jt') return `Rp ${formatNumber(x / 1e6, 1)} jt`
+  return formatRp(x)
+}
