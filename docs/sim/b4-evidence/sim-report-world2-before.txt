@@ -1,0 +1,276 @@
+## World 2 Gudang B2B+B2C — default (gudang bersama porsi volume keluar, tim outbound bersama, ongkir konsumen, modal 12%)
+toggles: volume|teamsShared|ship-konsumen|stockOff|wacc0.1200
+
+| pool | total | B2B | B2C | tidak dibagi |
+|---|---:|---:|---:|---:|
+| Admin ASN | Rp 18 jt | Rp 9,7 jt | Rp 8,3 jt | Rp 0 |
+| Inbound dan terima barang | Rp 60 jt | Rp 35,3 jt | Rp 24,7 jt | Rp 0 |
+| Putaway dan WMS | Rp 38 jt | Rp 24,4 jt | Rp 13,6 jt | Rp 0 |
+| Simpan (bulk + pick face) | Rp 90 jt | Rp 55,9 jt | Rp 34,1 jt | Rp 0 |
+| Kelola stok | Rp 24 jt | Rp 11,6 jt | Rp 12,4 jt | Rp 0 |
+| Picker reguler | Rp 54 jt | Rp 15,8 jt | Rp 38,2 jt | Rp 0 |
+| Packer reguler | Rp 45 jt | Rp 13,2 jt | Rp 31,8 jt | Rp 0 |
+| Dispatch dan manifest | Rp 25,5 jt | Rp 7,5 jt | Rp 18 jt | Rp 0 |
+| Tim ISD (instan & same day) | Rp 40 jt | Rp 0 | Rp 40 jt | Rp 0 |
+| Replenishment | Rp 25,5 jt | Rp 14,7 jt | Rp 10,8 jt | Rp 0 |
+| Customer service | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+| Shop management | Rp 18 jt | Rp 0 | Rp 18 jt | Rp 0 |
+| Meja retur | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+
+| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |
+|---|---:|---:|---:|---:|---:|
+| A | Rp 58,1 jt | Rp 68 jt | Rp 2,6 M | Rp 954,9 jt | Rp 776,1 jt |
+| B | Rp 219,4 jt | Rp 156,5 jt | Rp 2,2 M | Rp 1,2 M | Rp 967,3 jt |
+| C | Rp 83,4 jt | Rp 183,7 jt | Rp 1,8 M | Rp 2,4 M | Rp 1,9 M |
+| D | Rp 100,3 jt | Rp 0 | Rp 1,8 M | Rp 0 | Rp 0 |
+| E | Rp 3,3 jt | Rp 26,6 jt | Rp 374,4 jt | Rp 764,6 jt | Rp 614,5 jt |
+| F | Rp 51,5 jt | Rp 103,9 jt | Rp 654,5 jt | Rp 1,3 M | Rp 1,1 M |
+
+| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| MP-A | 1799 | Rp 1,6 M | Rp 1,3 M | Rp 105,3 jt | Rp 34,8 jt | Rp 0 | Rp 7,9 jt | Rp 19 jt | Rp 3,7 jt | Rp 4,2 jt | Rp 32,5 jt | Rp 21,8 jt | Rp 3,4 jt | Rp 1,5 M | Rp 122,4 jt |
+| MP-B | 1567 | Rp 1,4 M | Rp 1,1 M | Rp 99,1 jt | Rp 30,8 jt | Rp 0 | Rp 7 jt | Rp 8,8 jt | Rp 3,3 jt | Rp 3,7 jt | Rp 32,6 jt | Rp 19,4 jt | Rp 3,8 jt | Rp 1,3 M | Rp 101 jt |
+| MP-C | 1352 | Rp 1,2 M | Rp 967,9 jt | Rp 68,2 jt | Rp 28,1 jt | Rp 0 | Rp 6 jt | Rp 14 jt | Rp 2,9 jt | Rp 3,2 jt | Rp 29,3 jt | Rp 16,8 jt | Rp 1,9 jt | Rp 1,1 M | Rp 100,9 jt |
+| MP-D | 902 | Rp 782,2 jt | Rp 610,7 jt | Rp 62,6 jt | Rp 17,7 jt | Rp 0 | Rp 4 jt | Rp 8,3 jt | Rp 1,9 jt | Rp 2,1 jt | Rp 18,2 jt | Rp 10,5 jt | Rp 2,8 jt | Rp 701,9 jt | Rp 43,5 jt |
+| MP-E | 1086 | Rp 975,9 jt | Rp 762,3 jt | Rp 58,6 jt | Rp 22 jt | Rp 0 | Rp 4,8 jt | Rp 10,4 jt | Rp 2,2 jt | Rp 2,6 jt | Rp 22,8 jt | Rp 13,2 jt | Rp 2,4 jt | Rp 895,4 jt | Rp 74,8 jt |
+| WEB | 927 | Rp 831,3 jt | Rp 649,7 jt | Rp 20,8 jt | Rp 18,7 jt | Rp 0 | Rp 4,1 jt | Rp 6,2 jt | Rp 2 jt | Rp 2,2 jt | Rp 19,4 jt | Rp 11,4 jt | Rp 781 rb | Rp 791,8 jt | Rp 96,1 jt |
+
+| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |
+|---|---:|---:|---:|---:|---:|
+| P0 | 467 | 125.573 | 704.529 | 881.783 | 51.682 |
+| P1 | 981 | 122.881 | 695.200 | 870.028 | 51.947 |
+| P2 | 6185 | 102.319 | 703.505 | 880.784 | 74.961 |
+
+Harga kecepatan: ISD Rp 28 rb/order P0+P1 (1448 order); P2 tanpa ISD. Menit reguler: B2B 21340 vs B2C 51657.
+Total: order B2C 7633; DO B2B 720; modal B2C Rp 15 jt.
+
+## World 2 flip: biaya gudang bersama tidak dibagi
+toggles: none|teamsShared|ship-konsumen|stockOff|wacc0.1200
+
+| pool | total | B2B | B2C | tidak dibagi |
+|---|---:|---:|---:|---:|
+| Admin ASN | Rp 18 jt | Rp 0 | Rp 0 | Rp 18 jt |
+| Inbound dan terima barang | Rp 60 jt | Rp 0 | Rp 0 | Rp 60 jt |
+| Putaway dan WMS | Rp 38 jt | Rp 0 | Rp 0 | Rp 38 jt |
+| Simpan (bulk + pick face) | Rp 90 jt | Rp 0 | Rp 0 | Rp 90 jt |
+| Kelola stok | Rp 24 jt | Rp 0 | Rp 0 | Rp 24 jt |
+| Picker reguler | Rp 54 jt | Rp 15,8 jt | Rp 38,2 jt | Rp 0 |
+| Packer reguler | Rp 45 jt | Rp 13,2 jt | Rp 31,8 jt | Rp 0 |
+| Dispatch dan manifest | Rp 25,5 jt | Rp 7,5 jt | Rp 18 jt | Rp 0 |
+| Tim ISD (instan & same day) | Rp 40 jt | Rp 0 | Rp 40 jt | Rp 0 |
+| Replenishment | Rp 25,5 jt | Rp 14,7 jt | Rp 10,8 jt | Rp 0 |
+| Customer service | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+| Shop management | Rp 18 jt | Rp 0 | Rp 18 jt | Rp 0 |
+| Meja retur | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+
+| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |
+|---|---:|---:|---:|---:|---:|
+| A | Rp 107,4 jt | Rp 84,2 jt | Rp 2,6 M | Rp 954,9 jt | Rp 776,1 jt |
+| B | Rp 231,7 jt | Rp 162,5 jt | Rp 2,2 M | Rp 1,2 M | Rp 967,3 jt |
+| C | Rp 116,7 jt | Rp 223,1 jt | Rp 1,8 M | Rp 2,4 M | Rp 1,9 M |
+| D | Rp 125,2 jt | Rp 0 | Rp 1,8 M | Rp 0 | Rp 0 |
+| E | Rp 13,8 jt | Rp 45,7 jt | Rp 374,4 jt | Rp 764,6 jt | Rp 614,5 jt |
+| F | Rp 58,2 jt | Rp 116,2 jt | Rp 654,5 jt | Rp 1,3 M | Rp 1,1 M |
+
+| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| MP-A | 1799 | Rp 1,6 M | Rp 1,3 M | Rp 105,3 jt | Rp 34,8 jt | Rp 0 | Rp 7,9 jt | Rp 19 jt | Rp 3,7 jt | Rp 4,2 jt | Rp 32,5 jt | Rp 0 | Rp 3,4 jt | Rp 1,5 M | Rp 144,2 jt |
+| MP-B | 1567 | Rp 1,4 M | Rp 1,1 M | Rp 99,1 jt | Rp 30,8 jt | Rp 0 | Rp 7 jt | Rp 8,8 jt | Rp 3,3 jt | Rp 3,7 jt | Rp 32,6 jt | Rp 0 | Rp 3,8 jt | Rp 1,3 M | Rp 120,4 jt |
+| MP-C | 1352 | Rp 1,2 M | Rp 967,9 jt | Rp 68,2 jt | Rp 28,1 jt | Rp 0 | Rp 6 jt | Rp 14 jt | Rp 2,9 jt | Rp 3,2 jt | Rp 29,3 jt | Rp 0 | Rp 1,9 jt | Rp 1,1 M | Rp 117,8 jt |
+| MP-D | 902 | Rp 782,2 jt | Rp 610,7 jt | Rp 62,6 jt | Rp 17,7 jt | Rp 0 | Rp 4 jt | Rp 8,3 jt | Rp 1,9 jt | Rp 2,1 jt | Rp 18,2 jt | Rp 0 | Rp 2,8 jt | Rp 701,9 jt | Rp 53,9 jt |
+| MP-E | 1086 | Rp 975,9 jt | Rp 762,3 jt | Rp 58,6 jt | Rp 22 jt | Rp 0 | Rp 4,8 jt | Rp 10,4 jt | Rp 2,2 jt | Rp 2,6 jt | Rp 22,8 jt | Rp 0 | Rp 2,4 jt | Rp 895,4 jt | Rp 88 jt |
+| WEB | 927 | Rp 831,3 jt | Rp 649,7 jt | Rp 20,8 jt | Rp 18,7 jt | Rp 0 | Rp 4,1 jt | Rp 6,2 jt | Rp 2 jt | Rp 2,2 jt | Rp 19,4 jt | Rp 0 | Rp 781 rb | Rp 791,8 jt | Rp 107,4 jt |
+
+| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |
+|---|---:|---:|---:|---:|---:|
+| P0 | 467 | 113.342 | 704.529 | 881.783 | 63.912 |
+| P1 | 981 | 110.765 | 695.200 | 870.028 | 64.063 |
+| P2 | 6185 | 90.129 | 703.505 | 880.784 | 87.151 |
+
+Harga kecepatan: ISD Rp 28 rb/order P0+P1 (1448 order); P2 tanpa ISD. Menit reguler: B2B 21340 vs B2C 51657.
+Total: order B2C 7633; DO B2B 720; modal B2C Rp 15 jt.
+
+## World 2 flip: tim outbound terpisah
+toggles: volume|teamsSeparate|ship-konsumen|stockOff|wacc0.1200
+
+| pool | total | B2B | B2C | tidak dibagi |
+|---|---:|---:|---:|---:|
+| Admin ASN | Rp 18 jt | Rp 9,7 jt | Rp 8,3 jt | Rp 0 |
+| Inbound dan terima barang | Rp 60 jt | Rp 35,3 jt | Rp 24,7 jt | Rp 0 |
+| Putaway dan WMS | Rp 38 jt | Rp 24,4 jt | Rp 13,6 jt | Rp 0 |
+| Simpan (bulk + pick face) | Rp 90 jt | Rp 55,9 jt | Rp 34,1 jt | Rp 0 |
+| Kelola stok | Rp 24 jt | Rp 11,6 jt | Rp 12,4 jt | Rp 0 |
+| Picker reguler | Rp 62,1 jt | Rp 18,2 jt | Rp 43,9 jt | Rp 0 |
+| Packer reguler | Rp 51,7 jt | Rp 15,1 jt | Rp 36,6 jt | Rp 0 |
+| Dispatch dan manifest | Rp 29,3 jt | Rp 8,6 jt | Rp 20,8 jt | Rp 0 |
+| Tim ISD (instan & same day) | Rp 40 jt | Rp 0 | Rp 40 jt | Rp 0 |
+| Replenishment | Rp 25,5 jt | Rp 14,7 jt | Rp 10,8 jt | Rp 0 |
+| Customer service | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+| Shop management | Rp 18 jt | Rp 0 | Rp 18 jt | Rp 0 |
+| Meja retur | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+
+| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |
+|---|---:|---:|---:|---:|---:|
+| A | Rp 57 jt | Rp 66,4 jt | Rp 2,6 M | Rp 954,9 jt | Rp 776,1 jt |
+| B | Rp 218,6 jt | Rp 154,8 jt | Rp 2,2 M | Rp 1,2 M | Rp 967,3 jt |
+| C | Rp 81,6 jt | Rp 178,2 jt | Rp 1,8 M | Rp 2,4 M | Rp 1,9 M |
+| D | Rp 99,3 jt | Rp 0 | Rp 1,8 M | Rp 0 | Rp 0 |
+| E | Rp 2,8 jt | Rp 24,5 jt | Rp 374,4 jt | Rp 764,6 jt | Rp 614,5 jt |
+| F | Rp 51,1 jt | Rp 101,6 jt | Rp 654,5 jt | Rp 1,3 M | Rp 1,1 M |
+
+| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| MP-A | 1799 | Rp 1,6 M | Rp 1,3 M | Rp 105,3 jt | Rp 34,8 jt | Rp 0 | Rp 7,9 jt | Rp 19 jt | Rp 3,7 jt | Rp 4,2 jt | Rp 35,7 jt | Rp 21,8 jt | Rp 3,4 jt | Rp 1,5 M | Rp 119,3 jt |
+| MP-B | 1567 | Rp 1,4 M | Rp 1,1 M | Rp 99,1 jt | Rp 30,8 jt | Rp 0 | Rp 7 jt | Rp 8,8 jt | Rp 3,3 jt | Rp 3,7 jt | Rp 35,3 jt | Rp 19,4 jt | Rp 3,8 jt | Rp 1,3 M | Rp 98,3 jt |
+| MP-C | 1352 | Rp 1,2 M | Rp 967,9 jt | Rp 68,2 jt | Rp 28,1 jt | Rp 0 | Rp 6 jt | Rp 14 jt | Rp 2,9 jt | Rp 3,2 jt | Rp 31,6 jt | Rp 16,8 jt | Rp 1,9 jt | Rp 1,1 M | Rp 98,6 jt |
+| MP-D | 902 | Rp 782,2 jt | Rp 610,7 jt | Rp 62,6 jt | Rp 17,7 jt | Rp 0 | Rp 4 jt | Rp 8,3 jt | Rp 1,9 jt | Rp 2,1 jt | Rp 19,7 jt | Rp 10,5 jt | Rp 2,8 jt | Rp 701,9 jt | Rp 42 jt |
+| MP-E | 1086 | Rp 975,9 jt | Rp 762,3 jt | Rp 58,6 jt | Rp 22 jt | Rp 0 | Rp 4,8 jt | Rp 10,4 jt | Rp 2,2 jt | Rp 2,6 jt | Rp 24,7 jt | Rp 13,2 jt | Rp 2,4 jt | Rp 895,4 jt | Rp 73 jt |
+| WEB | 927 | Rp 831,3 jt | Rp 649,7 jt | Rp 20,8 jt | Rp 18,7 jt | Rp 0 | Rp 4,1 jt | Rp 6,2 jt | Rp 2 jt | Rp 2,2 jt | Rp 21 jt | Rp 11,4 jt | Rp 781 rb | Rp 791,8 jt | Rp 94,5 jt |
+
+| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |
+|---|---:|---:|---:|---:|---:|
+| P0 | 467 | 127.304 | 704.529 | 881.783 | 49.950 |
+| P1 | 981 | 124.618 | 695.200 | 870.028 | 50.210 |
+| P2 | 6185 | 104.050 | 703.505 | 880.784 | 73.230 |
+
+Harga kecepatan: ISD Rp 28 rb/order P0+P1 (1448 order); P2 tanpa ISD. Menit reguler: B2B 21340 vs B2C 51657.
+Total: order B2C 7633; DO B2B 720; modal B2C Rp 15 jt.
+
+## World 2 flip: ongkir ditanggung penjual
+toggles: volume|teamsShared|ship-penjual|stockOff|wacc0.1200
+
+| pool | total | B2B | B2C | tidak dibagi |
+|---|---:|---:|---:|---:|
+| Admin ASN | Rp 18 jt | Rp 9,7 jt | Rp 8,3 jt | Rp 0 |
+| Inbound dan terima barang | Rp 60 jt | Rp 35,3 jt | Rp 24,7 jt | Rp 0 |
+| Putaway dan WMS | Rp 38 jt | Rp 24,4 jt | Rp 13,6 jt | Rp 0 |
+| Simpan (bulk + pick face) | Rp 90 jt | Rp 55,9 jt | Rp 34,1 jt | Rp 0 |
+| Kelola stok | Rp 24 jt | Rp 11,6 jt | Rp 12,4 jt | Rp 0 |
+| Picker reguler | Rp 54 jt | Rp 15,8 jt | Rp 38,2 jt | Rp 0 |
+| Packer reguler | Rp 45 jt | Rp 13,2 jt | Rp 31,8 jt | Rp 0 |
+| Dispatch dan manifest | Rp 25,5 jt | Rp 7,5 jt | Rp 18 jt | Rp 0 |
+| Tim ISD (instan & same day) | Rp 40 jt | Rp 0 | Rp 40 jt | Rp 0 |
+| Replenishment | Rp 25,5 jt | Rp 14,7 jt | Rp 10,8 jt | Rp 0 |
+| Customer service | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+| Shop management | Rp 18 jt | Rp 0 | Rp 18 jt | Rp 0 |
+| Meja retur | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+
+| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |
+|---|---:|---:|---:|---:|---:|
+| A | Rp 58,1 jt | Rp 13,8 jt | Rp 2,6 M | Rp 954,9 jt | Rp 776,1 jt |
+| B | Rp 219,4 jt | Rp 98,4 jt | Rp 2,2 M | Rp 1,2 M | Rp 967,3 jt |
+| C | Rp 83,4 jt | Rp 54,5 jt | Rp 1,8 M | Rp 2,4 M | Rp 1,9 M |
+| D | Rp 100,3 jt | Rp 0 | Rp 1,8 M | Rp 0 | Rp 0 |
+| E | Rp 3,3 jt | Rp -32,5 jt | Rp 374,4 jt | Rp 764,6 jt | Rp 614,5 jt |
+| F | Rp 51,5 jt | Rp 46,7 jt | Rp 654,5 jt | Rp 1,3 M | Rp 1,1 M |
+
+| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| MP-A | 1799 | Rp 1,6 M | Rp 1,3 M | Rp 105,3 jt | Rp 34,8 jt | Rp 84,8 jt | Rp 7,9 jt | Rp 19 jt | Rp 3,7 jt | Rp 4,2 jt | Rp 32,5 jt | Rp 21,8 jt | Rp 3,2 jt | Rp 1,4 M | Rp 37,8 jt |
+| MP-B | 1567 | Rp 1,4 M | Rp 1,1 M | Rp 99,1 jt | Rp 30,8 jt | Rp 74,6 jt | Rp 7 jt | Rp 8,8 jt | Rp 3,3 jt | Rp 3,7 jt | Rp 32,6 jt | Rp 19,4 jt | Rp 3,6 jt | Rp 1,2 M | Rp 26,7 jt |
+| MP-C | 1352 | Rp 1,2 M | Rp 967,9 jt | Rp 68,2 jt | Rp 28,1 jt | Rp 64,2 jt | Rp 6 jt | Rp 14 jt | Rp 2,9 jt | Rp 3,2 jt | Rp 29,3 jt | Rp 16,8 jt | Rp 1,8 jt | Rp 1,1 M | Rp 36,8 jt |
+| MP-D | 902 | Rp 782,2 jt | Rp 610,7 jt | Rp 62,6 jt | Rp 17,7 jt | Rp 40,9 jt | Rp 4 jt | Rp 8,3 jt | Rp 1,9 jt | Rp 2,1 jt | Rp 18,2 jt | Rp 10,5 jt | Rp 2,6 jt | Rp 661 jt | Rp 2,7 jt |
+| MP-E | 1086 | Rp 975,9 jt | Rp 762,3 jt | Rp 58,6 jt | Rp 22 jt | Rp 50,8 jt | Rp 4,8 jt | Rp 10,4 jt | Rp 2,2 jt | Rp 2,6 jt | Rp 22,8 jt | Rp 13,2 jt | Rp 2,2 jt | Rp 844,6 jt | Rp 24,2 jt |
+| WEB | 927 | Rp 831,3 jt | Rp 649,7 jt | Rp 20,8 jt | Rp 18,7 jt | Rp 43,4 jt | Rp 4,1 jt | Rp 6,2 jt | Rp 2 jt | Rp 2,2 jt | Rp 19,4 jt | Rp 11,4 jt | Rp 738 rb | Rp 748,4 jt | Rp 52,7 jt |
+
+| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |
+|---|---:|---:|---:|---:|---:|
+| P0 | 467 | 172.599 | 704.529 | 881.783 | 4.655 |
+| P1 | 981 | 169.619 | 695.200 | 870.028 | 5.209 |
+| P2 | 6185 | 149.215 | 703.505 | 880.784 | 28.065 |
+
+Harga kecepatan: ISD Rp 28 rb/order P0+P1 (1448 order); P2 tanpa ISD. Menit reguler: B2B 21340 vs B2C 51657.
+Total: order B2C 7633; DO B2B 720; modal B2C Rp 14,1 jt.
+
+## World 2 flip: modal di persediaan
+toggles: volume|teamsShared|ship-konsumen|stockOn|wacc0.1200
+
+| pool | total | B2B | B2C | tidak dibagi |
+|---|---:|---:|---:|---:|
+| Admin ASN | Rp 18 jt | Rp 9,7 jt | Rp 8,3 jt | Rp 0 |
+| Inbound dan terima barang | Rp 60 jt | Rp 35,3 jt | Rp 24,7 jt | Rp 0 |
+| Putaway dan WMS | Rp 38 jt | Rp 24,4 jt | Rp 13,6 jt | Rp 0 |
+| Simpan (bulk + pick face) | Rp 90 jt | Rp 55,9 jt | Rp 34,1 jt | Rp 0 |
+| Kelola stok | Rp 24 jt | Rp 11,6 jt | Rp 12,4 jt | Rp 0 |
+| Picker reguler | Rp 54 jt | Rp 15,8 jt | Rp 38,2 jt | Rp 0 |
+| Packer reguler | Rp 45 jt | Rp 13,2 jt | Rp 31,8 jt | Rp 0 |
+| Dispatch dan manifest | Rp 25,5 jt | Rp 7,5 jt | Rp 18 jt | Rp 0 |
+| Tim ISD (instan & same day) | Rp 40 jt | Rp 0 | Rp 40 jt | Rp 0 |
+| Replenishment | Rp 25,5 jt | Rp 14,7 jt | Rp 10,8 jt | Rp 0 |
+| Customer service | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+| Shop management | Rp 18 jt | Rp 0 | Rp 18 jt | Rp 0 |
+| Meja retur | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+
+| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |
+|---|---:|---:|---:|---:|---:|
+| A | Rp 58,1 jt | Rp 68 jt | Rp 2,6 M | Rp 954,9 jt | Rp 776,1 jt |
+| B | Rp 219,4 jt | Rp 156,5 jt | Rp 2,2 M | Rp 1,2 M | Rp 967,3 jt |
+| C | Rp 83,4 jt | Rp 183,7 jt | Rp 1,8 M | Rp 2,4 M | Rp 1,9 M |
+| D | Rp 100,3 jt | Rp 0 | Rp 1,8 M | Rp 0 | Rp 0 |
+| E | Rp 3,3 jt | Rp 26,6 jt | Rp 374,4 jt | Rp 764,6 jt | Rp 614,5 jt |
+| F | Rp 51 jt | Rp 103,9 jt | Rp 654,5 jt | Rp 1,3 M | Rp 1,1 M |
+
+| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| MP-A | 1799 | Rp 1,6 M | Rp 1,3 M | Rp 105,3 jt | Rp 34,8 jt | Rp 0 | Rp 7,9 jt | Rp 19 jt | Rp 3,7 jt | Rp 4,2 jt | Rp 32,5 jt | Rp 21,8 jt | Rp 3,4 jt | Rp 1,5 M | Rp 122,4 jt |
+| MP-B | 1567 | Rp 1,4 M | Rp 1,1 M | Rp 99,1 jt | Rp 30,8 jt | Rp 0 | Rp 7 jt | Rp 8,8 jt | Rp 3,3 jt | Rp 3,7 jt | Rp 32,6 jt | Rp 19,4 jt | Rp 3,8 jt | Rp 1,3 M | Rp 101 jt |
+| MP-C | 1352 | Rp 1,2 M | Rp 967,9 jt | Rp 68,2 jt | Rp 28,1 jt | Rp 0 | Rp 6 jt | Rp 14 jt | Rp 2,9 jt | Rp 3,2 jt | Rp 29,3 jt | Rp 16,8 jt | Rp 1,9 jt | Rp 1,1 M | Rp 100,9 jt |
+| MP-D | 902 | Rp 782,2 jt | Rp 610,7 jt | Rp 62,6 jt | Rp 17,7 jt | Rp 0 | Rp 4 jt | Rp 8,3 jt | Rp 1,9 jt | Rp 2,1 jt | Rp 18,2 jt | Rp 10,5 jt | Rp 2,8 jt | Rp 701,9 jt | Rp 43,5 jt |
+| MP-E | 1086 | Rp 975,9 jt | Rp 762,3 jt | Rp 58,6 jt | Rp 22 jt | Rp 0 | Rp 4,8 jt | Rp 10,4 jt | Rp 2,2 jt | Rp 2,6 jt | Rp 22,8 jt | Rp 13,2 jt | Rp 2,4 jt | Rp 895,4 jt | Rp 74,8 jt |
+| WEB | 927 | Rp 831,3 jt | Rp 649,7 jt | Rp 20,8 jt | Rp 18,7 jt | Rp 0 | Rp 4,1 jt | Rp 6,2 jt | Rp 2 jt | Rp 2,2 jt | Rp 19,4 jt | Rp 11,4 jt | Rp 781 rb | Rp 791,8 jt | Rp 96,1 jt |
+
+| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |
+|---|---:|---:|---:|---:|---:|
+| P0 | 467 | 125.573 | 704.529 | 881.783 | 51.682 |
+| P1 | 981 | 122.881 | 695.200 | 870.028 | 51.947 |
+| P2 | 6185 | 102.319 | 703.505 | 880.784 | 74.961 |
+
+Harga kecepatan: ISD Rp 28 rb/order P0+P1 (1448 order); P2 tanpa ISD. Menit reguler: B2B 21340 vs B2C 51657.
+Total: order B2C 7633; DO B2B 720; modal B2C Rp 15 jt.
+
+## World 2 flip: biaya modal 20%
+toggles: volume|teamsShared|ship-konsumen|stockOff|wacc0.2000
+
+| pool | total | B2B | B2C | tidak dibagi |
+|---|---:|---:|---:|---:|
+| Admin ASN | Rp 18 jt | Rp 9,7 jt | Rp 8,3 jt | Rp 0 |
+| Inbound dan terima barang | Rp 60 jt | Rp 35,3 jt | Rp 24,7 jt | Rp 0 |
+| Putaway dan WMS | Rp 38 jt | Rp 24,4 jt | Rp 13,6 jt | Rp 0 |
+| Simpan (bulk + pick face) | Rp 90 jt | Rp 55,9 jt | Rp 34,1 jt | Rp 0 |
+| Kelola stok | Rp 24 jt | Rp 11,6 jt | Rp 12,4 jt | Rp 0 |
+| Picker reguler | Rp 54 jt | Rp 15,8 jt | Rp 38,2 jt | Rp 0 |
+| Packer reguler | Rp 45 jt | Rp 13,2 jt | Rp 31,8 jt | Rp 0 |
+| Dispatch dan manifest | Rp 25,5 jt | Rp 7,5 jt | Rp 18 jt | Rp 0 |
+| Tim ISD (instan & same day) | Rp 40 jt | Rp 0 | Rp 40 jt | Rp 0 |
+| Replenishment | Rp 25,5 jt | Rp 14,7 jt | Rp 10,8 jt | Rp 0 |
+| Customer service | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+| Shop management | Rp 18 jt | Rp 0 | Rp 18 jt | Rp 0 |
+| Meja retur | Rp 16 jt | Rp 0 | Rp 16 jt | Rp 0 |
+
+| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |
+|---|---:|---:|---:|---:|---:|
+| A | Rp 38,2 jt | Rp 66,6 jt | Rp 2,6 M | Rp 954,9 jt | Rp 776,1 jt |
+| B | Rp 204,6 jt | Rp 154,6 jt | Rp 2,2 M | Rp 1,2 M | Rp 967,3 jt |
+| C | Rp 69,1 jt | Rp 180,1 jt | Rp 1,8 M | Rp 2,4 M | Rp 1,9 M |
+| D | Rp 86,7 jt | Rp 0 | Rp 1,8 M | Rp 0 | Rp 0 |
+| E | Rp -868 rb | Rp 25,5 jt | Rp 374,4 jt | Rp 764,6 jt | Rp 614,5 jt |
+| F | Rp 47,2 jt | Rp 102 jt | Rp 654,5 jt | Rp 1,3 M | Rp 1,1 M |
+
+| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| MP-A | 1799 | Rp 1,6 M | Rp 1,3 M | Rp 105,3 jt | Rp 34,8 jt | Rp 0 | Rp 7,9 jt | Rp 19 jt | Rp 3,7 jt | Rp 4,2 jt | Rp 32,5 jt | Rp 21,8 jt | Rp 5,7 jt | Rp 1,5 M | Rp 120,1 jt |
+| MP-B | 1567 | Rp 1,4 M | Rp 1,1 M | Rp 99,1 jt | Rp 30,8 jt | Rp 0 | Rp 7 jt | Rp 8,8 jt | Rp 3,3 jt | Rp 3,7 jt | Rp 32,6 jt | Rp 19,4 jt | Rp 6,3 jt | Rp 1,3 M | Rp 98,5 jt |
+| MP-C | 1352 | Rp 1,2 M | Rp 967,9 jt | Rp 68,2 jt | Rp 28,1 jt | Rp 0 | Rp 6 jt | Rp 14 jt | Rp 2,9 jt | Rp 3,2 jt | Rp 29,3 jt | Rp 16,8 jt | Rp 3,1 jt | Rp 1,1 M | Rp 99,7 jt |
+| MP-D | 902 | Rp 782,2 jt | Rp 610,7 jt | Rp 62,6 jt | Rp 17,7 jt | Rp 0 | Rp 4 jt | Rp 8,3 jt | Rp 1,9 jt | Rp 2,1 jt | Rp 18,2 jt | Rp 10,5 jt | Rp 4,6 jt | Rp 701,9 jt | Rp 41,6 jt |
+| MP-E | 1086 | Rp 975,9 jt | Rp 762,3 jt | Rp 58,6 jt | Rp 22 jt | Rp 0 | Rp 4,8 jt | Rp 10,4 jt | Rp 2,2 jt | Rp 2,6 jt | Rp 22,8 jt | Rp 13,2 jt | Rp 3,9 jt | Rp 895,4 jt | Rp 73,3 jt |
+| WEB | 927 | Rp 831,3 jt | Rp 649,7 jt | Rp 20,8 jt | Rp 18,7 jt | Rp 0 | Rp 4,1 jt | Rp 6,2 jt | Rp 2 jt | Rp 2,2 jt | Rp 19,4 jt | Rp 11,4 jt | Rp 1,3 jt | Rp 791,8 jt | Rp 95,5 jt |
+
+| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |
+|---|---:|---:|---:|---:|---:|
+| P0 | 467 | 126.903 | 704.529 | 881.783 | 50.352 |
+| P1 | 981 | 124.178 | 695.200 | 870.028 | 50.650 |
+| P2 | 6185 | 103.630 | 703.505 | 880.784 | 73.650 |
+
+Harga kecepatan: ISD Rp 28 rb/order P0+P1 (1448 order); P2 tanpa ISD. Menit reguler: B2B 21340 vs B2C 51657.
+Total: order B2C 7633; DO B2B 720; modal B2C Rp 25 jt.
+
