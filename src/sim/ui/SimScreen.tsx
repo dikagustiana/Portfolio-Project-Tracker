@@ -39,11 +39,16 @@ export default function SimScreen() {
   const lastRef = useRef(0)
   const progressRef = useRef(0)
   useEffect(() => {
-    if (!playing || reducedMotion) {
+    if (!playing) {
       // Paused: sprites draw their day-end state; the clock simply stops.
       progressRef.current = 0
       lastRef.current = 0
       return
+    }
+    // Reduced motion jumps day to day instead of animating (§7.10).
+    if (reducedMotion) {
+      const iv = window.setInterval(() => setDay((d) => (d >= daysRef.current ? 1 : d + 1)), 420 / speed)
+      return () => window.clearInterval(iv)
     }
     const msPerDay = 2200 / speed
     const tick = (now: number) => {
