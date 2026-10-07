@@ -4,7 +4,7 @@
 
 import type { PrincipalId } from './config.ts'
 import type { Allocations } from './cost.ts'
-import { must } from './trace.ts'
+import { must } from '../../../core/trace.ts'
 import type { World } from './types.ts'
 
 export type EventKind =

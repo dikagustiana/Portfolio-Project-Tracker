@@ -7,8 +7,8 @@
 
 import { CASH_TERMS, DAYS, PRINCIPALS, SEED, TRUCKS, ZONES } from './config.ts'
 import type { PrincipalId, TruckClassId } from './config.ts'
-import { mulberry32 } from './rng.ts'
-import { must } from './trace.ts'
+import { mulberry32 } from '../../../core/rng.ts'
+import { must } from '../../../core/trace.ts'
 import type { DeliveryOrder, DoLine, InvoiceGen, InvoiceSent, Po, Principal, Sku, StockDay, Store, Trip, World } from './types.ts'
 
 /** Days on which the commercial team re-checks order needs (§3 step 2). */

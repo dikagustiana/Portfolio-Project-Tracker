@@ -1,13 +1,13 @@
 // The four live figures (brief §7.3). Each is a button that opens its number trace, and
 // each follows the timeline day.
 
-import { formatDays, formatM3, formatRp, formatRpShort } from '../engine/format.ts'
+import { formatDays, formatM3, formatRp, formatRpShort } from '../../../core/format.ts'
 import { metricsTrace } from '../engine/cost.ts'
 import type { Allocations, MetricPoint } from '../engine/cost.ts'
 import type { PrincipalId } from '../engine/config.ts'
-import { num, trace } from '../engine/trace.ts'
-import type { Trace } from '../engine/trace.ts'
-import { PRINCIPAL_COLOR } from './colors.ts'
+import { num, trace } from '../../../core/trace.ts'
+import type { Trace } from '../../../core/trace.ts'
+import { PRINCIPAL_COLOR } from '../../../core/colors.ts'
 
 interface MetricsBarProps {
   point: MetricPoint

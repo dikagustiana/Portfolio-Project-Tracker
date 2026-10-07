@@ -4,8 +4,8 @@
 
 import { DAYS, DENSITY_FACTOR_KG_PER_M3, DPO_DAYS, NORMAL_LOAD_FACTOR, PALLET_RULES, POOLS, PRINCIPALS, TRUCKS, TRUCK_COMMON, ZONES } from './config.ts'
 import type { PoolDef, PrincipalId, Toggles, Zone } from './config.ts'
-import { must, num, ref, trace } from './trace.ts'
-import type { Trace } from './trace.ts'
+import { must, num, ref, trace } from '../../../core/trace.ts'
+import type { Trace } from '../../../core/trace.ts'
 import type { DoLine, InvoiceSent, Sku, Trip, World } from './types.ts'
 
 const PIDS = PRINCIPALS.map((p) => p.id)

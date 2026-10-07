@@ -1,7 +1,12 @@
 // The timeline (brief §7.6): day scrubber Hari 1–30, play/pause, speeds 1×/4×/16×, and the
 // 11 step markers of one sample cycle with jump-to-step.
 
-import type { CycleMarker } from '../engine/events.ts'
+export interface CycleStep {
+  step: number
+  day: number
+  label: string
+  ref: string
+}
 
 const STEP_SHORT: Record<number, string> = {
   1: 'Forecast', 2: 'Cek stok', 3: 'PO', 4: 'Inbound', 5: 'Simpan', 6: 'Outbound',
@@ -13,7 +18,7 @@ interface TimelineProps {
   days: number
   playing: boolean
   speed: number
-  cycle: CycleMarker[]
+  cycle: CycleStep[]
   onDay: (day: number) => void
   onPlay: (playing: boolean) => void
   onSpeed: (speed: number) => void

@@ -3,9 +3,9 @@
 // shown next to the stored value — control 9 made visible.
 
 import { useState } from 'react'
-import type { Trace, TraceInput } from '../engine/trace.ts'
-import { verifyTrace } from '../engine/trace.ts'
-import { formatNumber } from '../engine/format.ts'
+import type { Trace, TraceInput } from './trace.ts'
+import { verifyTrace } from './trace.ts'
+import { formatNumber } from './format.ts'
 
 const UNIT_LABEL: Record<string, string> = {
   rp: 'Rp', m3: 'm³', kg: 'kg', km: 'km', day: 'hari', pallet: 'palet', palletDay: 'palet-hari',

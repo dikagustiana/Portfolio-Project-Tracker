@@ -2,10 +2,10 @@
 // the control-8 test diffs against after the world-2 refactor. Run:
 //   npx tsx scripts/sim-golden.ts
 import { writeFileSync, mkdirSync } from 'node:fs'
-import { DEFAULT_TOGGLES } from '../src/sim/engine/config.ts'
-import type { Toggles } from '../src/sim/engine/config.ts'
-import { computeAll, toggleKey } from '../src/sim/engine/index.ts'
-import { hashJson } from '../src/sim/engine/rng.ts'
+import { DEFAULT_TOGGLES } from '../src/sim/worlds/distribusi/engine/config.ts'
+import type { Toggles } from '../src/sim/worlds/distribusi/engine/config.ts'
+import { computeAll, toggleKey } from '../src/sim/worlds/distribusi/engine/index.ts'
+import { hashJson } from '../src/sim/core/rng.ts'
 
 const PIDS = ['A', 'B', 'C', 'D', 'E', 'F'] as const
 const money = (x: number): string => Math.round(x).toString()

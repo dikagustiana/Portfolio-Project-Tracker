@@ -1,10 +1,15 @@
 // Shared isometric projection and sprite input types. Kept separate from WorldCanvas and
 // sprites so the two never import each other (a cycle confuses type-aware linting).
 
-import type { Computed } from '../engine/index.ts'
-import type { PrincipalId } from '../engine/config.ts'
-import type { ThemeColors } from './colors.ts'
-import type { WorldObject } from './objects.ts'
+
+
+/** Minimal footprint needed for projection — each world's object type satisfies it. */
+export interface Footprint {
+  x: number
+  y: number
+  w: number
+  d: number
+}
 
 export const TILE_W = 58
 export const TILE_H = 29
@@ -15,7 +20,7 @@ export function project(x: number, y: number, originX: number, originY: number, 
 }
 
 /** Screen rectangle of an object footprint (for the a11y overlay). */
-export function objectRect(o: WorldObject, originX: number, originY: number, scale = 1): { left: number; top: number; width: number; height: number } {
+export function objectRect(o: Footprint, originX: number, originY: number, scale = 1): { left: number; top: number; width: number; height: number } {
   const corners = [
     project(o.x, o.y, originX, originY, 0, scale),
     project(o.x + o.w, o.y, originX, originY, 0, scale),
@@ -29,17 +34,4 @@ export function objectRect(o: WorldObject, originX: number, originY: number, sca
   return { left, top, width: right - left, height: bottom - top }
 }
 
-export interface SpriteInput {
-  data: Computed
-  day: number
-  dayProgress: number
-  playing: boolean
-  speed: number
-  reducedMotion: boolean
-  theme: ThemeColors
-  follow: PrincipalId | null
-  ox: number
-  oy: number
-  scale: number
-  size: { w: number; h: number }
-}
+

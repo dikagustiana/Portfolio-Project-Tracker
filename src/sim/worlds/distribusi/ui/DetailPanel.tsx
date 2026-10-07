@@ -7,13 +7,13 @@ import { useState } from 'react'
 import type { Computed } from '../engine/index.ts'
 import type { PrincipalId, Toggles } from '../engine/config.ts'
 import { ZONES } from '../engine/config.ts'
-import { formatDays, formatM3, formatNumber, formatPct, formatRp, formatRpShort } from '../engine/format.ts'
+import { formatDays, formatM3, formatNumber, formatPct, formatRp, formatRpShort } from '../../../core/format.ts'
 import { PALLET_RULES } from '../engine/config.ts'
 import { objectById } from './objects.ts'
 import type { WorldObject } from './objects.ts'
-import { PRINCIPAL_COLOR, PRINCIPAL_COLOR_SOFT } from './colors.ts'
-import { TraceView } from './TraceView.tsx'
-import type { Trace } from '../engine/trace.ts'
+import { PRINCIPAL_COLOR, PRINCIPAL_COLOR_SOFT } from '../../../core/colors.ts'
+import { TraceView } from '../../../core/TraceView.tsx'
+import type { Trace } from '../../../core/trace.ts'
 
 interface DetailPanelProps {
   data: Computed

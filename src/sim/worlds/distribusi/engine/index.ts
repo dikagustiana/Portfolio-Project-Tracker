@@ -14,10 +14,10 @@ import type { World } from './types.ts'
 export * from './config.ts'
 export * from './cost.ts'
 export * from './events.ts'
-export * from './format.ts'
+export * from '../../../core/format.ts'
 export * from './generate.ts'
-export * from './rng.ts'
-export * from './trace.ts'
+export * from '../../../core/rng.ts'
+export * from '../../../core/trace.ts'
 export * from './types.ts'
 
 export interface Computed {

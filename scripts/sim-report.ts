@@ -1,11 +1,11 @@
 // sim-report (brief §9 M1): prints the dummy month per principal at the default toggle
 // state, and with each toggle flipped one at a time. Run: npx tsx scripts/sim-report.ts
 // (Node 22+ strips types natively with --experimental-strip-types; plain `node` works too.)
-import { DEFAULT_TOGGLES } from '../src/sim/engine/config.ts'
-import type { PrincipalId, Toggles } from '../src/sim/engine/config.ts'
-import { computeAll, formatDays, formatM3, formatNumber, formatPct, formatRp, formatRpShort } from '../src/sim/engine/index.ts'
-import { toggleKey } from '../src/sim/engine/index.ts'
-import { hashJson } from '../src/sim/engine/rng.ts'
+import { DEFAULT_TOGGLES } from '../src/sim/worlds/distribusi/engine/config.ts'
+import type { PrincipalId, Toggles } from '../src/sim/worlds/distribusi/engine/config.ts'
+import { computeAll, formatDays, formatM3, formatNumber, formatPct, formatRp, formatRpShort } from '../src/sim/worlds/distribusi/engine/index.ts'
+import { toggleKey } from '../src/sim/worlds/distribusi/engine/index.ts'
+import { hashJson } from '../src/sim/core/rng.ts'
 
 const PIDS: PrincipalId[] = ['A', 'B', 'C', 'D', 'E', 'F']
 const pad = (s: string, n: number): string => (s.length >= n ? s : s + ' '.repeat(n - s.length))

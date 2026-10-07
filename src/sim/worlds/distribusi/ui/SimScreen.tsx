@@ -3,17 +3,48 @@
 // shell so the board's main bundle does not grow.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import './sim.css'
-import type { PrincipalId, Toggles } from '../engine/index.ts'
+import '../../../core/sim.css'
+import type { Allocations } from '../engine/cost.ts'
+import type { PrincipalId, Toggles } from '../engine/config.ts'
 import { computeAll, DEFAULT_TOGGLES } from '../engine/index.ts'
-import { must } from '../engine/trace.ts'
+import { POOLS, TOGGLE_DEFS } from '../engine/config.ts'
+import { must } from '../../../core/trace.ts'
 import { DetailPanel } from './DetailPanel.tsx'
-import { Waterfall } from './Waterfall.tsx'
+import { Waterfall } from '../../../core/Waterfall.tsx'
 import { MetricsBar } from './MetricsBar.tsx'
-import { Timeline } from './Timeline.tsx'
-import { TogglesDrawer } from './TogglesDrawer.tsx'
-import type { Trace } from '../engine/trace.ts'
+import { Timeline } from '../../../core/Timeline.tsx'
+import { TogglesDrawer } from '../../../core/TogglesDrawer.tsx'
+import type { Trace } from '../../../core/trace.ts'
+import { formatPct } from '../../../core/format.ts'
+import type { WaterfallStep } from '../../../core/Waterfall.tsx'
+import { PRINCIPAL_COLOR } from '../../../core/colors.ts'
 import { WorldCanvas } from './WorldCanvas.tsx'
+
+/** World-1 sections for the generic drawer, from the §4 toggle defs. */
+function toggleSections(toggles: Toggles, onChange: (t: Toggles) => void) {
+  return TOGGLE_DEFS.map((def) => ({
+    label: def.label,
+    options: def.options,
+    current: String(toggles[def.key]),
+    onSelect: (v: string) => onChange({ ...toggles, [def.key]: def.key === 'stockCapital' ? v === 'on' : v }),
+  }))
+}
+
+/** Gross profit → contribution, one step per cost line (§7.8). */
+function waterfallSteps(data: { alloc: Allocations }, p: PrincipalId): WaterfallStep[] {
+  const r = data.alloc.principal[p]
+  const teamLabel: Record<string, string> = Object.fromEntries(POOLS.map((x) => [x.id, x.team]))
+  return [
+    { label: 'Laba kotor', value: r.grossProfit, kind: 'start' },
+    ...Object.entries(r.poolCost)
+      .filter(([, v]) => (v ?? 0) > 0)
+      .map(([k, v]) => ({ label: teamLabel[k] ?? k, value: -(v ?? 0), kind: 'cost' as const })),
+    { label: 'Armada (truk)', value: -r.tripCost, kind: 'cost' },
+    { label: 'Modal kas', value: -r.capitalCash, kind: 'cost' },
+    ...(r.capitalStock > 0 ? [{ label: 'Modal persediaan', value: -r.capitalStock, kind: 'cost' as const }] : []),
+    { label: 'Kontribusi', value: r.contribution },
+  ]
+}
 
 export default function SimScreen() {
   const [toggles, setToggles] = useState<Toggles>(DEFAULT_TOGGLES)
@@ -106,7 +137,16 @@ export default function SimScreen() {
       <div className="sim-body">
         <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: 10, position: 'relative' }}>
           <WorldCanvas data={data} day={day} follow={follow} selected={selected} onSelect={onSelect} playing={playing} speed={speed} reducedMotion={reducedMotion} dayProgress={dayProgress} />
-          <TogglesDrawer open={drawerOpen} toggles={toggles} onChange={setToggles} onClose={() => setDrawerOpen(false)} />
+          <TogglesDrawer
+            open={drawerOpen}
+            sections={toggleSections(toggles, setToggles)}
+            slider={{
+              label: 'Biaya modal', min: 0, max: 0.2, step: 0.005, value: toggles.costOfCapital,
+              format: (v) => formatPct(v, 0), onChange: (v) => setToggles({ ...toggles, costOfCapital: v }),
+            }}
+            onReset={() => setToggles(DEFAULT_TOGGLES)}
+            onClose={() => setDrawerOpen(false)}
+          />
         </div>
         <div style={{ minHeight: 0, overflowY: 'auto' }} className="sim-panel">
           <DetailPanel
@@ -123,7 +163,11 @@ export default function SimScreen() {
           />
           {follow && !selected && (
             <div style={{ marginTop: 10, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', padding: 14 }}>
-              <Waterfall data={data} principal={follow} />
+              <Waterfall
+                title={`Waterfall Prinsipal ${follow}`}
+                color={PRINCIPAL_COLOR[follow]}
+                steps={waterfallSteps(data, follow)}
+              />
             </div>
           )}
         </div>

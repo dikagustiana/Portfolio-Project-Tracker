@@ -6,8 +6,8 @@ import { DEFAULT_TOGGLES, PRINCIPALS, TRUCKS } from './config.ts'
 import type { Toggles } from './config.ts'
 import { lineCostTrace, palletFit } from './cost.ts'
 import { computeAll, generateWorld } from './index.ts'
-import { hashJson } from './rng.ts'
-import { must, verifyTrace } from './trace.ts'
+import { hashJson } from '../../../core/rng.ts'
+import { must, verifyTrace } from '../../../core/trace.ts'
 import type { World } from './types.ts'
 
 const PIDS = PRINCIPALS.map((p) => p.id)

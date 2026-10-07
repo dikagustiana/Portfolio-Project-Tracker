@@ -5,12 +5,27 @@
 // moves: the day-end state and the pop-ups remain.
 
 import type { PrincipalId } from '../engine/config.ts'
-import { formatM3, formatNumber, formatRpShort } from '../engine/format.ts'
-import { PRINCIPAL_COLOR } from './colors.ts'
-import type { ThemeColors } from './colors.ts'
+import { formatM3, formatNumber, formatRpShort } from '../../../core/format.ts'
+import { PRINCIPAL_COLOR } from '../../../core/colors.ts'
+import type { ThemeColors } from '../../../core/colors.ts'
 import { ARRIVAL_PATH, DOCK_TO_RACK, ROADS, RACK_TO_STAGE, storePos } from './objects.ts'
-import { project } from './iso.ts'
-import type { SpriteInput } from './iso.ts'
+import { project } from '../../../core/iso.ts'
+import type { Computed } from '../engine/index.ts'
+
+export interface SpriteInput {
+  data: Computed
+  day: number
+  dayProgress: number
+  playing: boolean
+  speed: number
+  reducedMotion: boolean
+  theme: ThemeColors
+  follow: PrincipalId | null
+  ox: number
+  oy: number
+  scale: number
+  size: { w: number; h: number }
+}
 
 interface Vec {
   x: number

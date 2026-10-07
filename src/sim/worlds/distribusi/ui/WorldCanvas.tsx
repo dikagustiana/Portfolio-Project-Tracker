@@ -7,14 +7,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Computed } from '../engine/index.ts'
 import type { PrincipalId } from '../engine/config.ts'
-import { PRINCIPAL_COLOR } from './colors.ts'
-import { readTheme } from './colors.ts'
-import type { ThemeColors } from './colors.ts'
+import { PRINCIPAL_COLOR } from '../../../core/colors.ts'
+import { readTheme } from '../../../core/colors.ts'
+import type { ThemeColors } from '../../../core/colors.ts'
 import { ALL_OBJECTS, objectById, ROADS } from './objects.ts'
 import type { WorldObject } from './objects.ts'
 import { drawSprites } from './sprites.ts'
-import { objectRect, project, TILE_H, TILE_W, LIFT } from './iso.ts'
-import type { SpriteInput } from './iso.ts'
+import { objectRect, project, TILE_H, TILE_W, LIFT } from '../../../core/iso.ts'
+import type { SpriteInput } from './sprites.ts'
 
 interface WorldCanvasProps {
   data: Computed
