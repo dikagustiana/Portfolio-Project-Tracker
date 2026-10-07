@@ -30,7 +30,7 @@ export interface KpiView {
   trace: Trace
 }
 
-export type Target = { kind: 'object'; id: string } | { kind: 'order'; id: string }
+export type Target = { kind: 'object'; id: string } | { kind: 'order'; id: string } | { kind: 'vehicle'; id: string }
 
 export interface ListItemView {
   key: string
@@ -68,6 +68,8 @@ export interface SelectionView {
   sub: string
   what: string
   rows: RowView[]
+  /** A vehicle on the map: the card offers "Ikuti" (camera follows it). */
+  followable?: boolean
 }
 
 export interface SummaryView {
@@ -194,12 +196,12 @@ export function lists2(data: Computed2, day: number, hour: number): Record<ListT
     const at = inboundHour(i)
     const cartons = po.lines.reduce((s, l) => s + l.cartons, 0)
     const st = hour < at ? { status: 'Dijadwalkan', tone: 'grey' as Tone } : hour < at + 2 ? { status: 'Bongkar', tone: 'amber' as Tone } : { status: 'Masuk rak', tone: 'green' as Tone }
-    return { key: po.id, icon: '📥', tone: 'amber', name: `${po.id} · Prinsipal ${po.principal}`, sub: `${formatNumber(cartons)} karton · tiba ${formatClock(at)}`, status: st.status, statusTone: st.tone, target: { kind: 'object', id: 'DOCK2' } }
+    return { key: po.id, icon: '📥', tone: 'amber', name: `${po.id} · Prinsipal ${po.principal}`, sub: `${formatNumber(cartons)} karton · tiba ${formatClock(at)}`, status: st.status, statusTone: st.tone, target: { kind: 'vehicle', id: `po:${po.id}` } }
   })
   for (const m of world.manifests.filter((x) => x.day === day).slice(0, 6 - dock.length)) {
     const at = pickupHour(m.courier, m.pickup)
     const label = COURIERS.find((c) => c.id === m.courier)?.label ?? m.courier
-    dock.push({ key: m.id, icon: '🛵', tone: 'green', name: `${m.id} · ${label}`, sub: `${formatNumber(m.packages)} paket · jemput ${formatClock(at)}`, status: hour < at ? 'Antre' : 'Diserahkan', statusTone: hour < at ? 'grey' : 'green', target: { kind: 'object', id: 'BAY' } })
+    dock.push({ key: m.id, icon: '🛵', tone: 'green', name: `${m.id} · ${label}`, sub: `${formatNumber(m.packages)} paket · jemput ${formatClock(at)}`, status: hour < at ? 'Antre' : 'Diserahkan', statusTone: hour < at ? 'grey' : 'green', target: { kind: 'vehicle', id: `mf:${m.id}` } })
   }
 
   const truk: ListItemView[] = b2b.trips
@@ -208,7 +210,7 @@ export function lists2(data: Computed2, day: number, hour: number): Record<ListT
     .map((t, i) => {
       const depart = tripDepartHour(i)
       const st = tripStatus(depart, hour)
-      return { key: t.id, icon: '🚚', tone: 'blue', name: `${t.truckCode} · Zona ${t.zone}`, sub: `${t.dos.length} DO · ${formatNumber(t.kg)} kg · berangkat ${formatClock(depart)}`, status: st.status, statusTone: st.tone, target: { kind: 'object', id: 'B2B' } }
+      return { key: t.id, icon: '🚚', tone: 'blue', name: `${t.truckCode} · Zona ${t.zone}`, sub: `${t.dos.length} DO · ${formatNumber(t.kg)} kg · berangkat ${formatClock(depart)}`, status: st.status, statusTone: st.tone, target: { kind: 'vehicle', id: `trip:${t.id}` } }
     })
 
   const order: ListItemView[] = world.orders
@@ -421,7 +423,7 @@ export function search2(data: Computed2, q: string): { label: string; sub: strin
     if (o.id.toLowerCase().includes(s)) out.push({ label: o.id, sub: `${o.platform} · hari ${o.day} · ${o.priority}`, target: { kind: 'order', id: o.id } })
   }
   const truck = data.world.b2b.trips.find((t) => t.truckCode.toLowerCase().includes(s))
-  if (truck && out.length < 8) out.push({ label: truck.truckCode, sub: 'Truk B2B', target: { kind: 'object', id: 'B2B' } })
+  if (truck && out.length < 8) out.push({ label: truck.truckCode, sub: `Truk B2B · hari ${truck.day}`, target: { kind: 'vehicle', id: `trip:${truck.id}` } })
   return out.slice(0, 8)
 }
 

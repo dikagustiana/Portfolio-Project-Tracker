@@ -92,7 +92,7 @@ function KpiCard({ kpi, onTrace }: { kpi: KpiView; onTrace: (t: Trace) => void }
 
 // --- Panels (shared by the desktop cards and the phone bottom sheet) --------------------------
 
-function SelectedObject({ selection, summary, onTrace, onDetail, onClear }: { selection: SelectionView | null; summary: SummaryView; onTrace: (t: Trace) => void; onDetail: () => void; onClear: () => void }) {
+function SelectedObject({ selection, summary, following, onFollow, onTrace, onDetail, onClear }: { selection: SelectionView | null; summary: SummaryView; following: boolean; onFollow: () => void; onTrace: (t: Trace) => void; onDetail: () => void; onClear: () => void }) {
   if (!selection) {
     return (
       <>
@@ -133,8 +133,13 @@ function SelectedObject({ selection, summary, onTrace, onDetail, onClear }: { se
         <Row key={r.k} row={r} onTrace={onTrace} />
       ))}
       <div className="s3-actions">
-        <button type="button" className="s3-action is-primary" onClick={onDetail}>
-          Detail dan jejak angka
+        {selection.followable && (
+          <button type="button" className="s3-action is-primary" aria-pressed={following} onClick={onFollow}>
+            {following ? 'Berhenti ikuti' : 'Ikuti'}
+          </button>
+        )}
+        <button type="button" className={`s3-action${selection.followable ? '' : ' is-primary'}`} onClick={onDetail}>
+          {selection.followable ? 'Detail' : 'Detail dan jejak angka'}
         </button>
       </div>
     </>
@@ -337,6 +342,9 @@ export interface OverlayProps {
   selection: SelectionView | null
   summary: SummaryView
   onClearSelection: () => void
+  /** The camera is following the selected vehicle. */
+  following: boolean
+  onFollow: () => void
   onDetail: () => void
   track: TrackView | null
   onTrackOrder: () => void
@@ -383,13 +391,25 @@ export function OverlaySim3D(p: OverlayProps) {
   // On a phone, opening something brings its panel up in the sheet.
   const onTarget = (t: Target) => {
     p.onTarget(t)
-    if (phone) {
-      setSheet(t.kind === 'order' ? 'alur' : 'objek')
+    if (phone && t.kind === 'order') {
+      setSheet('alur')
       setSheetOpen(true)
     }
   }
 
-  const selected = <SelectedObject selection={p.selection} summary={p.summary} onTrace={p.onTrace} onDetail={p.onDetail} onClear={p.onClearSelection} />
+  // On a phone, a new selection (from the map or a list) brings the "Objek" panel up. Adjusted
+  // during render when the selection changes (React's derived-state pattern, no effect).
+  const selId = p.selection?.id ?? null
+  const [seenSel, setSeenSel] = useState(selId)
+  if (selId !== seenSel) {
+    setSeenSel(selId)
+    if (phone && selId) {
+      setSheet('objek')
+      setSheetOpen(true)
+    }
+  }
+
+  const selected = <SelectedObject selection={p.selection} summary={p.summary} following={p.following} onFollow={p.onFollow} onTrace={p.onTrace} onDetail={p.onDetail} onClear={p.onClearSelection} />
   const flow = <FlowTrace track={p.track} onOrder={p.onTrackOrder} />
   const list = <ObjectList lists={p.lists} onTarget={onTarget} />
 

@@ -94,6 +94,11 @@
   pointer-events: auto;
 }
 
+.s3-pin.is-tag {
+  pointer-events: none;
+  cursor: default;
+}
+
 .s3-pin:hover span,
 .s3-pin.is-on span {
   outline: 3px solid color-mix(in srgb, var(--pill) 30%, transparent);

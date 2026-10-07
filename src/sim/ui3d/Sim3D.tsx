@@ -18,6 +18,7 @@ import { useReducedMotion } from './support.ts'
 import { DAY_END, DAY_START, kpis2, lists2, search2, selection2, summary2, track2 } from './bindings2.ts'
 import type { Target } from './bindings2.ts'
 import { RulesBody } from './panels3d.tsx'
+import { objectOfVehicle, vehicles2, vehicleSelection2, vehicleWhen } from './motion2.ts'
 import { computeAll2, DEFAULT_TOGGLES, PLATFORMS } from '../worlds/b2b-b2c/engine/index.ts'
 import type { Toggles2 } from '../worlds/b2b-b2c/engine/index.ts'
 import { metricItems2 } from '../worlds/b2b-b2c/ui/metrics2.ts'
@@ -36,8 +37,10 @@ function modeFor(width: number): OverlayMode {
 
 const CUTOFFS = [...new Set(PLATFORMS.map((p) => p.cutoffHour))].sort((a, b) => a - b).map((h) => ({ h, who: PLATFORMS.filter((p) => p.cutoffHour === h).map((p) => p.label) }))
 
-/** Playback pace shared with the 2D world: one day (06.00–22.00) takes 2,2 s ÷ speed. */
-const MS_PER_DAY = 2200
+/** Playback pace: one simulated hour per second at 1× (a day in 16 s, a month in 30 s at 16×).
+ *  Slower than the 2D world's 2,2 s per day so vehicles can be followed by eye. */
+const HOURS_PER_SECOND = 1
+const isVehicle = (id: string | null): id is string => !!id && id.includes(':')
 
 interface Clock {
   day: number
@@ -73,8 +76,10 @@ export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {}, on2D, onM
   const [toggles, setToggles] = useState<Toggles2>(DEFAULT_TOGGLES)
   const data = useMemo(() => computeAll2(toggles), [toggles])
   const days = data.world.days
-  const [clock, setClock] = useState<Clock>({ day: Math.min(days, Math.max(1, initialDay)), hour: initialHour, speed: 4, playing: false })
+  const [clock, setClock] = useState<Clock>({ day: Math.min(days, Math.max(1, initialDay)), hour: initialHour, speed: 1, playing: false })
+  /** A map object id (objects2.ts) or a vehicle id (`trip:…`, `mf:…`, `po:…`, `fl:…`). */
   const [selected, setSelected] = useState<string | null>(null)
+  const [following, setFollowing] = useState(false)
   const [trackedOrder, setTrackedOrder] = useState<string | null>(null)
   const [follow, setFollow] = useState<PrincipalId | null>(null)
   const [followPlatform, setFollowPlatform] = useState<string | null>(null)
@@ -102,13 +107,13 @@ export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {}, on2D, onM
   useEffect(() => {
     if (!clock.playing) return
     if (reducedMotion) {
-      const iv = window.setInterval(() => advance(1), 320 / clock.speed)
+      const iv = window.setInterval(() => advance(1), 1000 / (HOURS_PER_SECOND * clock.speed))
       return () => window.clearInterval(iv)
     }
     let raf = 0
     let last = 0
     const tick = (now: number) => {
-      if (last) advance(((now - last) / (MS_PER_DAY / clock.speed)) * (DAY_END - DAY_START))
+      if (last) advance(((now - last) / 1000) * HOURS_PER_SECOND * clock.speed)
       last = now
       raf = requestAnimationFrame(tick)
     }
@@ -137,21 +142,33 @@ export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {}, on2D, onM
   const metrics = useMemo(() => metricItems2(data, day, follow, followPlatform).items, [data, day, follow, followPlatform])
   const lists = useMemo(() => lists2(data, day, hour), [data, day, hour])
   const track = useMemo(() => track2(data, day, hour, trackedOrder), [data, day, hour, trackedOrder])
-  const selection = useMemo(() => (selected ? selection2(data, day, hour, selected, metrics) : null), [data, day, hour, selected, metrics])
+  const vehicles = useMemo(() => vehicles2(data, day, hour), [data, day, hour])
+  const onMap = isVehicle(selected) ? vehicles.find((v) => v.id === selected) : undefined
+  const selection = useMemo(() => (isVehicle(selected) ? vehicleSelection2(data, day, hour, selected, onMap) : selected ? selection2(data, day, hour, selected, metrics) : null), [data, day, hour, selected, metrics, onMap])
   const summary = useMemo(() => summary2(data, day, hour, metrics), [data, day, hour, metrics])
   const onSearch = useCallback((q: string) => search2(data, q), [data])
 
+  const select = useCallback((id: string | null) => {
+    setSelected(id)
+    setFollowing(false)
+  }, [])
   const onTarget = useCallback(
     (t: Target) => {
       if (t.kind === 'object') {
-        setSelected(t.id)
+        select(t.id)
+        return
+      }
+      if (t.kind === 'vehicle') {
+        select(t.id)
+        const when = vehicleWhen(data, t.id)
+        if (when && when.day !== day) setClock((c) => ({ ...c, ...when }))
         return
       }
       setTrackedOrder(t.id)
       const o = data.world.orders.find((x) => x.id === t.id)
       if (o && o.day !== day) setClock((c) => ({ ...c, day: o.day, hour: o.hour }))
     },
-    [data, day],
+    [data, day, select],
   )
   const closeDrawer = useCallback(() => {
     setDrawer(null)
@@ -173,10 +190,10 @@ export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {}, on2D, onM
                     data={data}
                     day={day}
                     toggles={toggles}
-                    selected={selected}
+                    selected={isVehicle(selected) ? objectOfVehicle(selected) : selected}
                     follow={follow}
                     followPlatform={followPlatform}
-                    onSelect={setSelected}
+                    onSelect={select}
                     onFollow={setFollow}
                     onFollowPlatform={setFollowPlatform}
                     trace={detailTrace}
@@ -189,22 +206,42 @@ export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {}, on2D, onM
 
   const clockView: ClockView = { day, days, hour, from: DAY_START, to: DAY_END, speed: clock.speed, playing: clock.playing, cutoffs: CUTOFFS }
 
-  // The rendered view shifts the user's camera so its target lands on the free area's centre;
-  // zoom and rotation then pivot there too. Drag edits `cam`, the view follows.
-  const view = useMemo(() => (size.w ? panByPixels(cam, focus.x, focus.y, size.w, size.h) : cam), [cam, focus, size])
+  // "Ikuti": while the followed vehicle is on the map the camera centres on it (derived, no
+  // effect); when it leaves, the view returns to the user's camera. A drag ends following
+  // from wherever the camera is.
+  const followed = following ? onMap : undefined
+  const userCam = useMemo(() => (followed ? { ...cam, panX: followed.x, panZ: followed.z } : cam), [cam, followed])
+  // The rendered view shifts the camera so its target lands on the free area's centre; zoom
+  // and rotation then pivot there too.
+  const view = useMemo(() => (size.w ? panByPixels(userCam, focus.x, focus.y, size.w, size.h) : userCam), [userCam, focus, size])
 
   const labels = useMemo<ProjectedLabel[]>(() => {
     if (!size.w) return []
     const project = makeProjector(view, size.w, size.h)
-    return LABELS2.map((a) => ({ ...a, ...project(a.at) }))
-  }, [view, size])
+    const tags: ProjectedLabel[] = onMap ? [{ id: 'tag-selected', at: [onMap.x, 2.6, onMap.z], text: onMap.label, kind: 'tag', ...project([onMap.x, 2.6, onMap.z]) }] : []
+    return [...LABELS2.map((a) => ({ ...a, ...project(a.at) })), ...tags]
+  }, [view, size, onMap])
 
   const mode = modeFor(size.w)
 
   return (
     <div ref={wrapRef} className={`s3-root s3-root--${mode}`}>
-      <Scene3D dark={dark} view={view} cam={cam} setCam={setCam} interior={interior} />
-      <LabelLayer labels={labels} selected={selected} onPin={(id) => setSelected(id)} />
+      <Scene3D
+        dark={dark}
+        view={view}
+        cam={userCam}
+        setCam={setCam}
+        interior={interior}
+        vehicles={vehicles}
+        selected={selected}
+        onPick={select}
+        onDragStart={() => {
+          if (!following) return
+          setCam(userCam)
+          setFollowing(false)
+        }}
+      />
+      <LabelLayer labels={labels} selected={selected} onPin={select} />
       {size.w > 0 && (
         <OverlaySim3D
           mode={mode}
@@ -222,7 +259,12 @@ export default function Sim3D({ world = 'b2b-b2c', onWorld = () => {}, on2D, onM
           onHour={(h) => setClock((c) => ({ ...c, hour: h }))}
           selection={selection}
           summary={summary}
-          onClearSelection={() => setSelected(null)}
+          onClearSelection={() => select(null)}
+          following={!!followed}
+          onFollow={() => {
+            if (followed) setCam(userCam)
+            setFollowing(!followed)
+          }}
           onDetail={() => setDrawer({ kind: 'detail' })}
           track={track}
           onTrackOrder={() => track && setDrawer({ kind: 'order', id: track.orderId })}
@@ -251,6 +293,16 @@ function LabelLayer({ labels, selected, onPin }: { labels: ProjectedLabel[]; sel
     <div className="s3-labels">
       {labels.map((l) => {
         const target = l.target
+        if (l.kind === 'tag') {
+          return (
+            <div key={l.id} aria-hidden className="s3-pin is-tag" style={{ left: l.left, top: l.top }}>
+              <span>{l.text}</span>
+              <svg width="14" height="12" viewBox="0 0 14 12">
+                <path d="M7 12 L1 2 Q7 -3 13 2 Z" />
+              </svg>
+            </div>
+          )
+        }
         if (l.kind === 'pin' && target) {
           return (
             <button key={l.id} type="button" className={`s3-pin${selected === target ? ' is-on' : ''}`} style={{ left: l.left, top: l.top }} onClick={() => onPin(target)} aria-label={`Buka ${l.text}`}>

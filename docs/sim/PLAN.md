@@ -179,3 +179,20 @@ with the reference pending the owner attaching `reference-waretrack.png`. Stop f
   2D world (2,2 s per day ÷ speed; reduced motion steps an hour).
 - Intra-day times the engine does not model are display-only schedules (ASSUMPTIONS.md).
 - Proof: `sim-report` for both worlds is byte-identical to `2a21ed6` (before Brief 3).
+
+### V3 as built — motion
+
+- `motion2.ts` (pure, unit-tested) places every vehicle at (day, hour) from the engine's day
+  records: B2B trips load at one of three dock doors then drive east to "Toko"; couriers come
+  down the right road, wait at their bay slot and leave south to "Konsumen" at the pickup;
+  inbound POs come down the left road, unload beside the west wall and leave by the back road;
+  two forklifts shuttle while a truck loads or unloads. Tests pin continuity (no jumps, nose
+  first), the timetable, and one truck per door.
+- The site layout moved to make the routes clear: roads run off the map, dock bays sit at the
+  three doors, the clock post and two trees no longer stand on a road.
+- Buildings, vehicles and the interior are clickable (the drag only captures the pointer after
+  4 px, so clicks reach the scene); a ring and a name tag mark the selection. Vehicle cards
+  come from the engine (trip load and cost, manifest packages, PO cartons) and offer "Ikuti":
+  the camera follows the vehicle until it leaves the map or the viewer drags.
+- Pace: one simulated hour per second at 1× (a day in 16 s; a month in 30 s at 16×), slower
+  than the 2D world's 2,2 s per day so vehicles can be followed by eye.

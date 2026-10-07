@@ -113,12 +113,12 @@ function Wheels({ positions, palette, r = 0.22 }: { positions: [number, number, 
   )
 }
 
-/** Box truck: white box, blue cab, dark wheels (§3.5). */
-export function BoxTruck({ palette, position = [0, 0, 0], rotation = [0, 0, 0] }: { palette: Palette3D; position?: [number, number, number]; rotation?: [number, number, number] }) {
+/** Box truck: white box, blue cab (teal for inbound suppliers), dark wheels (§3.5). Faces +x. */
+export function BoxTruck({ palette, position = [0, 0, 0], rotation = [0, 0, 0], cab }: { palette: Palette3D; position?: [number, number, number]; rotation?: [number, number, number]; cab?: string }) {
   return (
     <group position={position} rotation={rotation}>
       <Box position={[-0.55, 0.85, 0]} size={[2.5, 1.5, 1.4]} color={palette.truckBox} radius={0.14} />
-      <Box position={[1.05, 0.75, 0]} size={[1.1, 1.1, 1.35]} color={palette.truckCab} radius={0.18} />
+      <Box position={[1.05, 0.75, 0]} size={[1.1, 1.1, 1.35]} color={cab ?? palette.truckCab} radius={0.18} />
       <Box position={[1.32, 0.85, 0]} size={[0.6, 0.45, 1.2]} color={palette.glass} radius={0.1} />
       <Wheels palette={palette} positions={[[-1.2, 0.22, 0.72], [-1.2, 0.22, -0.72], [0.9, 0.22, 0.72], [0.9, 0.22, -0.72]]} />
     </group>
