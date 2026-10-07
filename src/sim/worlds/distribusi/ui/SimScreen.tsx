@@ -57,7 +57,14 @@ export default function SimScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [dayProgress, setDayProgress] = useState(0)
 
-  const reducedMotion = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, [])
+  // Reactive so a runtime OS-settings change is honoured, not just the value at mount.
+  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const onChange = () => setReducedMotion(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
   const data = useMemo(() => computeAll(toggles), [toggles])
   const point = must(data.alloc.metrics[day - 1] ?? data.alloc.metrics[data.alloc.metrics.length - 1], 'metric point')
   const daysRef = useRef(data.world.days)
