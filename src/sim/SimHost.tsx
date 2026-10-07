@@ -14,6 +14,8 @@ import { Boundary3D } from './ui3d/Boundary3D.tsx'
 const Distribusi = lazy(() => import('./worlds/distribusi/ui/SimScreen.tsx').then((m) => ({ default: m.default })))
 const B2bB2c = lazy(() => import('./worlds/b2b-b2c/ui/SimScreen2.tsx').then((m) => ({ default: m.default })))
 const Sim3D = lazy(() => import('./ui3d/Sim3D.tsx').then((m) => ({ default: m.default })))
+// Brief B4 V0: Factory Yard's town, ported as it is, while the SAMB world is built on its kernel.
+const TownV0 = lazy(() => import('./yard/town/TownV0.tsx'))
 
 const WORLDS: { id: SimWorld; label: string }[] = [
   { id: 'distribusi', label: 'Distribusi' },
@@ -31,6 +33,18 @@ export function SimHost() {
       <B2bB2c />
     </Suspense>
   )
+
+  if (hasWebGL()) {
+    return (
+      <div style={{ height: 'calc(100dvh - 76px)', minHeight: 420 }}>
+        <Boundary3D fallback={world2d}>
+          <Suspense fallback={<div className="skel" style={{ height: '100%' }} />}>
+            <TownV0 />
+          </Suspense>
+        </Boundary3D>
+      </div>
+    )
+  }
 
   if (world === 'b2b-b2c' && can3d && ui.simView === '3d') {
     // The scene is all absolutely positioned, so it needs a definite height: the viewport less
