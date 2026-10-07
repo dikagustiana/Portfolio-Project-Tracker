@@ -263,7 +263,8 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
           </div>
         )}
 
-        {flags.length > 0 && !done && <WarnList list={flags.filter(([l]) => l < 2).map(([, x]) => x)} />}
+        {/* The blocker box above already says what blocks the task. */}
+        {flags.length > 0 && !done && <WarnList list={flags.filter(([l, x]) => l < 2 && !(blocker && x.startsWith('Terhambat'))).map(([, x]) => x)} />}
 
         <dl className="kv">
           <dt>PIC</dt>

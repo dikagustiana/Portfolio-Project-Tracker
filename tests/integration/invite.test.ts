@@ -1,5 +1,7 @@
-// M3 (BRIEF §10): invite-only sign-in. The owner-only invite-person Edge Function creates the login
-// and returns a one-time link; the login links to its person by e-mail; nobody else may invite.
+// Invite-only sign-in (docs/ARCHITECTURE.md §K). The invite-person Edge Function creates the login
+// and returns a one-time link, but only after the database (login_link_target, called with the
+// caller's own JWT) agrees: the super admin for anyone, a Project Admin only for someone with a
+// pending invitation to one of their projects, nobody for a revoked invitation.
 // Needs a local stack with the function reachable at INVITE_URL (default SUPABASE_URL/functions/v1/invite-person).
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -15,10 +17,14 @@ const local = /^http:\/\/(127\.0\.0\.1|localhost):/.test(url) && !!service && !!
 const run = Math.random().toString(36).slice(2, 8)
 const mail = (n: string) => `${n}.${run}@undangan.test`
 
-describe.skipIf(!local)('invite-person (owner-only invitations)', () => {
-  let admin: SupabaseClient<Database>
-  const tokens = { owner: '', officer: '' }
-  const people = { owner: '', officer: '', guest: '', noMail: '' }
+type Client = SupabaseClient<Database>
+
+describe.skipIf(!local)('invite-person (login links decided by the database)', () => {
+  let admin: Client
+  let paClient: Client
+  const tokens = { superAdmin: '', projectAdmin: '', member: '' }
+  const people = { superAdmin: '', projectAdmin: '', member: '', guest: '', noMail: '' }
+  let projectId = ''
 
   const person = async (name: string, email: string | null) => {
     const p = await admin.from('people').insert({ display_name: `${name} ${run}`, job_title: 'Uji' }).select('id').single()
@@ -33,7 +39,7 @@ describe.skipIf(!local)('invite-person (owner-only invitations)', () => {
     const c = createClient<Database>(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } })
     const s = await c.auth.signInWithPassword({ email, password })
     if (s.error) throw new Error(s.error.message)
-    return { id: u.data.user.id, token: s.data.session.access_token }
+    return { id: u.data.user.id, token: s.data.session.access_token, client: c }
   }
   const invite = async (token: string, personId: string, mode: 'link' | 'email' = 'link') => {
     const res = await fetch(fnUrl, {
@@ -46,29 +52,42 @@ describe.skipIf(!local)('invite-person (owner-only invitations)', () => {
 
   beforeAll(async () => {
     admin = createClient<Database>(url, service, { auth: { persistSession: false } })
-    people.owner = await person('Owner', mail('owner'))
-    people.officer = await person('Officer', mail('officer'))
+    people.superAdmin = await person('Super', mail('super'))
+    people.projectAdmin = await person('Admin project', mail('pa'))
+    people.member = await person('Anggota', mail('member'))
     people.guest = await person('Tamu', mail('tamu'))
     people.noMail = await person('Tanpa email', null)
-    const owner = await login(mail('owner'))
-    await admin.from('app_roles').insert({ user_id: owner.id, role: 'owner' })
-    tokens.owner = owner.token
-    tokens.officer = (await login(mail('officer'))).token
+    const sup = await login(mail('super'))
+    const set = await admin.from('profiles').upsert({ user_id: sup.id, system_role: 'super_admin' })
+    if (set.error) throw new Error(set.error.message)
+    tokens.superAdmin = sup.token
+    const pa = await login(mail('pa'))
+    tokens.projectAdmin = pa.token
+    paClient = pa.client
+    tokens.member = (await login(mail('member'))).token
+    const p = await admin.from('projects').insert({ name: `Undangan ${run}`, entity_code: 'SAMB' }).select('id').single()
+    if (p.error) throw new Error(p.error.message)
+    projectId = p.data.id
+    const m = await admin.from('project_members').insert([
+      { project_id: projectId, person_id: people.projectAdmin, role: 'project_admin' },
+      { project_id: projectId, person_id: people.member, role: 'member' },
+    ])
+    if (m.error) throw new Error(m.error.message)
   })
 
   afterAll(async () => {
     if (!admin) return
+    if (projectId) await admin.from('projects').delete().eq('id', projectId)
     const { data } = await admin.auth.admin.listUsers({ perPage: 1000 })
-    for (const u of data.users.filter((x) => x.email?.endsWith(`.${run}@undangan.test`))) {
-      await admin.from('app_roles').delete().eq('user_id', u.id).eq('role', 'group_viewer')
-      // The owner role row goes with the user (cascade) once another owner exists.
+    for (const u of data.users.filter((x) => x.email?.endsWith(`.${run}@undangan.test`)))
+      // The test super admin stays when it is the only one (there is always one super admin).
       await admin.auth.admin.deleteUser(u.id).catch(() => undefined)
-    }
+    await admin.from('invitations').delete().like('email', `%.${run}@undangan.test`)
     await admin.from('people').delete().in('id', Object.values(people))
   })
 
-  it('the owner gets a one-time invite link; the new login links to the person', async () => {
-    const r = await invite(tokens.owner, people.guest)
+  it('the super admin gets a one-time invite link; the new login links to the person', async () => {
+    const r = await invite(tokens.superAdmin, people.guest)
     expect(r.status, r.body.error).toBe(200)
     expect(r.body.type).toBe('invite')
     expect(r.body.link).toMatch(/\/auth\/v1\/verify\?token=/)
@@ -77,21 +96,48 @@ describe.skipIf(!local)('invite-person (owner-only invitations)', () => {
   })
 
   it('a second link for someone who already has a login is a magic link', async () => {
-    const r = await invite(tokens.owner, people.guest)
+    const r = await invite(tokens.superAdmin, people.guest)
     expect(r.status).toBe(200)
     expect(r.body.type).toBe('magiclink')
   })
 
-  it('a person without an office e-mail cannot be invited', async () => {
-    const r = await invite(tokens.owner, people.noMail)
+  it('a person without an office e-mail cannot get a link', async () => {
+    const r = await invite(tokens.superAdmin, people.noMail)
     expect(r.status).toBe(400)
     expect(r.body.error).toContain('belum punya email kantor')
   })
 
-  it('nobody but the owner may invite', async () => {
-    const r = await invite(tokens.officer, people.noMail)
+  it('members and anonymous callers may not create login links', async () => {
+    const r = await invite(tokens.member, people.guest)
     expect(r.status).toBe(403)
-    const anon = await invite(anonKey, people.noMail)
-    expect(anon.status).toBe(403)
+    const anon = await invite(anonKey, people.guest)
+    expect([401, 403]).toContain(anon.status)
+  })
+
+  it('a project admin may create a link only for someone invited to their project, until it is revoked', async () => {
+    // Not invited by anyone: refused.
+    expect((await invite(tokens.projectAdmin, people.guest)).status).toBe(403)
+    // Invited as Member of the project admin's project: allowed.
+    const inv = await paClient.rpc('invite_member', {
+      p: { email: mail('baru'), name: `Baru ${run}`, assignments: [{ project_id: projectId, role: 'member' }] },
+    })
+    expect(inv.error).toBeNull()
+    const res = inv.data as unknown as { person_id: string; invitation_id: string; mode: string }
+    expect(res.mode).toBe('invited')
+    const r = await invite(tokens.projectAdmin, res.person_id)
+    expect(r.status, r.body.error).toBe(200)
+    expect(r.body.type).toBe('invite')
+    // Revoked: the access and the unused login go; no new link, for anyone.
+    const rev = await paClient.rpc('revoke_invitation', { p_invitation: res.invitation_id })
+    expect(rev.error).toBeNull()
+    expect((await invite(tokens.projectAdmin, res.person_id)).status).toBe(403)
+    const again = await invite(tokens.superAdmin, res.person_id)
+    expect(again.status).toBe(400)
+    expect(again.body.error).toContain('dicabut')
+    const member = await admin.from('project_members').select('person_id').eq('project_id', projectId).eq('person_id', res.person_id)
+    expect(member.data).toEqual([])
+    const pe = await admin.from('people').select('user_id').eq('id', res.person_id).single()
+    expect(pe.data?.user_id).toBeNull()
+    await admin.from('people').delete().eq('id', res.person_id)
   })
 })

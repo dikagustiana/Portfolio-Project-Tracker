@@ -10,10 +10,10 @@ import { adminClient, signIn } from './helpers.ts'
 const OWNER = `sim-owner.${Math.random().toString(36).slice(2, 8)}@e2e.test`
 
 // The database only creates logins for e-mails on file (on_auth_user_gate), so the test owner is
-// invited the way the owner screens do it: a pending 'owner' role, granted when the login appears.
+// set up the way the bootstrap does it: a pending super admin role, granted when the login appears.
 test.beforeAll(async () => {
   const admin = adminClient()
-  const pending = await admin.from('pending_app_roles').insert({ email: OWNER, role: 'owner' })
+  const pending = await admin.from('pending_system_roles').insert({ email: OWNER, system_role: 'super_admin' })
   if (pending.error) throw new Error(pending.error.message)
   const created = await admin.auth.admin.createUser({ email: OWNER, email_confirm: true })
   if (created.error) throw new Error(created.error.message)
@@ -21,7 +21,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   const admin = adminClient()
-  await admin.from('pending_app_roles').delete().eq('email', OWNER)
+  await admin.from('pending_system_roles').delete().eq('email', OWNER)
   const { data } = await admin.auth.admin.listUsers({ perPage: 1000 })
   for (const u of data.users.filter((x) => x.email === OWNER)) await admin.auth.admin.deleteUser(u.id).catch(() => undefined)
 })
@@ -31,9 +31,9 @@ test('world 1 #/simulasi loads, is reachable and traceable', async ({ page, base
   const base = baseURL ?? 'http://localhost:5173'
   await signIn(page, admin, OWNER, base)
 
-  // Owner-only nav button → sim host → world 1.
-  await expect(page.getByRole('button', { name: 'Simulasi proses' })).toBeVisible()
-  await page.getByRole('button', { name: 'Simulasi proses' }).click()
+  // Super-admin-only nav button (Lab · Simulasi) → sim host → world 1.
+  await expect(page.getByRole('button', { name: 'Lab · Simulasi' })).toBeVisible()
+  await page.getByRole('button', { name: 'Lab · Simulasi' }).click()
   await expect(page).toHaveURL(/#\/simulasi/)
   await expect(page.getByRole('heading', { name: 'Simulasi proses' })).toBeVisible()
   await expect(page.getByText('Ilustrasi — angka dummy, bukan data SAMB')).toBeVisible()

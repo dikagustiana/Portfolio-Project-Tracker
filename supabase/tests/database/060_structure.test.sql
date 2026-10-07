@@ -27,6 +27,10 @@ insert into public.projects (id, name, entity_code) values (md5('project:BT2')::
 select is((select code from public.projects where name = 'Project Budget Tracking'), 'BT2', 'a taken code gets a number');
 insert into public.tasks (project_id, title, start_date, end_date) values (md5('project:BT')::uuid, 'Pertama', '2026-10-07', '2026-10-07');
 select is((select ref from public.tasks where title = 'Pertama'), 'BT01', 'the first task of a new project');
+insert into public.tasks (project_id, ref, title, start_date, end_date) values (md5('project:BT')::uuid, '', 'Kedua', '2026-10-07', '2026-10-07');
+select is((select ref from public.tasks where title = 'Kedua'), 'BT02', 'an empty ref (the column default) also asks for the next one');
+insert into public.projects (id, name, entity_code, code) values (md5('project:KS')::uuid, 'Kas Sentral', 'SAMB', '');
+select is((select code from public.projects where id = md5('project:KS')::uuid), 'KS', 'an empty code (the column default) is assigned too');
 
 -- ---------------------------------------------------------------------------------------
 -- Sub-tasks

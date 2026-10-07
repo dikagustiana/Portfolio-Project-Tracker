@@ -200,6 +200,12 @@ create function private.events_immutable() returns trigger
 language plpgsql security definer set search_path = ''
 as $$
 begin
+  -- Deleting a person nulls their id here (ON DELETE SET NULL); the line keeps its name snapshot.
+  if tg_op = 'UPDATE' then
+    if new.actor_person_id is null and (to_jsonb(new) - 'actor_person_id') = (to_jsonb(old) - 'actor_person_id') then
+      return new;
+    end if;
+  end if;
   raise exception 'Riwayat project hanya bisa ditambah, tidak bisa diubah.' using errcode = '42501';
 end
 $$;
@@ -454,6 +460,10 @@ create function private.comments_immutable() returns trigger
 language plpgsql security definer set search_path = ''
 as $$
 begin
+  -- Deleting a person nulls the author id (ON DELETE SET NULL); the text and time stay.
+  if new.author_person_id is null and (to_jsonb(new) - 'author_person_id') = (to_jsonb(old) - 'author_person_id') then
+    return new;
+  end if;
   raise exception 'Komentar tidak bisa diubah.' using errcode = '42501';
 end
 $$;

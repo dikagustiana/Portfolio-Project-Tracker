@@ -34,12 +34,26 @@ export async function signIn(page: Page, admin: SupabaseClient<Database>, email:
   await expect(page.getByRole('navigation', { name: 'Menu utama' })).toBeVisible({ timeout: 20_000 })
 }
 
+/**
+ * A super admin to act as: the system role is granted to the e-mail before its login exists, the
+ * way the bootstrap does it, and applied when the login is created.
+ */
+export async function addSuperAdmin(admin: SupabaseClient<Database>, name: string, email: string): Promise<string> {
+  const id = await addPerson(admin, name, email)
+  const r = await admin.from('pending_system_roles').upsert({ email, system_role: 'super_admin' })
+  if (r.error) throw new Error(r.error.message)
+  return id
+}
+
+/** The side peek a record opens in from any list. */
+export const peekOf = (page: Page) => page.getByRole('dialog', { name: 'Pratinjau record' })
+
 export async function cleanup(admin: SupabaseClient<Database>, opts: { projects?: string[]; people?: string[]; emailSuffix: string }) {
   if (opts.projects?.length) await admin.from('projects').delete().in('id', opts.projects)
   const { data } = await admin.auth.admin.listUsers({ perPage: 1000 })
-  for (const u of data.users.filter((x) => x.email?.endsWith(opts.emailSuffix))) {
-    await admin.from('app_roles').delete().eq('user_id', u.id).eq('role', 'group_viewer')
+  for (const u of data.users.filter((x) => x.email?.endsWith(opts.emailSuffix)))
+    // A test super admin stays when it is the only one (there is always one super admin).
     await admin.auth.admin.deleteUser(u.id).catch(() => undefined)
-  }
+  await admin.from('pending_system_roles').delete().like('email', `%${opts.emailSuffix}`)
   if (opts.people?.length) await admin.from('people').delete().in('id', opts.people)
 }

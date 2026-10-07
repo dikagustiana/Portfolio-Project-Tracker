@@ -115,6 +115,22 @@ delete from public.project_members where project_id = pg_temp.prj('MB') and pers
 select ok(exists (select 1 from public.project_events where object_id = pg_temp.t('muti') and actor_person_id = pg_temp.p('david')),
   'removing his access keeps his events');
 
+-- Deleting a person keeps the history they wrote: ids go, names, text and times stay.
+select ok((select count(*) from public.project_events where actor_person_id = pg_temp.p('david')) > 0, 'David has acted');
+select lives_ok($$ delete from public.people where id = pg_temp.p('david') $$, 'a person with history can be deleted');
+select ok(exists (select 1 from public.project_events where object_id = pg_temp.t('muti') and verb = 'task_rejected'
+                   and actor_person_id is null and actor_name = 'David'), '… their events stay, with the name');
+select throws_ok($$ update public.project_events set actor_name = 'X' where object_id = pg_temp.t('muti') $$, '42501', null,
+  'events stay append-only otherwise');
+select throws_ok($$ update public.project_events set actor_person_id = null, verb = 'task_created' where object_id = pg_temp.t('muti') and verb = 'task_rejected' $$,
+  '42501', null, '… even together with nulling the actor');
+insert into public.comments (project_id, task_id, author_person_id, body) values (pg_temp.prj('MB'), pg_temp.t('yani'), pg_temp.p('muti'), 'Catatan Muti');
+select lives_ok($$ delete from public.people where id = pg_temp.p('muti') $$, 'a person who commented can be deleted');
+select is((select author_person_id::text || '|' || body from public.comments where body = 'Catatan Muti'), null,
+  '… the comment stays (author id cleared)');
+select ok(exists (select 1 from public.comments where body = 'Catatan Muti' and author_person_id is null), '… with its text');
+select throws_ok($$ update public.comments set body = 'diubah' where body = 'Catatan Muti' $$, '42501', null, 'comments stay append-only');
+
 -- Quiet bulk loads stay out of the feed.
 select set_config('app.quiet_events', 'on', true);
 insert into public.tasks (project_id, title, start_date, end_date) values (pg_temp.prj('MB'), 'Impor massal', '2026-10-07', '2026-10-08');

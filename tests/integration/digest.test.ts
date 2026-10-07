@@ -1,10 +1,17 @@
 // M6 gate (BRIEF §10): the daily-digest Edge Function, run in dry-run mode for a workday and for a
-// holiday, writes an email_log that matches the golden digest. Needs a local stack with the seed
-// imported and the function reachable at DIGEST_URL (default: SUPABASE_URL/functions/v1/daily-digest).
+// holiday, writes an email_log that matches the domain. The seed now carries the sub-tasks the
+// extraction derived (the prototype had none), so composed e-mails are compared with the domain run
+// on the same rows the client loads; the run summary still equals the golden file. Needs a local
+// stack with the seed imported and the function reachable at DIGEST_URL
+// (default: SUPABASE_URL/functions/v1/daily-digest).
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { BOARD_TABLES, toBoard } from '../../src/data/adapter.ts'
+import type { BoardRows } from '../../src/data/adapter.ts'
 import type { Database } from '../../src/data/database.types.ts'
+import { fetchAll } from '../../src/data/fetch.ts'
+import type { TableSource } from '../../src/data/fetch.ts'
 import { createDomain } from '../../src/domain/index.ts'
 import { PROTOTYPE_URL, prototypeBoard, readJson } from '../fixtures/prototype-board.ts'
 
@@ -86,11 +93,24 @@ describe.skipIf(!local)('daily digest dry run (email_provider = none)', () => {
     })
   })
 
-  it('workday with addresses: each composed e-mail equals the golden digest for that person', async () => {
+  it('workday with addresses: each composed e-mail equals the domain digest on the same rows', async () => {
     await admin.from('people_contact').upsert([...legacyOf].map(([id, lid]) => ({ person_id: id, email: `${lid.replace('m-', '')}@digest.test` })))
     const r = await run(golden.today)
     const byMember = Object.fromEntries(r.emails.map((e) => [e.memberId, { count: e.count, subject: e.subject, text: e.text }]))
-    expect(byMember).toEqual(golden.digest)
+    // What the client domain composes from the rows it loads (the function must not differ).
+    const rows = Object.fromEntries(await Promise.all(BOARD_TABLES.map(async (t) => [t, await fetchAll(admin as unknown as TableSource, t)] as const))) as unknown as BoardRows
+    const d = createDomain(toBoard(rows).board, { today: golden.today, appUrl: PROTOTYPE_URL, viewer: null })
+    const expected = Object.fromEntries(
+      d
+        .digestAll(golden.today)
+        .emails.filter((e) => legacyOf.has(e.memberId))
+        .map((e) => [legacyOf.get(e.memberId) ?? e.memberId, { count: e.count, subject: e.subject, text: e.text }]),
+    )
+    expect(byMember).toEqual(expected)
+    expect(Object.keys(byMember).sort()).toEqual(Object.keys(golden.digest).sort())
+    // The sub-tasks reach the e-mail: commitments are asked for the inchstones, not the packages.
+    const subTitles = (rows.tasks as { parent_task_id: string | null; title: string }[]).filter((t) => t.parent_task_id).map((t) => t.title)
+    expect(Object.values(byMember).some((e) => subTitles.some((title) => e.text.includes(`• ${title}`)))).toBe(true)
     expect(r.emails.every((e) => e.status === 'disusun')).toBe(true)
   })
 

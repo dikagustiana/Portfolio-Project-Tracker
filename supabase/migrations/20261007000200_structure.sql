@@ -117,6 +117,8 @@ begin
 end
 $$;
 alter table public.projects alter column code set not null;
+-- '' asks the insert trigger for a code; the trigger always replaces it, so writers may omit it.
+alter table public.projects alter column code set default '';
 
 -- ---------------------------------------------------------------------------------------
 -- Record refs
@@ -149,7 +151,7 @@ declare
   v_prefix text;
   v_parent text;
 begin
-  if new.ref is not null then
+  if coalesce(new.ref, '') <> '' then
     return new;
   end if;
   perform pg_advisory_xact_lock(hashtextextended('ref:' || tg_table_name || ':' || new.project_id::text, 0));
@@ -226,6 +228,10 @@ $$;
 alter table public.milestones alter column ref set not null;
 alter table public.tasks alter column ref set not null;
 alter table public.asks alter column ref set not null;
+-- '' asks assign_ref for the next ref; the trigger always replaces it, so writers may omit it.
+alter table public.milestones alter column ref set default '';
+alter table public.tasks alter column ref set default '';
+alter table public.asks alter column ref set default '';
 create unique index milestones_ref_key on public.milestones (project_id, ref);
 create unique index tasks_ref_key on public.tasks (project_id, ref);
 create unique index asks_ref_key on public.asks (project_id, ref);
@@ -261,7 +267,7 @@ language plpgsql security definer set search_path = ''
 as $$
 begin
   if tg_op = 'INSERT' then
-    if new.code is null then
+    if coalesce(new.code, '') = '' then
       perform pg_advisory_xact_lock(hashtextextended('project-code', 0));
       new.code := private.free_project_code(private.code_from_name(new.name), new.id);
     end if;
