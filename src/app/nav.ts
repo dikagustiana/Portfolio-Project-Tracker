@@ -3,7 +3,7 @@
 // full record view. Both go through the URL, so refresh and copy-link work.
 import type { Domain, Id, RecordTarget } from '../domain/index.ts'
 import { addrPath, go, setUI } from './ui.ts'
-import type { Addr, RecKind, Tab } from './ui.ts'
+import type { Addr, Tab } from './ui.ts'
 
 /** The address of a record on the board, or null when it is not there (not readable). */
 export function addrOf(d: Domain, t: RecordTarget): Addr | null {
@@ -11,7 +11,7 @@ export function addrOf(d: Domain, t: RecordTarget): Addr | null {
   const rec = t.kind === 'task' ? d.task(t.id) : t.kind === 'gate' ? d.mstone(t.id) : d.ask(t.id)
   if (!rec) return null
   const p = d.project(rec.projectId)
-  return { code: p?.code || rec.projectId, kind: t.kind as RecKind, ref: rec.ref || rec.id }
+  return { code: p?.code || rec.projectId, kind: t.kind, ref: rec.ref || rec.id }
 }
 
 /** Resolve an address to ids: projectId '' when the project is not readable, id '' when the record is not found. */

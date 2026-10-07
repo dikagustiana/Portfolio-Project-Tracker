@@ -184,7 +184,7 @@ export type {
   Views,
   WaitItem,
 } from './views.ts'
-export { projectPath, recordPath } from './search.ts'
+export { bareTitle, projectPath, recordPath } from './search.ts'
 export type { Addressing, HitKind, SearchHit } from './search.ts'
 export type { TaskDates, WzTaskDefaults } from './wizard.ts'
 export type * from './types.ts'

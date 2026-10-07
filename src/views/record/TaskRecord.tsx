@@ -13,7 +13,8 @@ import type { Project, Task } from '../../domain/index.ts'
 import { reopenNote, withNote } from '../../modals/logic.ts'
 import { WarnList } from '../../modals/parts.tsx'
 import { useAct } from './act.ts'
-import { Comments, CopyLink, Crumbs, RecordLine, RefTag, Section, Tag, TaskLine, Timeline, taskStatus } from './parts.tsx'
+import { Comments, CopyLink, Crumbs, RecordLine, RefTag, Section, Tag, TaskLine, Timeline } from './parts.tsx'
+import { taskStatus } from './status.ts'
 
 export function TaskRecord({ t, zoom }: { t: Task; zoom: 'peek' | 'full' }) {
   const { d } = useBoard()
@@ -39,6 +40,7 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
   const ms = d.mstone(t.milestoneId)
   const parent = t.parentId ? d.task(t.parentId) : undefined
   const kids = d.children(t.id)
+  const openKids = kids.filter((k) => !d.isDone(k))
   const vid = d.validatorOf(t)
   const blocker = d.blocker(t)
   const st = taskStatus(d, t)
@@ -101,7 +103,11 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
         <Tag tone={st.tone} box>
           {st.text}
         </Tag>
-        {g && <span className={`chip s-${t.stage}`} style={{ color: 'var(--sc)' }}>{stageName(t.stage)}</span>}
+        {g && stageName(t.stage) !== st.text && (
+          <span className={`chip s-${t.stage}`} style={{ color: 'var(--sc)' }}>
+            {stageName(t.stage)}
+          </span>
+        )}
         {kids.length > 0 && (
           <Tag tone="indigo" box>
             Paket · {d.taskProg(t).d}/{d.taskProg(t).n} sub-task diterima
@@ -142,7 +148,8 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
           )}
           {g && !done && !review && pic && (
             <>
-              {t.stage === 'todo' ? (
+              {/* A package's work happens in its sub-tasks; it is only submitted once they are accepted. */}
+              {kids.length > 0 ? null : t.stage === 'todo' ? (
                 <button className="btn" disabled={busy || waitStart.length > 0} title={waitStart.length ? `Menunggu ${waitStart.map((x) => x.ref).join(', ')}` : ''} onClick={() => void run(() => actions.setTaskStage(t.id, 'progress'), 'Mulai dikerjakan')}>
                   Mulai kerjakan
                 </button>
@@ -151,7 +158,12 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
                   Kembalikan ke belum mulai
                 </button>
               )}
-              <button className="btn primary" disabled={busy} onClick={() => flows.submitFlow(t.id)}>
+              <button
+                className={`btn${openKids.length ? '' : ' primary'}`}
+                disabled={busy || openKids.length > 0}
+                title={openKids.length ? `Menunggu sub-task diterima: ${openKids.map((x) => x.ref).join(', ')}` : ''}
+                onClick={() => flows.submitFlow(t.id)}
+              >
                 {kids.length ? 'Ajukan paket' : 'Ajukan selesai'}
               </button>
             </>

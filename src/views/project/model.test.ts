@@ -11,8 +11,11 @@ import {
   ganttLayout,
   listGroups,
   memberOptions,
+  nestRows,
   openAsks,
-  projectTabs,
+  projectTab,
+  taskViews,
+  topOf,
   vcGroups,
   vcSelected,
 } from './model.ts'
@@ -21,6 +24,7 @@ const TODAY = '2026-10-07' // Wednesday
 
 const project = (over: Partial<Project> = {}): Project => ({
   id: 'p1',
+  code: 'MB',
   name: 'Margin Bridge',
   entity: 'SAMB',
   outcome: '',
@@ -42,6 +46,7 @@ const project = (over: Partial<Project> = {}): Project => ({
 const ms = (id: string, order: number, over: Partial<Milestone> = {}): Milestone => ({
   id,
   projectId: 'p1',
+  ref: '',
   code: null,
   title: `Gate ${id}`,
   target: '',
@@ -59,6 +64,9 @@ const ms = (id: string, order: number, over: Partial<Milestone> = {}): Milestone
 const task = (id: string, start: string, end: string, over: Partial<Task> = {}): Task => ({
   id,
   projectId: 'p1',
+  ref: id.toUpperCase(),
+  parentId: '',
+  ownerFunctionId: '',
   milestoneId: '',
   title: `Task ${id}`,
   desc: '',
@@ -81,6 +89,7 @@ const task = (id: string, start: string, end: string, over: Partial<Task> = {}):
   rejectedBy: null,
   doneAt: null,
   deps: [],
+  acceptDeps: [],
   steps: [],
   createdAt: 1,
   ...over,
@@ -88,8 +97,14 @@ const task = (id: string, start: string, end: string, over: Partial<Task> = {}):
 const ask = (id: string, over: Partial<Ask> = {}): Ask => ({
   id,
   projectId: 'p1',
+  ref: '',
   milestoneId: '',
   question: `Q ${id}`,
+  context: '',
+  options: [],
+  recommendation: '',
+  rationale: '',
+  taskIds: [],
   decider: '',
   due: '',
   status: 'open',
@@ -108,6 +123,8 @@ const decision = (id: string, at: number, over: Partial<Decision> = {}): Decisio
   kind: 'gate',
   status: 'lulus',
   note: '',
+  rationale: '',
+  askId: null,
   by: null,
   at,
   src: { deciderName: '', forum: '', decidedOn: '' },
@@ -117,16 +134,16 @@ const decision = (id: string, at: number, over: Partial<Decision> = {}): Decisio
 function board(over: Partial<Board> = {}): Board {
   return {
     people: [
-      { id: 'david', name: 'David', role: '', userId: null, email: null, emailDaily: true, createdAt: 1 },
-      { id: 'dika', name: 'Dika', role: '', userId: null, email: null, emailDaily: true, createdAt: 1 },
-      { id: 'outsider', name: 'Outsider', role: '', userId: null, email: null, emailDaily: true, createdAt: 1 },
-      { id: 'yani', name: 'Yani', role: '', userId: null, email: null, emailDaily: true, createdAt: 1 },
+      { id: 'david', name: 'David', role: '', userId: null, email: null, emailDaily: true, functionId: '', createdAt: 1 },
+      { id: 'dika', name: 'Dika', role: '', userId: null, email: null, emailDaily: true, functionId: '', createdAt: 1 },
+      { id: 'outsider', name: 'Outsider', role: '', userId: null, email: null, emailDaily: true, functionId: '', createdAt: 1 },
+      { id: 'yani', name: 'Yani', role: '', userId: null, email: null, emailDaily: true, functionId: '', createdAt: 1 },
     ],
     memberships: [
-      { projectId: 'p1', personId: 'dika', role: 'pm' },
-      { projectId: 'p1', personId: 'yani', role: 'officer' },
-      { projectId: 'p1', personId: 'david', role: 'pm' },
-      { projectId: 'p2', personId: 'outsider', role: 'pm' },
+      { projectId: 'p1', personId: 'dika', role: 'project_admin' },
+      { projectId: 'p1', personId: 'yani', role: 'member' },
+      { projectId: 'p1', personId: 'david', role: 'project_admin' },
+      { projectId: 'p2', personId: 'outsider', role: 'project_admin' },
     ],
     projects: [project()],
     milestones: [ms('g2', 2, { target: '2026-10-30' }), ms('g1', 1, { target: '2026-10-16' })],
@@ -155,6 +172,14 @@ function board(over: Partial<Board> = {}): Board {
       },
     ],
     settings: { cutiIsWorkday: false, emailPaused: false, emailTime: '07:00', timezone: 'Asia/Jakarta', emailProvider: 'none' },
+    functions: [],
+    blockers: [],
+    reviews: [],
+    commitments: [],
+    comments: [],
+    events: [],
+    invitations: [],
+    flags: [],
     ...over,
   }
 }
@@ -166,9 +191,25 @@ describe('tabs and filters', () => {
   it('shows Value chain only for a project with a template in use', () => {
     const d = dom()
     const p = d.project('p1')!
-    expect(projectTabs(d, p).map((x) => x[0])).toEqual(['milestone', 'vc', 'list', 'pipeline', 'gantt'])
+    expect(taskViews(d, p).map((x) => x[0])).toEqual(['list', 'pipeline', 'gantt', 'vc'])
     const noTpl = dom(board({ projects: [project({ stepTemplateId: null })] }))
-    expect(projectTabs(noTpl, noTpl.project('p1')!).map((x) => x[1])).toEqual(['Milestone', 'Checklist', 'Pipeline', 'Gantt chart'])
+    const q = noTpl.project('p1')!
+    expect(taskViews(noTpl, q).map((x) => x[1])).toEqual(['Checklist', 'Pipeline', 'Gantt'])
+    expect(projectTab(noTpl, q, 'vc')).toBe('list')
+    expect(projectTab(d, p, 'vc')).toBe('vc')
+  })
+
+  it('groups the four task views under the Task tab', () => {
+    expect(['milestone', 'list', 'pipeline', 'gantt', 'vc', 'keputusan', 'aktivitas', 'anggota'].map((t) => topOf(t as never))).toEqual([
+      'milestone',
+      'task',
+      'task',
+      'task',
+      'task',
+      'keputusan',
+      'aktivitas',
+      'anggota',
+    ])
   })
 
   it('lists only this project’s members as PIC options, in board order', () => {
@@ -186,6 +227,16 @@ describe('tabs and filters', () => {
     expect(ids(filterTasks(d, 'p1', 'yani', ''))).toEqual(['d', 'b'])
     expect(ids(filterTasks(d, 'p1', 'all', '  CIKARANG '))).toEqual(['a'])
     expect(ids(filterTasks(d, 'p1', 'all', 'pallet'))).toEqual(['a'])
+    expect(ids(filterTasks(d, 'p1', 'all', 'c'))).toEqual(['a', 'c'])
+  })
+
+  it('nests sub-tasks under their package, and keeps a sub-task whose package is filtered out', () => {
+    const rows = [task('p', '2026-10-01', '2026-10-09'), task('x', '2026-10-02', '2026-10-03', { parentId: 'p' }), task('y', '2026-10-04', '2026-10-05', { parentId: 'q' }), task('z', '2026-10-01', '2026-10-02')]
+    expect(nestRows(rows).map((n) => [n.t.id, ids(n.kids)])).toEqual([
+      ['p', ['x']],
+      ['y', []],
+      ['z', []],
+    ])
   })
 })
 
@@ -216,7 +267,7 @@ describe('groups', () => {
     expect(vcGroups(d, p, ts, 'report')).toEqual([])
   })
 
-  it('orders open asks by due date (none last, ties by creation) and the log newest first', () => {
+  it('orders open asks by due date (none last, ties by creation) and the decision log newest first', () => {
     const b = board({
       asks: [
         ask('k1'),
@@ -226,14 +277,19 @@ describe('groups', () => {
         ask('k4', { status: 'decided', decidedAt: 300, answer: 'Ya' }),
         ask('k5', { projectId: 'p2' }),
       ],
-      decisions: [decision('d1', 100), decision('d2', 500, { kind: 'project', status: 'aktif' }), decision('d3', 50, { projectId: 'p2' })],
+      decisions: [
+        decision('d1', 100),
+        decision('d2', 500, { kind: 'project', status: 'aktif' }),
+        decision('d3', 50, { projectId: 'p2' }),
+        decision('d4', 300, { kind: 'ask', status: 'decided', askId: 'k4', note: 'Ya' }),
+      ],
     })
     const d = dom(b)
     const p = d.project('p1')!
     expect(ids(openAsks(d, p))).toEqual(['k3', 'k6', 'k2', 'k1'])
-    expect(decisionLog(d, p).map((e) => [e.kind, e.kind === 'ask' ? e.a.id : e.d.id])).toEqual([
+    expect(decisionLog(d, p).map((e) => [e.kind, e.id])).toEqual([
       ['project', 'd2'],
-      ['ask', 'k4'],
+      ['ask', 'd4'],
       ['gate', 'd1'],
     ])
   })
@@ -297,6 +353,20 @@ describe('gantt layout', () => {
     expect(g1?.kind === 'ms' && g1.target).toEqual({ left: (dn('2026-10-16') - L.a) * 36 + 36 - 8, labelLeft: (dn('2026-10-16') - L.a) * 36 + 36 + 14 })
     const a = L.rows[1]
     expect(a?.kind === 'task' && [a.left, a.width]).toEqual([(dn('2026-10-05') - L.a) * 36, 5 * 36])
+  })
+
+  it('puts sub-tasks right under their package and marks them', () => {
+    const b = board({
+      tasks: [
+        task('pk', '2026-10-01', '2026-10-20', { milestoneId: 'g1' }),
+        task('z', '2026-10-02', '2026-10-03', { milestoneId: 'g1' }),
+        task('k2', '2026-10-10', '2026-10-12', { milestoneId: 'g1', parentId: 'pk' }),
+        task('k1', '2026-10-05', '2026-10-06', { milestoneId: 'g1', parentId: 'pk' }),
+      ],
+    })
+    const db = dom(b)
+    const L = ganttLayout(db, db.project('p1')!, filterTasks(db, 'p1', 'all', ''), 'day', false)
+    expect(L.rows.filter((r) => r.kind === 'task').map((r) => (r.kind === 'task' ? `${r.t.id}${r.child ? '*' : ''}` : ''))).toEqual(['pk', 'k1*', 'k2*', 'z'])
   })
 
   it('hides empty milestone headers only while a filter is active', () => {

@@ -3,29 +3,14 @@
 // Ctrl/⌘ K. Restricted projects are not on the board, so they cannot appear here.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useBoard } from '../data/board-context.ts'
+import { bareTitle } from '../domain/index.ts'
 import type { SearchHit } from '../domain/index.ts'
 import { Icon } from './bits.tsx'
-import { closeFind, openFind, useFindOpen } from './find.ts'
+import { closeFind, useFindOpen } from './find.ts'
 import { openProject, peek } from './nav.ts'
 import { go } from './ui.ts'
 
 const KIND: Record<SearchHit['kind'], string> = { project: 'Project', task: 'Task', gate: 'Milestone', ask: 'Keputusan', person: 'Orang' }
-
-/** Global shortcut: "/" (outside inputs) or Ctrl/⌘ K. */
-export function useFindShortcut(): void {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null
-      const typing = !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)
-      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) {
-        e.preventDefault()
-        openFind()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
-}
 
 export function QuickFind() {
   const open = useFindOpen()
@@ -86,7 +71,7 @@ function FindBox() {
             <button key={`${h.kind}${h.id}`} role="option" aria-selected={n === i} className={`qf-hit${n === i ? ' on' : ''}`} onMouseEnter={() => setI(n)} onClick={() => choose(h)}>
               <span className="ref">{h.ref || '—'}</span>
               <span style={{ minWidth: 0 }}>
-                <div className="tt">{h.title}</div>
+                <div className="tt">{bareTitle(h.ref, h.title)}</div>
                 <div className="sub">{h.sub}</div>
               </span>
               <span className="k">{KIND[h.kind]}</span>

@@ -504,7 +504,8 @@ export function makeViews(deps: {
           since: day(b.raisedAt),
         })
       }
-      const wait = rules.waitingToStart(t)
+      // Prerequisites the person owns themselves are their own work, not a wait on others.
+      const wait = rules.waitingToStart(t).filter((d) => person(who) === '*' || !isP(who, d.assignee))
       if (t.stage === 'todo' && wait.length)
         out.push({
           key: `d${t.id}`,

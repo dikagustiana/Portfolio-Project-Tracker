@@ -1,7 +1,7 @@
 // Project wizard (prototype startWizard/renderWizard): outcome → milestones planned backward →
-// tasks per milestone → pemeriksa → summary. Owner only; there is no "Tim" step because people
-// are managed in Admin, so PM, PIC and pemeriksa pick from everyone. create_project adds the
-// memberships (PM and pemeriksa as pm, PICs as officer).
+// tasks per milestone → pemeriksa → summary. Super admin only; there is no "Tim" step because
+// people are managed in Admin, so PM, PIC and pemeriksa pick from everyone. create_project adds
+// the memberships (PM as Project Admin, pemeriksa and PICs as Member).
 import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Icon, Tip } from '../app/bits.tsx'

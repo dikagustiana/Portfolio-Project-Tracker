@@ -5,7 +5,7 @@ import { Tip } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
 import { useOverlay } from '../app/overlay-context.ts'
 import { TwoStep } from '../app/overlay.tsx'
-import { setUI } from '../app/ui.ts'
+import { go, setUI } from '../app/ui.ts'
 import { useBoard } from '../data/board-context.ts'
 import { GRADS, MATURITY } from '../domain/index.ts'
 import type { Id, Maturity, Project } from '../domain/index.ts'
@@ -40,7 +40,7 @@ function ProjectBody({ p }: { p: Project }) {
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
   const pms = adminPeople(board, p.id)
-  const isOwner = viewer.isOwner
+  const isSuper = viewer.isSuperAdmin
   const lk = !d.pActive(p)
   const [f, setF] = useState<Fields>(() => ({
     name: p.name,
@@ -80,9 +80,9 @@ function ProjectBody({ p }: { p: Project }) {
           gate_mode: f.gate,
           maturity: f.maturity,
           color: f.color,
-          ...(isOwner ? { parallel_gates: f.parallel, step_template_id: f.template } : {}),
+          ...(isSuper ? { parallel_gates: f.parallel, step_template_id: f.template } : {}),
         }),
-      { ok: 'Project disimpan', after: () => setUI({ view: 'project', pid: p.id }) },
+      { ok: 'Project disimpan', after: () => setUI({ view: 'project', pid: p.code || p.id }) },
     )
   }
 
@@ -198,7 +198,7 @@ function ProjectBody({ p }: { p: Project }) {
               ))}
             </div>
           </div>
-          {isOwner && (
+          {isSuper && (
             <>
               <label className="toggle">
                 <input type="checkbox" id="pPar" checked={f.parallel} disabled={lk} onChange={(e) => set('parallel', e.target.checked)} />
@@ -233,13 +233,13 @@ function ProjectBody({ p }: { p: Project }) {
       <div className="err">{err}</div>
       <div className="mfoot">
         <div className="row" style={{ gap: 6 }}>
-          {isOwner && (
+          {isSuper && (
             <TwoStep
               className="btn danger"
               label="Hapus project"
               armed={`Yakin? ${d.ptasks(p.id).length} task ikut terhapus`}
               disabled={busy}
-              onConfirm={() => void run(() => actions.deleteProject(p.id), { ok: 'Project dihapus', after: () => setUI({ view: 'dash' }) })}
+              onConfirm={() => void run(() => actions.deleteProject(p.id), { ok: 'Project dihapus', after: () => go({ view: 'portfolio' }) })}
             />
           )}
           {d.pActive(p) && d.canOwn(p) && (

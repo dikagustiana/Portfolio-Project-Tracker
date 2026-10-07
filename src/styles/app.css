@@ -185,3 +185,29 @@ button.prow:focus-visible { outline: 2px solid var(--focus); outline-offset: -2p
 .sidebar-more { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 6px 10px }
 .sidebar-more:hover { color: var(--accent) }
 .ptabs-sep { width: 1px; align-self: stretch; background: var(--line); margin: 4px 2px }
+
+/* Project page: tab counts, the task sub-toolbar, sub-tasks under their package */
+.pill-n { margin-left: 6px; font-size: 11px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums }
+.pills .on .pill-n { color: inherit; opacity: .8 }
+.sub-toolbar { margin-top: -6px; padding-top: 0 }
+.trow .tt .ref, .kcard .tt .ref, .glabel .ref { margin-right: 6px; vertical-align: 1px }
+.trow.child { margin-left: 28px; border-left: 2px solid var(--line); border-radius: 0 14px 14px 0; padding-left: 12px }
+.trow.pkg .tt { font-weight: 700 }
+.glabel.child { padding-left: 28px }
+@media (max-width: 720px) {
+  .trow.child { margin-left: 12px }
+}
+.inp.sm { padding: 4px 8px; font-size: 13px; min-height: 0 }
+
+/* Portofolio on a phone: each project row becomes a compact card instead of a wide table. */
+@media (max-width: 720px) {
+  .ptable { overflow-x: visible }
+  .prow.head { display: none }
+  button.prow { grid-template-columns: minmax(0, 1fr) auto; min-width: 0; gap: 6px 12px; padding: 12px 14px }
+  button.prow > .pn, button.prow > .prog, button.prow > :nth-child(5) { grid-column: 1 / -1 }
+  button.prow > :nth-child(3)::before { content: 'Milestone '; color: var(--muted); font-family: var(--f-ui) }
+  button.prow > :nth-child(4) { justify-self: end }
+  button.prow > :nth-child(5) { white-space: normal; color: var(--muted) }
+  button.prow > :nth-child(6)::before { content: 'PM '; color: var(--muted) }
+  button.prow > :nth-child(7) { justify-self: end }
+}

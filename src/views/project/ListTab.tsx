@@ -1,9 +1,10 @@
 // Checklist tab (prototype viewList): filtered tasks grouped per milestone, then "Tanpa milestone".
+// Sub-tasks sit under their package; counts are over leaf tasks, like every progress number.
 import { TRow } from '../../app/bits.tsx'
 import { useBoard } from '../../data/board-context.ts'
 import { MS_LABEL } from '../../domain/index.ts'
 import type { Project, Task } from '../../domain/index.ts'
-import { listGroups } from './model.ts'
+import { listGroups, nestRows } from './model.ts'
 
 export function NoMatch() {
   return (
@@ -25,12 +26,17 @@ export function ListTab({ p, ts }: { p: Project; ts: readonly Task[] }) {
             <div className="group-h">
               {g.label}
               <span className="n">
-                {g.rows.filter(d.isDone).length}/{g.rows.length}
+                {g.rows.filter((t) => d.isLeaf(t) && d.isDone(t)).length}/{g.rows.filter(d.isLeaf).length}
               </span>
               {g.state && <span className={`chip ${g.state}`}>{MS_LABEL[g.state]}</span>}
             </div>
-            {g.rows.map((t) => (
-              <TRow key={t.id} t={t} p={p} />
+            {nestRows(g.rows).map(({ t, kids }) => (
+              <div key={t.id}>
+                <TRow t={t} p={p} />
+                {kids.map((k) => (
+                  <TRow key={k.id} t={k} p={p} child />
+                ))}
+              </div>
             ))}
           </div>
         ))}

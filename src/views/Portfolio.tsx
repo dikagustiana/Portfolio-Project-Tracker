@@ -12,7 +12,8 @@ import { useBoard } from '../data/board-context.ts'
 import { fmt, fmtLong, MS_LABEL, P_LABEL } from '../domain/index.ts'
 import type { PortfolioRow, Tone } from '../domain/index.ts'
 import { VcModules } from './project/ValueChain.tsx'
-import { ago, ProgBar, RecordLine, Section, Tag, TaskLine, Timeline } from './record/parts.tsx'
+import { ProgBar, RecordLine, Section, Tag, TaskLine, Timeline } from './record/parts.tsx'
+import { ago } from './record/status.ts'
 
 const FILTERS: [PortfolioFilterKey, string][] = [
   ['all', 'Semua project'],
@@ -23,7 +24,7 @@ const FILTERS: [PortfolioFilterKey, string][] = [
 ]
 
 /** Status of a project row as one signal. */
-export function rowStatus(r: PortfolioRow): { tone: Tone; text: string } {
+function rowStatus(r: PortfolioRow): { tone: Tone; text: string } {
   if (r.p.status !== 'aktif') return { tone: r.p.status === 'selesai' ? 'green' : 'grey', text: P_LABEL[r.p.status] }
   if (r.blocked > 0) return { tone: 'red', text: `${r.blocked} terhambat` }
   if (!r.health || r.health.level === 'ok') return { tone: 'green', text: 'On track' }

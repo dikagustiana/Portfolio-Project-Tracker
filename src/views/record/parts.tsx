@@ -8,8 +8,9 @@ import { useOverlay } from '../../app/overlay-context.ts'
 import { linkOf, peek } from '../../app/nav.ts'
 import { messageOf } from '../../data/actions.ts'
 import { useBoard } from '../../data/board-context.ts'
-import { dn, fmt, fmtTs, range } from '../../domain/index.ts'
-import type { Domain, Id, ProjectEvent, RecordTarget, Task, Tone } from '../../domain/index.ts'
+import { bareTitle, fmtTs, range } from '../../domain/index.ts'
+import type { Id, ProjectEvent, RecordTarget, Task, Tone } from '../../domain/index.ts'
+import { ago, taskStatus } from './status.ts'
 
 export function RefTag({ r }: { r: string }) {
   return r ? <span className="ref">{r}</span> : null
@@ -58,21 +59,6 @@ export function ProgBar({ p, tone = 'indigo', label }: { p: number; tone?: Tone;
   )
 }
 
-/** Status of a task as one small signal: blocked, late, review, done, active, draft, idle. */
-export function taskStatus(d: Domain, t: Task): { tone: Tone; text: string } {
-  if (d.isDone(t)) return { tone: 'green', text: d.gated(d.project(t.projectId)) ? 'Diterima' : 'Selesai' }
-  if (d.isBlocked(t)) return { tone: 'red', text: 'Terhambat' }
-  if (t.stage === 'review') return { tone: 'violet', text: 'Diperiksa' }
-  if (d.isLate(t)) return { tone: 'red', text: `Telat ${dn(d.today) - dn(t.end)} hari` }
-  if (t.rejectReason) return { tone: 'red', text: 'Perlu diperbaiki' }
-  if (d.packageReady(t)) return { tone: 'indigo', text: 'Siap diajukan' }
-  if (d.isDraft(t)) return { tone: 'amber', text: 'Draf' }
-  if (t.stage === 'progress') return { tone: 'indigo', text: 'Dikerjakan' }
-  const left = dn(t.end) - dn(d.today)
-  if (left <= 3) return { tone: 'amber', text: left === 0 ? 'Deadline hari ini' : `${left} hari lagi` }
-  return { tone: 'grey', text: 'Belum mulai' }
-}
-
 /** One task as a list row: ref, title, context line, status. Click opens the peek. */
 export function TaskLine({ t, sub, showProject = true, end }: { t: Task; sub?: ReactNode; showProject?: boolean; end?: ReactNode }) {
   const { d } = useBoard()
@@ -116,7 +102,7 @@ export function RecordLine({ target, r, title, sub, tone, label }: {
     <button className="li" onClick={() => peek(d, target)}>
       <RefTag r={r} />
       <div style={{ minWidth: 0 }}>
-        <div className="tt">{title}</div>
+        <div className="tt">{bareTitle(r, title)}</div>
         <div className="sub">{sub}</div>
       </div>
       <div className="end">
@@ -124,21 +110,6 @@ export function RecordLine({ target, r, title, sub, tone, label }: {
       </div>
     </button>
   )
-}
-
-/** "2 jam lalu", "kemarin", "3 hari lalu", else the date. */
-export function ago(ts: number, today: string): string {
-  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date(ts))
-  const days = dn(today) - dn(day)
-  if (days <= 0) {
-    const mins = Math.round((Date.now() - ts) / 60000)
-    if (mins < 1) return 'baru saja'
-    if (mins < 60) return `${mins} menit lalu`
-    return `${Math.round(mins / 60)} jam lalu`
-  }
-  if (days === 1) return 'kemarin'
-  if (days < 7) return `${days} hari lalu`
-  return fmt(day)
 }
 
 /** History as a timeline (newest first). `withObject` shows which record each line is about. */

@@ -7,7 +7,7 @@ import { Linkified } from '../../app/bits.tsx'
 import { useFlows } from '../../app/flows.ts'
 import { openProject, peek } from '../../app/nav.ts'
 import { useBoard } from '../../data/board-context.ts'
-import { fmt, fmtTs } from '../../domain/index.ts'
+import { bareTitle, fmt, fmtTs } from '../../domain/index.ts'
 import type { Ask } from '../../domain/index.ts'
 import { DecisionSource } from '../../modals/DecisionSource.tsx'
 import { decSrcInput, newDecSrc } from '../../modals/form.ts'
@@ -58,7 +58,7 @@ export function AskRecord({ a, zoom }: { a: Ask; zoom: 'peek' | 'full' }) {
         ]}
       />
       <div className="rec-h">
-        <H>{a.question}</H>
+        <H>{bareTitle(a.ref, a.question)}</H>
         <CopyLink target={{ kind: 'ask', id: a.id }} />
       </div>
       <div className="rec-chips">

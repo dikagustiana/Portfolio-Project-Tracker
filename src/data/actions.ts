@@ -177,7 +177,7 @@ export function makeActions(supa: Supa) {
       }),
     resolveBlocker: (id: string, resolution?: string) => call(supa, 'resolve_blocker', { p_blocker: id, p_resolution: resolution ?? '' }),
     escalateBlocker: (id: string, p: { question?: string; context?: string; decider_person_id?: string; due?: string }) =>
-      call(supa, 'escalate_blocker', { p_blocker: id, p: p as unknown as Json }),
+      call(supa, 'escalate_blocker', { p_blocker: id, p }),
     addComment: (target: 'task' | 'ask', id: string, body: string) => call(supa, 'add_comment', { p_target: target, p_id: id, p_body: body }),
 
     setMemberRole: (projectId: string, personId: string, role: 'project_admin' | 'member' | 'viewer' | null) =>

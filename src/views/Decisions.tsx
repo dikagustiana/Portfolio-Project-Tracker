@@ -4,10 +4,10 @@
 import { useState } from 'react'
 import { Head, Icon } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
-import { peek } from '../app/nav.ts'
 import { useBoard } from '../data/board-context.ts'
-import { fmt, fmtTs, MS_LABEL, P_LABEL } from '../domain/index.ts'
+import { fmt } from '../domain/index.ts'
 import type { Ask } from '../domain/index.ts'
+import { DecisionRows } from './lists.tsx'
 import { RecordLine, Section } from './record/parts.tsx'
 
 export function Decisions() {
@@ -80,53 +80,7 @@ export function Decisions() {
           {open.length ? <div className="rows">{open.map(line)}</div> : <div className="empty-line">Tidak ada keputusan yang terbuka.</div>}
         </Section>
         <Section title="Keputusan terakhir" n={log.length}>
-          {log.length ? (
-            <div className="tl">
-              {log.map((x) => {
-                const p = d.project(x.projectId)
-                const a = x.askId ? d.ask(x.askId) : undefined
-                const m = x.milestoneId ? d.mstone(x.milestoneId) : undefined
-                const what =
-                  x.kind === 'ask'
-                    ? `${a?.ref ?? 'Keputusan'} · ${x.status === 'decided' ? 'diputuskan' : 'dibuka lagi'}`
-                    : x.kind === 'gate'
-                      ? `${m ? d.msNo(m) : 'Milestone'} · ${MS_LABEL[x.status as 'lulus'] ?? x.status}`
-                      : `Project · ${P_LABEL[x.status as 'aktif'] ?? x.status}`
-                const tone = x.status === 'lulus' || x.status === 'decided' || x.status === 'selesai' ? 'green' : x.status === 'stop' || x.status === 'dihentikan' ? 'red' : 'amber'
-                return (
-                  <div key={x.id} className={`ev tone-${tone}`}>
-                    <div style={{ minWidth: 0 }}>
-                      <div>
-                        <b>{what}</b>
-                        {a && (
-                          <>
-                            {' '}
-                            <button className="linkbtn" onClick={() => peek(d, { kind: 'ask', id: a.id })}>
-                              {a.question.length > 70 ? `${a.question.slice(0, 70)}…` : a.question}
-                            </button>
-                          </>
-                        )}
-                        {!a && m && (
-                          <>
-                            {' '}
-                            <button className="linkbtn" onClick={() => peek(d, { kind: 'gate', id: m.id })}>
-                              {m.title}
-                            </button>
-                          </>
-                        )}
-                      </div>
-                      <div className="note">{x.note}</div>
-                      <div className="when">
-                        {p?.name ?? ''} · {d.decWho(x.src, x.by)} · {fmtTs(x.at)}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="empty-line">Belum ada keputusan yang dicatat.</div>
-          )}
+          <DecisionRows items={log} />
         </Section>
       </div>
     </>

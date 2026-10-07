@@ -1,6 +1,7 @@
 // One milestone (gate) card on the Milestone tab (prototype viewMilestones, article.ms).
 import { Icon } from '../../app/bits.tsx'
 import { useFlows } from '../../app/flows.ts'
+import { peek } from '../../app/nav.ts'
 import { useBoard } from '../../data/board-context.ts'
 import { fmt, MS_LABEL } from '../../domain/index.ts'
 import type { Milestone, Project, Readiness } from '../../domain/index.ts'
@@ -22,8 +23,7 @@ export function MilestoneCard({ p, m, first, last, rd }: Props) {
   const lk = d.locked(p)
   const plan = d.canPlan(p) && !lk
   const s = d.msState(m)
-  const ts = d.mtasks(m.id)
-  const done = ts.filter(d.isDone).length
+  const prog = d.msProg(m)
   const date = d.msDate(m)
   const cur = !!rd && rd.m.id === m.id
   const gate = (
@@ -51,7 +51,11 @@ export function MilestoneCard({ p, m, first, last, rd }: Props) {
                 <span className={`chip ${s}`}>{cur && rd.ready && s === 'jalan' ? 'Siap jalan' : MS_LABEL[s]}</span>
               )}
             </div>
-            <h3>{m.title}</h3>
+            <h3>
+              <button className="linkbtn" style={{ font: 'inherit', color: 'inherit', textAlign: 'left' }} onClick={() => peek(d, { kind: 'gate', id: m.id })}>
+                {m.title}
+              </button>
+            </h3>
             <div className="line2">
               {m.target ? (
                 <>
@@ -99,15 +103,15 @@ export function MilestoneCard({ p, m, first, last, rd }: Props) {
         <div className="ms-foot">
           <div className="ms-prog">
             <span className="sub">
-              {done} dari {ts.length} task diterima
+              {prog.d} dari {prog.n} task diterima
             </span>
             <div className="bar">
-              <i style={{ width: `${ts.length ? (done / ts.length) * 100 : 0}%` }} />
+              <i style={{ width: `${prog.p}%` }} />
             </div>
           </div>
           <div className="row" style={{ gap: 6 }}>
             <span className="sub">
-              Pemutus: <b style={{ color: 'var(--ink)' }}>{d.mname(d.approverOf(m)) || 'Project Manager'}</b>
+              Pemutus: <b style={{ color: 'var(--ink)' }}>{d.mname(d.approverOf(m)) || 'Project Admin'}</b>
             </span>
             {plan && (
               <>

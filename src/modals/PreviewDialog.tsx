@@ -13,10 +13,10 @@ export function PreviewDialog({ personId }: { personId: Id }) {
   const dg = m ? d.digestFor(m.id, today) : null
   if (!m || !dg) return <Gone />
   const e = d.emailFor(dg)
-  const mayReadEmail = viewer.isOwner || board.memberships.some((x) => x.personId === m.id && d.isPMin(x.projectId))
+  const mayReadEmail = viewer.isSuperAdmin || board.memberships.some((x) => x.personId === m.id && d.isAdminIn(x.projectId))
   const off = d.offHol(today)
   let note = ''
-  if (!m.email && mayReadEmail) note = 'Belum ada email, jadi email ini belum bisa dikirim. Owner mengisinya di menu Admin.'
+  if (!m.email && mayReadEmail) note = 'Belum ada email, jadi email ini belum bisa dikirim. Super admin mengisinya di Admin · Orang & akun.'
   else if (!m.emailDaily) note = 'Email harian untuk anggota ini dimatikan.'
   else if (!d.isWork(today))
     note = `Hari ini ${off ? `libur (${off.name})` : 'akhir pekan'}, jadi tidak ada pengiriman. Ini contoh isinya kalau hari kerja.`

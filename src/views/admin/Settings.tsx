@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import type { Database } from '../../data/database.types.ts'
 import { useBoard } from '../../data/board-context.ts'
+import { EmailPanel } from './EmailStatus.tsx'
 import { useAdminWrite } from './shared.ts'
 
 export function AdminSettings() {
@@ -15,6 +16,7 @@ export function AdminSettings() {
 
   return (
     <div className="stack" style={{ maxWidth: 760 }}>
+      <EmailPanel />
       <section className="panel">
         <div className="panel-h">
           <h2>Hari kerja</h2>

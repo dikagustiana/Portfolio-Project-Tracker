@@ -1,4 +1,4 @@
-// Owner admin helpers. Admin tables are written directly; RLS lets only the owner through.
+// Super admin helpers. Admin tables are written directly; RLS lets only the super admin through.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useOverlay } from '../../app/overlay-context.ts'
@@ -16,7 +16,7 @@ const FRIENDLY: Record<string, string> = {
   '23505': 'Data ini sudah ada (email, kode, atau tanggal dipakai lagi).',
   '23503': 'Data ini masih dipakai di tempat lain, jadi tidak bisa dihapus.',
   '23514': 'Isian tidak memenuhi aturan.',
-  '42501': 'Hanya owner yang bisa mengubah ini.',
+  '42501': 'Hanya super admin yang bisa mengubah ini.',
 }
 
 export const dbMessage = (e: DbError): string =>
@@ -67,7 +67,7 @@ export interface PersonStatus {
   invited_at: string | null
 }
 
-/** Owner-only extras: login status, app roles, pending roles, holiday sources. */
+/** Super-admin extras: login status, system roles granted before a login exists, holiday sources. */
 export function useAdminData() {
   const status = useQuery({
     queryKey: ['admin', 'people_status'],
@@ -79,13 +79,12 @@ export function useAdminData() {
       return rows
     },
   })
-  const roles = useQuery({
-    queryKey: ['admin', 'app_roles'],
+  const pendingRoles = useQuery({
+    queryKey: ['admin', 'pending_system_roles'],
     queryFn: async () => {
-      const [a, p] = await Promise.all([supa().from('app_roles').select('*'), supa().from('pending_app_roles').select('*')])
-      if (a.error) throw new Error(a.error.message)
-      if (p.error) throw new Error(p.error.message)
-      return { active: a.data, pending: p.data }
+      const { data, error } = await supa().from('pending_system_roles').select('*')
+      if (error) throw new Error(error.message)
+      return data
     },
   })
   const holidays = useQuery({
@@ -96,5 +95,5 @@ export function useAdminData() {
       return data
     },
   })
-  return { status, roles, holidays }
+  return { status, pendingRoles, holidays }
 }

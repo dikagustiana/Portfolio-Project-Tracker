@@ -26,9 +26,14 @@ function Body({ a, zoom }: { a: Addr; zoom: 'peek' | 'full' }) {
     if (k) return <AskRecord a={k} zoom={zoom} />
   }
   return (
-    <div className="empty" style={{ textAlign: 'left', padding: 0 }}>
-      <h3>Tidak ditemukan</h3>
-      <p className="sub">Data ini tidak ada, sudah dihapus, atau kamu tidak punya akses ke project-nya.</p>
+    <div className="sec">
+      <h3 style={{ margin: '0 0 6px' }}>Tidak ditemukan</h3>
+      <p className="sub" style={{ margin: 0 }}>Data ini tidak ada, sudah dihapus, atau kamu tidak punya akses ke project-nya.</p>
+      <div className="row" style={{ marginTop: 12 }}>
+        <button className="btn" onClick={() => go({ view: 'home' })}>
+          Ke Beranda
+        </button>
+      </div>
     </div>
   )
 }

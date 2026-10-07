@@ -1,5 +1,5 @@
-// Milestone tab (prototype viewMilestones): outcome, next steps, milestone cards, loose tasks,
-// then "Keputusan dibutuhkan" and "Log keputusan".
+// Milestone tab (prototype viewMilestones): outcome, next steps, milestone cards and loose
+// tasks. Keputusan and the decision log have their own tab.
 import { Fragment } from 'react'
 import { Icon } from '../../app/bits.tsx'
 import { useFlows } from '../../app/flows.ts'
@@ -7,7 +7,6 @@ import { setUI } from '../../app/ui.ts'
 import { useBoard } from '../../data/board-context.ts'
 import { MATURITY } from '../../domain/index.ts'
 import type { Project } from '../../domain/index.ts'
-import { AsksPanel, DecisionLog } from './Decisions.tsx'
 import { MilestoneCard } from './MilestoneCard.tsx'
 import { NextSteps } from './NextSteps.tsx'
 
@@ -18,7 +17,8 @@ export function MilestoneTab({ p }: { p: Project }) {
   const rd = d.readiness(p)
   const lk = d.locked(p)
   const plan = d.canPlan(p) && !lk
-  const loose = d.ptasks(p.id).filter((t) => !t.milestoneId || !d.mstone(t.milestoneId))
+  const loose = d.ptasks(p.id).filter((t) => !t.parentId && (!t.milestoneId || !d.mstone(t.milestoneId)))
+  const asks = d.openAsks(p.id)
 
   return (
     <div className="stack">
@@ -87,8 +87,16 @@ export function MilestoneTab({ p }: { p: Project }) {
               </button>
             </div>
           )}
-          <AsksPanel p={p} />
-          <DecisionLog p={p} />
+          {asks.length > 0 && (
+            <div className="banner">
+              <span>
+                <b>{asks.length} keputusan</b> masih ditunggu di project ini.
+              </span>
+              <button className="btn sm" onClick={() => setUI({ tab: 'keputusan' })}>
+                Buka Keputusan
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

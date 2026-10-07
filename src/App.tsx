@@ -33,8 +33,8 @@ function SessionGate({ supa }: { supa: Supa }) {
 interface WhoAmI {
   user_id: string
   person_id: string | null
-  is_owner: boolean
-  is_group_viewer: boolean
+  system_role: 'super_admin' | 'user'
+  is_super_admin: boolean
 }
 
 function SignedIn({ supa, userId }: { supa: Supa; userId: string }) {
@@ -51,8 +51,7 @@ function SignedIn({ supa, userId }: { supa: Supa; userId: string }) {
   const viewer: Viewer = {
     userId: who.data.user_id,
     personId: who.data.person_id,
-    isOwner: who.data.is_owner,
-    isGroupViewer: who.data.is_group_viewer,
+    isSuperAdmin: who.data.is_super_admin,
   }
   return (
     <OverlayProvider>

@@ -31,6 +31,8 @@ export interface UIState {
   /** Project code (or id) of the open project or record. */
   pid: string | null
   tab: Tab
+  /** The task view (Checklist, Pipeline, Gantt, Value chain) the Task tab returns to. */
+  taskView: Tab
   /** Record on the full page (view 'record'). */
   rec: Addr | null
   /** Record in the side peek, over any view. */
@@ -57,6 +59,7 @@ const DEFAULTS: UIState = {
   view: 'home',
   pid: null,
   tab: 'milestone',
+  taskView: 'list',
   rec: null,
   peek: null,
   adminTab: 'orang',
@@ -163,8 +166,8 @@ const listeners = new Set<() => void>()
 export function setUI(patch: Partial<UIState>): void {
   state = { ...state, ...patch }
   try {
-    const { rec: _rec, peek: _peek, ...keep } = state
-    localStorage.setItem(KEY, JSON.stringify(keep))
+    // The open record and peek belong to the URL, not to stored preferences.
+    localStorage.setItem(KEY, JSON.stringify({ ...state, rec: null, peek: null }))
   } catch {
     /* ignore */
   }

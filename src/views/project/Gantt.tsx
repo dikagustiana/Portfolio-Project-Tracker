@@ -180,9 +180,10 @@ function GanttChart({ p, ts, filtering }: Props) {
             const draft = d.needsCommit(t)
             return (
               <div key={r.key} className="grow">
-                <div className="glabel">
+                <div className={`glabel${r.child ? ' child' : ''}`}>
                   <Avatar id={t.assignee} size={24} />
-                  <button title={t.title} onClick={() => flows.openTask(t.id)}>
+                  <button title={`${t.ref ? `${t.ref} · ` : ''}${t.title}`} onClick={() => flows.openTask(t.id)}>
+                    {t.ref && <span className="ref">{t.ref}</span>}
                     {t.title}
                   </button>
                 </div>

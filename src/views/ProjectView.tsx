@@ -1,35 +1,48 @@
-// Project page: header + tabs Milestone, Value chain, Checklist, Pipeline, Gantt (prototype viewProject).
+// Project page (spec §52): header, then Milestone | Task (Checklist · Pipeline · Gantt · Value
+// chain) | Keputusan | Aktivitas | Anggota. Every task row opens the same record in the side peek.
 import { Icon } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
 import { setUI, useUI } from '../app/ui.ts'
 import type { Tab } from '../app/ui.ts'
 import { useBoard } from '../data/board-context.ts'
 import type { Project } from '../domain/index.ts'
+import { ActivityTab } from './project/ActivityTab.tsx'
+import { AsksTab } from './project/AsksTab.tsx'
 import { Gantt } from './project/Gantt.tsx'
 import { ProjectHeader } from './project/Header.tsx'
 import { Kanban } from './project/Kanban.tsx'
 import { ListTab } from './project/ListTab.tsx'
+import { MembersTab } from './project/MembersTab.tsx'
 import { MilestoneTab } from './project/MilestoneTab.tsx'
-import { effectiveWho, filterTasks, memberOptions, projectTabs } from './project/model.ts'
+import { effectiveWho, filterTasks, memberOptions, projectTab, topOf } from './project/model.ts'
 import { Toolbar } from './project/Toolbar.tsx'
 import { ValueChainTab } from './project/ValueChain.tsx'
 
 export function ProjectView({ p }: { p: Project }) {
   const ui = useUI()
   const { d } = useBoard()
-  const tabs = projectTabs(d, p)
-  // A tab the project does not have (e.g. Value chain without a template) falls back to Milestone.
-  const tab: Tab = tabs.some(([k]) => k === ui.tab) ? ui.tab : 'milestone'
+  const tab = projectTab(d, p, ui.tab)
+  const top = topOf(tab)
   return (
     <>
       <ProjectHeader p={p} />
-      <Toolbar p={p} tab={tab} tabs={tabs} />
-      {tab === 'milestone' ? <MilestoneTab p={p} /> : <TaskTab p={p} tab={tab} />}
+      <Toolbar p={p} tab={tab} />
+      {top === 'milestone' ? (
+        <MilestoneTab p={p} />
+      ) : top === 'keputusan' ? (
+        <AsksTab p={p} />
+      ) : top === 'aktivitas' ? (
+        <ActivityTab p={p} />
+      ) : top === 'anggota' ? (
+        <MembersTab p={p} />
+      ) : (
+        <TaskTab p={p} tab={tab} />
+      )}
     </>
   )
 }
 
-function TaskTab({ p, tab }: { p: Project; tab: Exclude<Tab, 'milestone'> }) {
+function TaskTab({ p, tab }: { p: Project; tab: Tab }) {
   const ui = useUI()
   const { d } = useBoard()
   if (!d.ptasks(p.id).length) return <NoTasks p={p} />
@@ -42,7 +55,7 @@ function TaskTab({ p, tab }: { p: Project; tab: Exclude<Tab, 'milestone'> }) {
       return <Gantt p={p} ts={ts} filtering={ui.q !== '' || who !== 'all'} />
     case 'vc':
       return <ValueChainTab p={p} ts={ts} />
-    case 'list':
+    default:
       return <ListTab p={p} ts={ts} />
   }
 }

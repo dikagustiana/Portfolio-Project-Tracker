@@ -20,6 +20,13 @@ const SEG: Record<Exclude<RecordKind, 'project'>, string> = { task: 't', gate: '
 const enc = encodeURIComponent
 
 /** Hash path of a project: #/p/MB or #/p/MB/<tab>. */
+/**
+ * A title without its own short id in front ("K01 · Sahkan …" → "Sahkan …"). Imported records
+ * often carry the id in the text; lists already show it as a tag, so it is not repeated.
+ */
+export const bareTitle = (ref: string, title: string): string =>
+  ref && title.startsWith(`${ref} · `) ? title.slice(ref.length + 3) : title
+
 export const projectPath = (code: string, tab?: string): string => `#/p/${enc(code)}${tab ? `/${tab}` : ''}`
 /** Hash path of a record: #/p/MB/t/MB12, #/p/MB/g/G3, #/p/MB/k/K01. */
 export const recordPath = (code: string, kind: Exclude<RecordKind, 'project'>, ref: string): string =>

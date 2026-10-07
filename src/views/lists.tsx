@@ -5,8 +5,8 @@ import { Avatar } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
 import { peek } from '../app/nav.ts'
 import { useBoard } from '../data/board-context.ts'
-import { DAY_NAMES, daysSince, dow, fmt, VIEWS } from '../domain/index.ts'
-import type { ActionItem, ScheduleItem, ViewId, WaitItem } from '../domain/index.ts'
+import { bareTitle, DAY_NAMES, daysSince, dow, fmt, fmtTs, MS_LABEL, P_LABEL, VIEWS } from '../domain/index.ts'
+import type { ActionItem, Decision, ScheduleItem, WaitItem } from '../domain/index.ts'
 import { RefTag, Tag } from './record/parts.tsx'
 
 const projectName = (name: string | undefined) => (name ? `${name} · ` : '')
@@ -34,7 +34,7 @@ export function ActionRows({ items, showWho = false, limit, showProject = true }
           <button key={a.key} className="li" onClick={() => open(a)}>
             <RefTag r={a.ref} />
             <div style={{ minWidth: 0 }}>
-              <div className="tt">{a.title}</div>
+              <div className="tt">{bareTitle(a.ref, a.title)}</div>
               <div className="sub">
                 {showProject ? projectName(d.project(a.projectId)?.name) : ''}
                 {a.detail}
@@ -71,7 +71,7 @@ export function WaitRows({ items, limit }: { items: readonly WaitItem[]; limit?:
           <button key={w.key} className="li" onClick={() => peek(d, w.target)}>
             <RefTag r={w.ref} />
             <div style={{ minWidth: 0 }}>
-              <div className="tt">{w.title}</div>
+              <div className="tt">{bareTitle(w.ref, w.title)}</div>
               <div className="sub">
                 {projectName(d.project(w.projectId)?.name)}
                 {w.onLabel}
@@ -116,7 +116,7 @@ export function ScheduleRows({ items, showWho = false, limit }: { items: readonl
               <button key={x.key} className="li" onClick={() => peek(d, x.target)}>
                 <RefTag r={x.ref} />
                 <div style={{ minWidth: 0 }}>
-                  <div className="tt">{x.title}</div>
+                  <div className="tt">{bareTitle(x.ref, x.title)}</div>
                   <div className="sub">
                     {d.project(x.projectId)?.name ?? ''}
                     {showWho && x.who ? ` · ${d.mname(x.who)}` : ''}
@@ -138,5 +138,68 @@ export function ScheduleRows({ items, showWho = false, limit }: { items: readonl
   )
 }
 
-/** Title of a product view, for section headers. */
-export const viewTitle = (id: ViewId): string => VIEWS[id].title
+const label = <K extends string>(map: Record<K, string>, k: string): string => (k in map ? map[k as K] : k)
+
+/**
+ * The decision log (gates, project close/reopen, Keputusan) as a timeline. Each line names what
+ * was decided, the decision or note, the rationale when recorded, and who decided where and when
+ * next to who recorded it.
+ */
+export function DecisionRows({ items, showProject = true, empty = 'Belum ada keputusan yang dicatat.' }: {
+  items: readonly Decision[]
+  showProject?: boolean
+  empty?: string
+}) {
+  const { d } = useBoard()
+  if (!items.length) return <div className="empty-line">{empty}</div>
+  return (
+    <div className="tl">
+      {items.map((x) => {
+        const p = d.project(x.projectId)
+        const a = x.askId ? d.ask(x.askId) : undefined
+        const m = x.milestoneId ? d.mstone(x.milestoneId) : undefined
+        const what =
+          x.kind === 'ask'
+            ? `${a?.ref ?? 'Keputusan'} · ${x.status === 'decided' ? 'diputuskan' : 'dibuka lagi'}`
+            : x.kind === 'gate'
+              ? `${m ? d.msNo(m) : 'Milestone'} · ${label(MS_LABEL, x.status)}`
+              : `Project · ${label(P_LABEL, x.status)}`
+        const tone = x.status === 'lulus' || x.status === 'decided' || x.status === 'selesai' ? 'green' : x.status === 'stop' || x.status === 'dihentikan' ? 'red' : 'amber'
+        return (
+          <div key={x.id} className={`ev tone-${tone}`}>
+            <div style={{ minWidth: 0 }}>
+              <div>
+                <b>{what}</b>
+                {a && (
+                  <>
+                    {' '}
+                    <button className="linkbtn" onClick={() => peek(d, { kind: 'ask', id: a.id })}>
+                      {(() => {
+                        const q = bareTitle(a.ref, a.question)
+                        return q.length > 70 ? `${q.slice(0, 70)}…` : q
+                      })()}
+                    </button>
+                  </>
+                )}
+                {!a && m && (
+                  <>
+                    {' '}
+                    <button className="linkbtn" onClick={() => peek(d, { kind: 'gate', id: m.id })}>
+                      {m.title}
+                    </button>
+                  </>
+                )}
+              </div>
+              {x.note && <div className="note">{x.note}</div>}
+              {x.rationale && <div className="note">Alasan: {x.rationale}</div>}
+              <div className="when">
+                {showProject && p ? `${p.name} · ` : ''}
+                {d.decWho(x.src, x.by)} · {fmtTs(x.at)}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}

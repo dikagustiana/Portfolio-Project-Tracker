@@ -277,7 +277,7 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
         </>
       )}
       {!pics.length && (
-        <div className="sub">Belum ada anggota di project ini. Owner menambahkannya di menu Admin agar bisa dipilih sebagai PIC dan pemeriksa.</div>
+        <div className="sub">Belum ada anggota di project ini. Project Admin menambahkannya di tab Anggota agar bisa dipilih sebagai PIC dan pemeriksa.</div>
       )}
       {draftNote && <div className="sub" style={{ color: 'var(--warn-ink)' }}>{draftNote}</div>}
       <WarnList list={d.warnings(draft, p)} />

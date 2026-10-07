@@ -89,8 +89,14 @@ describe('task form', () => {
     expect(light).not.toHaveProperty('steps')
     expect(light).not.toHaveProperty('commit')
     const gated = taskPayload(t, { isNew: true, gated: true, hasTemplate: true, commit: 'off' })
-    expect(gated).toMatchObject({ project_id: PROJECT_ID, steps: ['report'], deps: ['TB-OKT'], commit: 'off' })
+    // Prerequisites travel typed: start (finish-to-start) and accept (acceptance-only).
+    expect(gated).toMatchObject({ project_id: PROJECT_ID, steps: ['report'], deps: [{ task_id: 'TB-OKT', kind: 'start' }], commit: 'off' })
     expect(gated).not.toHaveProperty('id')
+    const both = taskPayload({ ...t, acceptDeps: ['MB03'] }, { isNew: false, gated: true, hasTemplate: true })
+    expect(both.deps).toEqual([
+      { task_id: 'TB-OKT', kind: 'start' },
+      { task_id: 'MB03', kind: 'accept' },
+    ])
     expect(taskPayload(t, { isNew: false, gated: true, hasTemplate: true })).not.toHaveProperty('commit')
   })
 

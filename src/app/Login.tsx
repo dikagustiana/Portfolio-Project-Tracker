@@ -25,7 +25,7 @@ export function Login({ supa }: { supa: Supa }) {
       setState({
         kind: 'error',
         msg: NOT_INVITED.test(error.message)
-          ? 'Email ini belum terdaftar. Minta owner mengundangmu.'
+          ? 'Email ini belum terdaftar. Minta admin mengundangmu.'
           : /rate|too many|seconds/i.test(error.message)
             ? 'Terlalu sering. Tunggu sebentar, lalu coba lagi.'
             : `Gagal mengirim link masuk: ${error.message}`,
@@ -47,7 +47,7 @@ export function Login({ supa }: { supa: Supa }) {
         ) : (
           <form onSubmit={(e) => void send(e)}>
             <p className="mt-2" style={{ color: 'var(--muted)' }}>
-              Masukkan email kantormu. Kami kirim link untuk masuk, tanpa kata sandi. Hanya orang yang sudah diundang owner yang bisa masuk.
+              Masukkan email kantormu. Kami kirim link untuk masuk, tanpa kata sandi. Hanya orang yang sudah diundang admin yang bisa masuk.
             </p>
             <label className="f" style={{ marginTop: 16 }}>
               Email kantor

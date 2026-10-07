@@ -223,6 +223,24 @@ describe('views (ARCHITECTURE §H)', () => {
     expect(d.waiting('m-yani').map((w) => [w.kind, w.ref])).toContainEqual(['review', 'MB04'])
   })
 
+  it('Menunggu orang lain: a prerequisite the person owns is their own work, not a wait', () => {
+    const b = withPackage()
+    const one = must(b.tasks.find((t) => t.id === 'MB05.1'))
+    const two = must(b.tasks.find((t) => t.id === 'MB05.3'))
+    one.stage = 'todo'
+    one.acceptedAt = null
+    one.doneAt = null
+    two.deps = ['MB05.1']
+    const d = domain(b)
+    // Both belong to Yani: waiting on herself is not "waiting on others".
+    expect(d.waiting('m-yani').some((w) => w.kind === 'dependency' && w.ref === 'MB05.3')).toBe(false)
+    one.assignee = 'm-muti'
+    const d2 = domain(b)
+    expect(d2.waiting('m-yani').find((w) => w.kind === 'dependency' && w.ref === 'MB05.3')?.on).toBe('m-muti')
+    // Everyone's view keeps it.
+    expect(d.waiting('*').some((w) => w.kind === 'dependency' && w.ref === 'MB05.3')).toBe(true)
+  })
+
   it('Milik fungsi saya: unassigned work of the person\'s function', () => {
     const b = prototypeBoard()
     b.functions = [{ id: 'f-com', name: 'Commercial', sort: 1 }]

@@ -29,18 +29,21 @@ export function ProjectHeader({ p }: { p: Project }) {
       </div>
       <header className={`phead g-${p.color || 'samb3'}`}>
         <div style={{ minWidth: 0 }}>
-          <button className="crumb" onClick={() => go({ view: 'dash' })}>
-            ← Dashboard
+          <button className="crumb" onClick={() => go({ view: 'portfolio', peek: null })}>
+            ← Portofolio
           </button>
           <h1>{p.name}</h1>
           <div className="row" style={{ gap: 6, margin: '6px 0 2px' }}>
+            <span className="chip on-dark mono" title="Kode project, dipakai di semua ID record">
+              {p.code}
+            </span>
             {p.entity && <span className="chip on-dark">{entLabel}</span>}
             {!d.pActive(p) && (
               <span className="chip on-dark" style={{ background: '#fff', color: '#14212c' }}>
                 {P_LABEL[p.status]}
               </span>
             )}
-            {pm && <span className="chip on-dark">PM: {d.mname(pm)}</span>}
+            {pm && <span className="chip on-dark">Project Admin: {d.mname(pm)}</span>}
             {p.maturity && <span className="chip on-dark">{MATURITY[p.maturity]}</span>}
             <span className="chip on-dark">{d.gated(p) ? 'Alur pemeriksaan aktif' : 'Mode ringan'}</span>
             {r && (
@@ -114,7 +117,7 @@ function StatusBanner({ p }: { p: Project }) {
           Tutup project
         </button>
       ) : (
-        <span className="sub">Menunggu {d.mname(d.pmOf(p)) || 'Project Manager'}</span>
+        <span className="sub">Menunggu {d.mname(d.pmOf(p)) || 'Project Admin'}</span>
       )}
     </div>
   )

@@ -1,6 +1,6 @@
 // How a project event reads (docs/ARCHITECTURE.md §F): "Dika menerima MB12 · …". Pure, so the
 // activity feed, records, Beranda and Tinjauan mingguan phrase history the same way.
-import { dn, fmt } from '../domain/index.ts'
+import { bareTitle, dn, fmt } from '../domain/index.ts'
 import type { EventVerb, ProjectEvent, Tone } from '../domain/index.ts'
 
 const VERB: Record<EventVerb, [string, Tone]> = {
@@ -54,9 +54,9 @@ export interface EventLine {
 }
 
 export function eventLine(e: ProjectEvent): EventLine {
-  const [verb, tone] = VERB[e.verb] ?? [e.verb, 'grey' as Tone]
+  const [verb, tone] = VERB[e.verb] ?? [e.verb, 'grey']
   const m = e.meta
-  let note = ''
+  let note: string
   switch (e.verb) {
     case 'task_rejected':
       note = str(m.reason) ? `Alasan: ${str(m.reason)}` : ''
@@ -117,5 +117,5 @@ export function eventLine(e: ProjectEvent): EventLine {
     default:
       note = ''
   }
-  return { who: e.actorName || 'Sistem', verb, ref: e.objectRef, title: e.objectTitle, note, tone }
+  return { who: e.actorName || 'Sistem', verb, ref: e.objectRef, title: bareTitle(e.objectRef, e.objectTitle), note, tone }
 }
