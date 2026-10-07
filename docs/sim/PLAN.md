@@ -44,3 +44,57 @@ Outside the feature folder only the two §8 hooks are touched: `src/app/ui.ts` (
 3. CSP-safe with zero runtime dependencies; theme colours are read from the app's CSS tokens.
 4. Accessibility is carried by a parallel DOM overlay: every world object is a focusable button
    with an ARIA label; `prefers-reduced-motion` jumps instead of animating.
+
+---
+
+# World 2 plan (Brief 2, N0) — "Gudang B2B + B2C"
+
+## Refactor plan
+
+```
+src/sim/core/                     shared, world-agnostic
+  rng.ts format.ts trace.ts       PRNG, house formatters, traces
+  iso.ts colors.ts                projection + principal colours
+  TraceView.tsx Waterfall.tsx     number-trace viewer, generic waterfall
+  Timeline.tsx sim.css            timeline (+ world-2 intra-day mode), layout css
+  TogglesDrawer.tsx               drawer driven by any ToggleDef list
+  SimHost.tsx                     screen shell: world selector + lazy worlds
+src/sim/worlds/distribusi/        world 1 as built (engine/ + ui/), numbers unchanged
+src/sim/worlds/b2b-b2c/           world 2 (engine/ + ui/)
+```
+
+- `SimHost` is the single lazy chunk the shell loads; it renders the header world selector
+  ("Distribusi" / "Gudang B2B + B2C") and lazy-loads each world separately (`#/simulasi` and
+  `#/simulasi/distribusi` → world 1, `#/simulasi/b2b-b2c` → world 2). One nav button, unchanged.
+- World 1's files move unchanged (git mv); `tests/fixtures/sim-world1-golden.json` +
+  `worlds/distribusi/engine/golden.test.ts` prove world 1's numbers are identical after the move
+  (dataset hash + full report diff, control 8).
+- The import guard (control 11) keeps walking all of `src/sim/`.
+
+## How the B2B exit reuses world 1
+
+`worlds/b2b-b2c/engine/generate.ts` imports the Brief 1 generator and runs it at a smaller scale
+(`demandScale ≈ 0,4`, default behaviour preserved exactly when the option is absent — the golden
+test pins this). The B2B side yields POs → arrivals → stock-in → DOs → trips → invoices exactly as
+world 1. World 2 then generates B2C orders, and one **shared** stock ledger is built per SKU with
+`out = B2B cartons out + B2C units picked`, so both channels draw from the same balances (control 2).
+
+## World 2 engine sketch
+
+- Config: platforms MP-A–E + Website (fee %, settlement days, order share, cut-off 12.00 MP-A /
+  16.00 others), Kurir 1–3 (tariff per kg, base per package, pickups/day), boxes (Polymailer/S/M/L
+  with dims + cost), standard minutes per B2B line and per B2C line, team pools (shared outbound,
+  ISD dedicated, replenishment, CS by tickets, shop management by orders, returns desk), voucher
+  and return rates per principal (F vouchers, E returns, C mostly B2C, D B2B only).
+- Priorities: P0 instant (small share, processed immediately), P1 same day if before the platform's
+  cut-off else P2, P2 next day. Orders carry a time of day (06.00–22.00).
+- Allocation: shared pools S1–S5 → principals by ASN count / cartons received / pallets put away /
+  pallet-days + location-days / locations counted + units quarantined; each principal's share then
+  splits to channels by m³ shipped (toggle: "Porsi volume keluar" default / "Tidak dibagi" as the
+  "Biaya gudang bersama" line). Regular outbound pools split by pick lines × standard minutes
+  (toggle: shared on/off); ISD only to P0+P1; replenishment by pick-face units per channel.
+- B2C order economics: GMV − seller voucher; marketplace fee = fee % × GMV; shipping by the
+  "Ongkir ditanggung" toggle (default konsumen) with chargeable weight max(kg, cm³/6.000); packaging
+  by chosen box; returns (reverse handling + restock/quarantine); CS by tickets; shop management by
+  orders per platform; B2C capital cost over platform settlement days; B2B uses the world 1 clock.
+- Contribution views: principal × channel, per platform, cost to serve per priority (P0/P1/P2).
