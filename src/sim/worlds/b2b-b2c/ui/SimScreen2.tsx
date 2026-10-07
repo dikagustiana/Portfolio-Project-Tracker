@@ -41,6 +41,10 @@ export default function SimScreen2() {
   useEffect(() => {
     daysRef.current = data.world.days
   }, [data.world.days])
+  const hourRef = useRef(hour)
+  useEffect(() => {
+    hourRef.current = hour
+  }, [hour])
 
   // Playback: one day takes 2.2 s ÷ speed, mapped over the 06.00–22.00 window.
   const rafRef = useRef(0)
@@ -53,14 +57,15 @@ export default function SimScreen2() {
       return
     }
     if (reducedMotion) {
+      // Decide the day roll-over from the current hour here, not inside a state updater:
+      // updaters must be pure (StrictMode runs them twice, which skipped a day in dev).
       const iv = window.setInterval(() => {
-        setHour((h) => {
-          if (h >= 22) {
-            setDay((d) => (d >= daysRef.current ? 1 : d + 1))
-            return 6
-          }
-          return h + 1
-        })
+        if (hourRef.current >= 22) {
+          setDay((d) => (d >= daysRef.current ? 1 : d + 1))
+          setHour(6)
+        } else {
+          setHour((h) => h + 1)
+        }
       }, 320 / speed)
       return () => window.clearInterval(iv)
     }
