@@ -790,6 +790,7 @@ button.s3-card {
 
 .s3-dot {
   position: relative;
+  z-index: 1; /* above the connector lines, which are later siblings' ::before */
   width: 22px;
   height: 22px;
   border-radius: 50%;

@@ -161,3 +161,5 @@ with the reference pending the owner attaching `reference-waretrack.png`. Stop f
   so fading only the roof would show its own top face.
 - Not wired into SimHost yet (V2): the overlay's world selector and clock are placeholders with
   the binding shape (`world`/`onWorld`, day/hour/speed/playing).
+- Gate (7 Oct 2026): frames `v1-1366x768-light` and `v1-390x844-light` (plus dark, 1920, shell,
+  interior) in `.sim-local/`; layout sweep green at all 32 sizes. Waiting for "lanjut" before V2.
