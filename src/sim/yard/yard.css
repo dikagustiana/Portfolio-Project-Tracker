@@ -219,6 +219,6 @@
   .yd-trackwrap { flex-basis: 100%; }
   .yd-time { margin-left: auto; }
   .yd-idle p:not(.yd-kicker) { font-size: 12px; }
-  .yd-watermark { bottom: auto; top: 10px; left: auto; right: 10px; }
+  .yd-watermark { left: 10px; right: 10px; bottom: 8px; max-width: none; font-size: 9.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .yd * { transition: none !important; scroll-behavior: auto !important; } }

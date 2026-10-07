@@ -243,14 +243,25 @@ export class YardScene {
     if (id) this.stage.dataset.lens = id
     else delete this.stage.dataset.lens
   }
+  /** Pins each place name over its spot; where two would overlap, the later one (by key order)
+   *  steps back until there is room, so zoomed out or on a phone the names stay legible. */
   private placeLabels(): void {
     const w = this.stage.clientWidth
     const h = this.stage.clientHeight
+    const taken: [number, number, number, number][] = []
     for (const { def, el } of this.labels) {
       const [x, y] = this.screenAt(W(...def.at))
-      const off = x < -40 || x > w + 40 || y < -20 || y > h + 40
-      el.hidden = off
-      if (!off) el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`
+      let hide = x < -40 || x > w + 40 || y < -20 || y > h + 40
+      if (!hide) {
+        el.hidden = false
+        el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`
+        const bw = el.offsetWidth
+        const bh = el.offsetHeight
+        const r: [number, number, number, number] = [x - bw / 2, y - bh, x + bw / 2, y]
+        hide = taken.some(([a, b, c, d]) => r[0] < c && r[2] > a && r[1] < d && r[3] > b)
+        if (!hide) taken.push(r)
+      }
+      el.hidden = hide
     }
   }
 

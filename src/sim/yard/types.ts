@@ -46,6 +46,8 @@ export interface Card {
   progress?: { v: number; max: number; label: string }
   /** a bar split into shares (m³ per principal on a mixed truck, …) */
   shares?: { label: string; items: Share[] }
+  /** blocks shown first, right under the status (a card's main picture, such as a waterfall) */
+  lead?: Block[]
   rows: [string, string][]
   /** the cost driver this object moves */
   driver?: string
@@ -78,6 +80,8 @@ export interface PlaceDef {
   key: string
   id: string
   label: string
+  /** a shorter name for the button, when the full one would crowd the row (the full name stays its accessible name) */
+  short?: string
   /** [x0, x1, y0, y1] in the world's plate coordinates */
   box: readonly [number, number, number, number]
   /** buildings (peek ids) that open as section drawings while the camera is on this place */

@@ -208,9 +208,9 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
         {def.focus && <Seg label={def.focus.label} value={focus} options={def.focus.options} onChange={setFocus} />}
         <div className="yd-places" role="group" aria-label="Tempat">
           {def.places.map((p) => (
-            <button key={p.id} type="button" aria-current={place === p.id} onClick={() => scene?.goPlace(p.id)} title={`${p.label} (${p.key})`}>
+            <button key={p.id} type="button" aria-current={place === p.id} onClick={() => scene?.goPlace(p.id)} title={`${p.label} (${p.key})`} aria-label={p.short ? p.label : undefined}>
               <kbd>{p.key}</kbd>
-              {p.label}
+              {p.short ?? p.label}
             </button>
           ))}
         </div>
@@ -323,6 +323,7 @@ function CardView({ card, gap, follow, onFollow, onClose }: { card: Card; gap: s
           </ul>
         </div>
       )}
+      {card.lead?.map((b, i) => <BlockView key={`lead-${b.kind}-${b.title}-${i}`} block={b} />)}
       {card.rows.length > 0 && (
         <dl className="yd-rows">
           {card.rows.map(([k, v]) => (

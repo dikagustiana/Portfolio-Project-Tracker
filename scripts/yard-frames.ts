@@ -69,7 +69,11 @@ async function open(browser: Browser, base: string, f: Frame): Promise<{ page: P
   await page.addInitScript(`window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push('csp: ' + e.violatedDirective + ' ' + e.blockedURI))`)
   const q = new URLSearchParams({ v: 'yard', world: f.world, debug: '1', ...(f.dark ? { theme: 'dark' } : {}), ...f.q })
   await page.goto(`${base}${PREVIEW}?${q.toString()}`)
-  await page.waitForFunction(`'sim' in window`, null, { timeout: 90_000 })
+  // poll with evaluate: waitForFunction's string form needs eval, which the production CSP refuses
+  for (let i = 0; !(await page.evaluate<boolean>(`'sim' in window`)); i++) {
+    if (i > 300) throw new Error(`${f.name}: window.sim never appeared`)
+    await page.waitForTimeout(300)
+  }
   await page.evaluate('document.fonts.ready')
   if (f.act) await page.evaluate(f.act)
   await page.waitForTimeout(1500)
