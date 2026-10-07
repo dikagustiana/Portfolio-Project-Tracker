@@ -104,7 +104,12 @@ test('prefers-reduced-motion jumps instead of animating (both worlds)', async ({
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.getByRole('slider', { name: 'Geser hari' }).fill('6')
   await page.getByRole('button', { name: 'Putar' }).click()
-  await expect(page.getByText(/^Hari 7:/)).toBeVisible({ timeout: 3_000 })
+  // World 1 jumps a whole day every 420 ms, so any one day's caption is only up for an instant;
+  // assert the jump past day 6 instead, and that the animated path's "▶ 1×" badge never shows.
+  const dayShown = async (): Promise<number> => Number(/^Hari (\d+):/.exec(await page.getByText(/^Hari \d+:/).innerText())?.[1] ?? 0)
+  await expect.poll(dayShown, { timeout: 3_000 }).toBeGreaterThan(6)
+  await expect(page.getByText(/^▶ \d+×$/)).toHaveCount(0)
+  await page.getByRole('button', { name: 'Jeda' }).click()
 
   // World 2 (2D under reduced motion) steps an hour at a time; start late on day 6 so the jump to
   // day 7 lands within the timeout. Its map caption reads "Hari 7, 06.00 · … order".
