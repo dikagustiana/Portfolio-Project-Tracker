@@ -187,7 +187,7 @@ export function allocate2(world: World2, toggles: Toggles2): Allocations2 {
       id: def.id, team: def.team, total, b2b: total * minuteShare, b2c: total * (1 - minuteShare),
       unallocated: 0, driver: def.driver,
       totalTrace: trace(`Pool ${def.team}`, 'rp', '{0} × {1}', [num('orang', def.headcount, 'count'), num('biaya per orang', def.costPerPerson, 'rp')], (h, c) => h * c),
-    } as PoolAllocation2
+    }
   })
   pools.push(...outboundPools)
   const outboundB2b = outboundPools.reduce((s, p) => s + p.b2b, 0)

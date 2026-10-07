@@ -16,7 +16,7 @@ import type { View } from './ui.ts'
 
 // Owner-only screens load on demand, so everyone else's bundle stays smaller.
 const Admin = lazy(() => import('../views/Admin.tsx').then((m) => ({ default: m.Admin })))
-const Sim = lazy(() => import('../sim/worlds/distribusi/ui/SimScreen.tsx').then((m) => ({ default: m.default })))
+const Sim = lazy(() => import('../sim/SimHost.tsx').then((m) => ({ default: m.SimHost })))
 
 export function Shell() {
   const ui = useUI()

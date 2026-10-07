@@ -13,7 +13,8 @@ import type { ThemeColors } from '../../../core/theme.ts'
 import { ALL_OBJECTS, objectById, ROADS } from './objects.ts'
 import type { WorldObject } from './objects.ts'
 import { drawSprites } from './sprites.ts'
-import { objectRect, project, TILE_H, TILE_W, LIFT } from '../../../core/iso.ts'
+import { isoBox, objectRect, project, quad, shade, TILE_H, TILE_W, LIFT } from '../../../core/iso.ts'
+import type { View } from '../../../core/iso.ts'
 import type { SpriteInput } from './sprites.ts'
 
 interface WorldCanvasProps {
@@ -27,85 +28,6 @@ interface WorldCanvasProps {
   reducedMotion: boolean
   /** Fraction (0–1) of progress through the current day's animations, driven by the parent. */
   dayProgress: number
-}
-
-function shade(hex: string, f: number): string {
-  const n = parseInt(hex.slice(1), 16)
-  const r = Math.min(255, Math.round(((n >> 16) & 255) * f))
-  const g = Math.min(255, Math.round(((n >> 8) & 255) * f))
-  const b = Math.min(255, Math.round((n & 255) * f))
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`
-}
-
-interface View {
-  ox: number
-  oy: number
-  scale: number
-}
-
-/** Draw an isometric box: soft shadow, two shaded faces, lit top. */
-function isoBox(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, d: number, h: number, color: string, view: View, opts?: { outline?: string; alpha?: number; roof?: string }) {
-  const { ox, oy, scale } = view
-  const t = project(x, y, ox, oy, h, scale)
-  const r = project(x + w, y, ox, oy, h, scale)
-  const b = project(x + w, y + d, ox, oy, h, scale)
-  const l = project(x, y + d, ox, oy, h, scale)
-  const r0 = project(x + w, y, ox, oy, 0, scale)
-  const b0 = project(x + w, y + d, ox, oy, 0, scale)
-  const l0 = project(x, y + d, ox, oy, 0, scale)
-  ctx.save()
-  if (opts?.alpha !== undefined) ctx.globalAlpha = opts.alpha
-  ctx.fillStyle = 'rgba(43, 53, 72, 0.10)'
-  ctx.beginPath()
-  ctx.ellipse((l0.sx + r0.sx) / 2, b0.sy + 4 * scale, (r0.sx - l0.sx) * 0.52, TILE_H * 0.42 * scale, 0, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.fillStyle = shade(color, 0.62)
-  ctx.beginPath()
-  ctx.moveTo(l.sx, l.sy)
-  ctx.lineTo(b.sx, b.sy)
-  ctx.lineTo(b0.sx, b0.sy)
-  ctx.lineTo(l0.sx, l0.sy)
-  ctx.closePath()
-  ctx.fill()
-  ctx.fillStyle = shade(color, 0.78)
-  ctx.beginPath()
-  ctx.moveTo(r.sx, r.sy)
-  ctx.lineTo(b.sx, b.sy)
-  ctx.lineTo(b0.sx, b0.sy)
-  ctx.lineTo(r0.sx, r0.sy)
-  ctx.closePath()
-  ctx.fill()
-  ctx.fillStyle = opts?.roof ?? color
-  ctx.beginPath()
-  ctx.moveTo(t.sx, t.sy)
-  ctx.lineTo(r.sx, r.sy)
-  ctx.lineTo(b.sx, b.sy)
-  ctx.lineTo(l.sx, l.sy)
-  ctx.closePath()
-  ctx.fill()
-  if (opts?.outline) {
-    ctx.strokeStyle = opts.outline
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(t.sx, t.sy)
-    ctx.lineTo(r.sx, r.sy)
-    ctx.lineTo(b.sx, b.sy)
-    ctx.lineTo(l.sx, l.sy)
-    ctx.closePath()
-    ctx.stroke()
-  }
-  ctx.restore()
-}
-
-function quad(ctx: CanvasRenderingContext2D, pts: { sx: number; sy: number }[], color: string, alpha = 1): void {
-  ctx.save()
-  ctx.globalAlpha = alpha
-  ctx.fillStyle = color
-  ctx.beginPath()
-  pts.forEach((p, i) => (i ? ctx.lineTo(p.sx, p.sy) : ctx.moveTo(p.sx, p.sy)))
-  ctx.closePath()
-  ctx.fill()
-  ctx.restore()
 }
 
 export function WorldCanvas({ data, day, follow, selected, onSelect, playing, speed, reducedMotion, dayProgress }: WorldCanvasProps) {

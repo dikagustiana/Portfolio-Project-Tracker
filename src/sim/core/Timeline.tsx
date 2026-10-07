@@ -13,6 +13,16 @@ const STEP_SHORT: Record<number, string> = {
   7: 'Muat & jalan', 8: 'Serah terima', 9: 'Invoice', 10: 'Faktur pajak', 11: 'Kas masuk',
 }
 
+export interface IntraDay {
+  hour: number
+  /** Working window, world 2 runs 06.00–22.00 (brief 2 §7.2). */
+  from: number
+  to: number
+  /** Cut-off hours drawn as marks on the clock (12.00 MP-A, 16.00 others). */
+  cutoffs: number[]
+  onHour: (hour: number) => void
+}
+
 interface TimelineProps {
   day: number
   days: number
@@ -22,9 +32,15 @@ interface TimelineProps {
   onDay: (day: number) => void
   onPlay: (playing: boolean) => void
   onSpeed: (speed: number) => void
+  /** World 2: an intra-day clock with cut-off lines. */
+  intraDay?: IntraDay
+  /** Per-step short names; worlds without the Brief 1 steps pass their own. */
+  stepShort?: Record<number, string>
 }
 
-export function Timeline({ day, days, playing, speed, cycle, onDay, onPlay, onSpeed }: TimelineProps) {
+const clock = (h: number): string => `${String(Math.floor(h)).padStart(2, '0')}.${String(Math.round((h % 1) * 60)).padStart(2, '0')}`
+
+export function Timeline({ day, days, playing, speed, cycle, onDay, onPlay, onSpeed, intraDay, stepShort }: TimelineProps) {
   return (
     <div className="sim-timeline" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-md)', padding: '10px 14px' }}>
       <button type="button" className="btn" aria-label={playing ? 'Jeda' : 'Putar'} onClick={() => onPlay(!playing)}>
@@ -58,6 +74,37 @@ export function Timeline({ day, days, playing, speed, cycle, onDay, onPlay, onSp
         />
         <span style={{ fontSize: 12, color: 'var(--muted)' }}>{days}</span>
       </label>
+      {intraDay && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, flexBasis: '100%' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>Jam {clock(intraDay.hour)}</span>
+          <span style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+            <input
+              type="range"
+              min={intraDay.from}
+              max={intraDay.to}
+              step={0.25}
+              value={intraDay.hour}
+              onChange={(e) => intraDay.onHour(Number(e.currentTarget.value))}
+              aria-label="Geser jam"
+              style={{ flex: 1, accentColor: 'var(--accent)' }}
+            />
+            {intraDay.cutoffs.map((c) => (
+              <span
+                key={c}
+                title={`Cut-off ${clock(c)}`}
+                aria-label={`Cut-off ${clock(c)}`}
+                style={{ position: 'absolute', left: `${((c - intraDay.from) / (intraDay.to - intraDay.from)) * 100}%`, top: -4, width: 2, height: 14, background: 'var(--warn)' }}
+              />
+            ))}
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{clock(intraDay.to)}</span>
+          {intraDay.cutoffs.map((c) => (
+            <span key={c} style={{ fontSize: 10.5, color: 'var(--warn)', fontWeight: 700 }}>
+              cut-off {clock(c)}
+            </span>
+          ))}
+        </label>
+      )}
       <div role="group" aria-label="Lompat ke langkah siklus" style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         {cycle.map((m) => (
           <button
@@ -76,7 +123,7 @@ export function Timeline({ day, days, playing, speed, cycle, onDay, onPlay, onSp
               fontWeight: day === m.day ? 800 : 500,
             }}
           >
-            {m.step}. {STEP_SHORT[m.step] ?? m.label}
+            {m.step}. {(stepShort ?? STEP_SHORT)[m.step] ?? m.label}
           </button>
         ))}
       </div>
