@@ -32,3 +32,23 @@ logic code. The owner corrects them after the build. Config keys are given in `c
 | Principal profiles | A bulky/low value (price Rp 760 rb/karton, margin 8 %); B dense/high value (Rp 950 rb, 12 %); C small orders 1–2 karton (Rp 420 rb, 10 %); D dedicated admin (Rp 550 rb, 10 %); E mostly MT besar (80 % bias, Rp 300 rb, 9 %); F high minimum-inventory 21 d, lead 14 d (Rp 700 rb, 11 %) | `PRINCIPALS` |
 | Opening stock | covers lead time + minimum inventory days ×1,08 safety | `generateWorld` |
 | PO rule | checks on days 1/8/15/22: remaining forecast + minimum stock − current − in transit, ×1,05 | `PO_CHECK_DAYS` |
+
+---
+
+# World 2 "Gudang B2B + B2C" — assumptions and DUMMY parameters (Brief 2 §10)
+
+All in `src/sim/worlds/b2b-b2c/engine/config.ts`. Generic labels only (MP-A…E, Website, Kurir 1–3, OMS/WMS/Agregator).
+
+| # | Assumption | Default used | Config key | Where it shows |
+|---|---|---|---|---|
+| 1 | Regular outbound teams shared between B2B and B2C; only ISD is dedicated. Standard minutes: B2B line **1,2 menit**, B2C line **2,5 menit**, B2C package **1,8 menit**, B2B carton 0,4 menit. Separate teams (toggle off) add a **15 %** peak-sizing overhead | `STANDARD_MINUTES`, `SEPARATE_TEAM_OVERHEAD`, `Toggles2.sharedTeams` | Aturan alokasi → "Tim outbound dipakai bersama"; packing panel; priority view |
+| 2 | Shipping borne by the **consumer**; fees are percentage-only, no fixed fee per order | `Toggles2.shippingBearer`, `Platform.feePct` | Aturan alokasi → "Ongkir ditanggung"; order waterfall |
+| 3 | CS allocated by **tickets** (0,08 per order + 1 per return); shop management by **orders per platform** | `TICKETS_PER_ORDER`, pools `cs`, `shopMgmt` | CS/shop desks, platform panel |
+| 4 | Returns inspected at the returns desk; **60 % restocked**, the rest quarantined (write-off 50 % of GMV); reverse shipping 70 % of forward | `RESTOCK_SHARE`, `RETURN_RATE` | Meja retur, order waterfall |
+| 5 | Settlement days per platform from order complete: MP-A 7, MP-B 9, MP-C 5, MP-D 12, MP-E 8, Website 3 | `PLATFORMS.*.settlementDays` | Buku settlement, metrics "Hari dana tertahan" |
+| 6 | One order = one package; box chosen by item volume (Polymailer ≤ 3,6 L, S ≤ 6 L, M ≤ 15 L, L else); chargeable weight = max(kg, cm³/6.000) | `BOXES`, `CHARGEABLE_VOLUME_DIVISOR_CM3_PER_KG` | Dispatch/manifest panel, shipping trace |
+| 7 | The B2B exit follows Brief 1 exactly at **0,4× demand** (world-1 default toggles); PO lines scaled up by each SKU's B2C share so one pool serves both channels | `B2B.demandScale` | Jalur B2B, controls 2 & 8 |
+| — | Priority mix: P0 6 %, P1 26 % (before cut-off), P2 rest; hours 06–21 weighted around lunch/evening; order volume 260/day × platform share | `PRIORITY`, `ORDERS_PER_DAY`, `Platform.orderShare` | OMS panel, priority view |
+| — | Shared pools S1–S5: ASN 2×Rp 9 jt; inbound 6×Rp 10 jt; putaway 4×Rp 9,5 jt; storage 10×Rp 9 jt; stock mgmt 3×Rp 8 jt. ISD 4×Rp 10 jt; replenishment 3×Rp 8,5 jt; CS 2×Rp 8 jt; shop 2×Rp 9 jt; returns 2×Rp 8 jt | `POOLS` | Aturan alokasi, pool table in sim-report |
+| — | B2C value share: C 45 %, E 20 %, F 15 %, A/B 10 % each, D 0 (B2B only). Vouchers: F 6 % of GMV, others ≤ 2 %. Returns: E 12 %, others ≤ 3 % | `B2C_VALUE_SHARE`, `VOUCHER_SHARE`, `RETURN_RATE` | Principal×channel view |
+| — | Couriers: Kurir 1 Rp 6.000 + 3.200/kg (2 pickup/hari), Kurir 2 5.500 + 2.900 (1), Kurir 3 6.500 + 3.500 (2) | `COURIERS` | Courier lanes, bay, package panel |
