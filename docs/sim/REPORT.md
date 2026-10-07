@@ -129,12 +129,17 @@ World 2 (defaults) — `npx tsx scripts/sim-report.ts --world b2b-b2c`; the view
 - **Where channels separate**: outbound regular teams split by standard minutes — pick lines plus
   dispatch per package/carton (B2B 21.340 vs B2C 51.657 min; picker cost B2B 15,8 jt vs B2C
   38,2 jt), ISD Rp 40 jt lands only on P0/P1.
-- **One B2C order**: cost/order Rp 94–117 rb by priority; the order waterfall walks GMV − voucher −
-  fee − kemasan − retur − tim − gudang − modal.
+- **One B2C order**: cost to serve Rp 94–117 rb/order by priority, goods cost (HPP) ≈ Rp 700 rb on
+  ≈ Rp 760 rb revenue; the order waterfall walks GMV − voucher − fee − HPP − kemasan − retur − tim
+  − gudang − modal.
 - **Price of speed**: P0 Rp 117,4 rb/order and P1 Rp 115,2 rb vs P2 Rp 93,9 rb — the ISD premium is
   ≈ Rp 21–24 rb/order.
-- **Contribution**: per principal×channel (C: B2C Rp 1,8 M; D: B2B only Rp 100,3 jt), per platform
-  (MP-A Rp 1,2 M … Website Rp 643,3 jt), F's voucher leakage visible before any operating cost.
+- **Contribution** (both channels after the goods' cost): B2B positive for every principal (B
+  Rp 219,4 jt … E Rp 3,3 jt); **B2C negative for A, C, E, F** (C −Rp 110 jt) and barely positive for
+  B (Rp 5,4 jt); per platform MP-A −Rp 68,2 jt … Website −Rp 6,5 jt. Reason: the dummy generator
+  prices B2C pieces at the B2B carton price ÷ pieces (wholesale), so B2C earns only the SKU's
+  8–12 % margin while its cost to serve plus platform fee is ≈ 18–21 % of GMV. F's voucher leakage
+  stays visible before any operating cost.
 
 ### PR #3 review fixes (world 2 engine)
 
@@ -156,10 +161,17 @@ charged twice over and Rp 92,9 jt of shared cost subtracted twice):
 
 World 1 `sim-report` stays byte-identical; the world-1 golden test still passes.
 
+### Owner decisions (7 Oct 2026)
+
+- **Same basis for both channels**: B2C now subtracts the goods' cost (HPP = item GMV × (1 − SKU
+  margin)), as B2B starts from world 1's gross profit (value × margin). HPP shows on the order
+  and channel waterfalls, the platform panel and `sim-report`; KPI "Biaya per order B2C" and the
+  price of speed stay cost-to-serve figures. Consequence above: B2C is loss-making at wholesale
+  prices — a B2C retail-price assumption would be a new dummy parameter for the owner to set.
+- The trace badge reads **"hitung ulang sama"** (was "recompute sama").
+
 ## Known issues
 
-- Brief 3: the "recompute sama" badge (shared `TraceView`, asserted by both e2e suites) is the one
-  English phrase left on screen; renaming it is a one-word change in `TraceView` plus the specs.
 - Brief 3: world 1 "Distribusi" has no 3D scene; its selector entry opens the 2D world.
 - Brief 3: the B2B trucks' return leg is not drawn (they leave toward "Toko" and the Truk list
   marks them "Kembali" after four hours).

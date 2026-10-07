@@ -67,7 +67,7 @@ test('pins, lists and search open cards whose traces recompute', async ({ page }
   await expect(page.locator('.s3-selected .s3-title')).toHaveText('Jalur B2B (truk ke toko)')
   await page.locator('.s3-selected .s3-tracebtn').first().click()
   await expect(page.getByRole('dialog', { name: 'Jejak angka' })).toBeVisible()
-  await expect(page.getByText('recompute sama')).toBeVisible()
+  await expect(page.getByText('hitung ulang sama')).toBeVisible()
   await page.keyboard.press('Escape')
 
   await page.getByRole('tab', { name: /Order/ }).click()

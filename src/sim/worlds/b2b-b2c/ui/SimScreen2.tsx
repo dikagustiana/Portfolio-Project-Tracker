@@ -221,7 +221,8 @@ function ChannelWaterfall({ data, principal }: { data: ReturnType<typeof compute
         color="var(--s-done)"
         steps={[
           { label: 'Pendapatan net B2C', value: r.revenueB2c, kind: 'start' },
-          { label: 'Biaya channel + gudang', value: -(r.revenueB2c - r.b2c), kind: 'cost' },
+          { label: 'Harga pokok (HPP)', value: -r.cogsB2c, kind: 'cost' },
+          { label: 'Biaya channel + gudang', value: -(r.revenueB2c - r.cogsB2c - r.b2c), kind: 'cost' },
           { label: 'Kontribusi B2C', value: r.b2c },
         ]}
       />

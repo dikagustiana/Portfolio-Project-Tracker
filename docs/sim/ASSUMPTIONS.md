@@ -77,3 +77,4 @@ uses them (`sim-report` for both worlds is byte-identical before and after Brief
 | Restocked returns | Back on the shelf on the return day (shared ledger `restocked`); non-restocked returns stay quarantined | `generateWorld2` |
 | Manifests | Per courier per ship day, the day's packages split across that courier's pickups | `generateWorld2` |
 | Stock capital (toggle) | Charged to the B2B exit's principal contribution and to total costs | `allocate2` |
+| Goods cost (HPP), B2C | Item GMV × (1 − SKU margin) — the same basis as B2B's gross profit (value × margin). B2C piece prices are the B2B carton price ÷ pieces (wholesale), so B2C earns the same 8–12 % margin; there is no retail markup | `allocate2` (`OrderEconomics.cogs`), `pieceAttributes` |

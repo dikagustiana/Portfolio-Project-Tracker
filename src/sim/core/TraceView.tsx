@@ -39,7 +39,7 @@ export function TraceView({ root, onBack, onClose }: { root: Trace; onBack?: () 
           title={ok ? 'Formula menghitung ulang ke nilai yang sama' : 'Tidak cocok — seharusnya tidak pernah terjadi'}
           style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: ok ? 'var(--s-done)' : 'var(--danger)' }}
         >
-          {ok ? '✓ recompute sama' : '✗ tidak cocok'}
+          {ok ? '✓ hitung ulang sama' : '✗ tidak cocok'}
         </span>
         <button type="button" className="icon-btn" aria-label="Tutup jejak angka" onClick={onClose} style={{ marginLeft: path.length || onBack ? 0 : 'auto' }}>
           ✕

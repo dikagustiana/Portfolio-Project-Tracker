@@ -1,6 +1,6 @@
 // Sim screens smoke (Brief 1 §9 M4 + Brief 2 §9 N4 + Brief 3 V4): the owner opens both routes
 // from the signed-in shell, the worlds render with the watermark, objects are keyboard-reachable,
-// traces open with the recompute badge, the world selector switches routes, world 2 opens in 3D
+// traces open with the "hitung ulang sama" badge, the world selector switches routes, world 2 opens in 3D
 // with "Tampilan 2D" one click away, and prefers-reduced-motion jumps instead of animating in
 // both worlds (world 2 stays 2D then). The 3D view itself is covered without Supabase by
 // e2e-sim3d (npm run e2e:sim3d).
@@ -51,7 +51,7 @@ test('world 1 #/simulasi loads, is reachable and traceable', async ({ page, base
 
   // A metric opens its number trace, which recomputes to the same value.
   await page.getByRole('button', { name: /Biaya teralokasi s.d. hari ini/ }).click()
-  await expect(page.getByText('recompute sama')).toBeVisible()
+  await expect(page.getByText('hitung ulang sama')).toBeVisible()
 })
 
 test('world selector switches to #/simulasi/b2b-b2c and the second world works', async ({ page, baseURL }) => {
@@ -67,7 +67,7 @@ test('world selector switches to #/simulasi/b2b-b2c and the second world works',
   await expect(page.getByRole('group', { name: 'Ringkasan biaya' })).toBeVisible()
   await expect(page.getByText('Ilustrasi — angka dummy, bukan data SAMB')).toBeVisible()
   await page.getByRole('button', { name: /Biaya per order B2C/ }).click()
-  await expect(page.getByText('recompute sama')).toBeVisible()
+  await expect(page.getByText('hitung ulang sama')).toBeVisible()
   await page.keyboard.press('Escape')
 
   // The 2D world is one click away (and remembered per browser).
@@ -92,7 +92,7 @@ test('world selector switches to #/simulasi/b2b-b2c and the second world works',
 
   // A metric opens its trace with the recompute badge.
   await page.getByRole('button', { name: /Biaya per order B2C/ }).click()
-  await expect(page.getByText('recompute sama')).toBeVisible()
+  await expect(page.getByText('hitung ulang sama')).toBeVisible()
 })
 
 test('prefers-reduced-motion jumps instead of animating (both worlds)', async ({ page, baseURL }) => {

@@ -105,24 +105,24 @@ function world2Report(w2: W2): string {
       lines.push(`| ${pool.team} | ${formatRpShort(pool.total)} | ${formatRpShort(pool.b2b)} | ${formatRpShort(pool.b2c)} | ${formatRpShort(pool.unallocated)} |`)
     }
     lines.push('')
-    lines.push('| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C |')
-    lines.push('|---|---:|---:|---:|---:|')
+    lines.push('| prinsipal | kontribusi B2B | kontribusi B2C | pendapatan B2B | pendapatan B2C | HPP B2C |')
+    lines.push('|---|---:|---:|---:|---:|---:|')
     for (const p of PIDS) {
       const r = alloc.principalChannel[p]
-      lines.push(`| ${p} | ${formatRpShort(r.b2b)} | ${formatRpShort(r.b2c)} | ${formatRpShort(r.revenueB2b)} | ${formatRpShort(r.revenueB2c)} |`)
+      lines.push(`| ${p} | ${formatRpShort(r.b2b)} | ${formatRpShort(r.b2c)} | ${formatRpShort(r.revenueB2b)} | ${formatRpShort(r.revenueB2c)} | ${formatRpShort(r.cogsB2c)} |`)
     }
     lines.push('')
-    lines.push('| platform | order | GMV | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |')
-    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+    lines.push('| platform | order | GMV | HPP | fee | voucher | ongkir penjual | kemasan | retur | CS | shop | outbound+ISD | gudang bersama | modal | dana cair | kontribusi |')
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
     for (const pf of PLATFORMS) {
       const v = alloc.platform[pf]
-      lines.push(`| ${pf} | ${v.orders} | ${formatRpShort(v.gmv)} | ${formatRpShort(v.fee)} | ${formatRpShort(v.voucher)} | ${formatRpShort(v.sellerShipping)} | ${formatRpShort(v.packaging)} | ${formatRpShort(v.returnCost)} | ${formatRpShort(v.cs)} | ${formatRpShort(v.shop)} | ${formatRpShort(v.outbound)} | ${formatRpShort(v.shared)} | ${formatRpShort(v.capital)} | ${formatRpShort(v.netSettlement)} | ${formatRpShort(v.contribution)} |`)
+      lines.push(`| ${pf} | ${v.orders} | ${formatRpShort(v.gmv)} | ${formatRpShort(v.cogs)} | ${formatRpShort(v.fee)} | ${formatRpShort(v.voucher)} | ${formatRpShort(v.sellerShipping)} | ${formatRpShort(v.packaging)} | ${formatRpShort(v.returnCost)} | ${formatRpShort(v.cs)} | ${formatRpShort(v.shop)} | ${formatRpShort(v.outbound)} | ${formatRpShort(v.shared)} | ${formatRpShort(v.capital)} | ${formatRpShort(v.netSettlement)} | ${formatRpShort(v.contribution)} |`)
     }
     lines.push('')
-    lines.push('| prioritas | order | biaya/order | pendapatan/order | kontribusi/order |')
-    lines.push('|---|---:|---:|---:|---:|')
+    lines.push('| prioritas | order | biaya layanan/order | HPP/order | pendapatan/order | kontribusi/order |')
+    lines.push('|---|---:|---:|---:|---:|---:|')
     for (const pr of alloc.priority) {
-      lines.push(`| ${pr.priority} | ${pr.orders} | ${money(pr.avgCost)} | ${money(pr.avgRevenue)} | ${money(pr.avgContribution)} |`)
+      lines.push(`| ${pr.priority} | ${pr.orders} | ${money(pr.avgCost)} | ${money(pr.avgCogs)} | ${money(pr.avgRevenue)} | ${money(pr.avgContribution)} |`)
     }
     lines.push('')
     lines.push(`Harga kecepatan: ISD ${formatRpShort(alloc.isd.perOrder)}/order P0+P1 (${alloc.isd.p0p1Orders} order); P2 tanpa ISD. Menit reguler: B2B ${Math.round(alloc.outbound.b2bMinutes)} vs B2C ${Math.round(alloc.outbound.b2cMinutes)}.`)

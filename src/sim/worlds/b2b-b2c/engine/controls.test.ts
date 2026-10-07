@@ -160,9 +160,17 @@ describe('world 2 controls for every toggle combination', () => {
       const orderContribution = sum(alloc.perOrder.map((x) => x.contribution))
       expect(near(sum(pc.map((x) => x.b2c)), orderContribution), 'principal B2C = orders').toBe(true)
       expect(near(sum(Object.values(alloc.platform).map((x) => x.contribution)), orderContribution), 'platforms = orders').toBe(true)
-      // Headline: contributions + the unsplit shared line = B2B gross profit + B2C revenue − costs.
-      const b2bGross = alloc.b2bAlloc.totals.grossProfit
-      expect(near(sum(pc.map((x) => x.b2b + x.b2c)) - alloc.sharedUnsplit, b2bGross + sum(alloc.perOrder.map((x) => x.revenue)) - alloc.totals.costs), 'totals reconcile').toBe(true)
+      // Both channels on one basis: B2C goods cost = item GMV × (1 − SKU margin), as B2B's
+      // gross profit = value × margin; priority views split it out of the cost to serve.
+      for (const [i, o] of alloc.perOrder.entries()) {
+        const order = must(world.orders.filter((x) => x.shipDay <= world.days)[i], 'order')
+        expect(near(o.cogs, sum(order.items.map((it) => it.gmv * (1 - must(world.skus[it.sku], 'sku').margin))))).toBe(true)
+      }
+      for (const pr of alloc.priority) expect(near(pr.avgRevenue - pr.avgCogs - pr.avgCost, pr.avgContribution)).toBe(true)
+      expect(near(sum(pc.map((x) => x.cogsB2c)), sum(alloc.perOrder.map((x) => x.cogs))), 'principal HPP').toBe(true)
+      // Headline: contributions + the unsplit shared line = gross profit (both channels) − costs.
+      expect(near(alloc.totals.grossProfit, alloc.b2bAlloc.totals.grossProfit + sum(alloc.perOrder.map((x) => x.revenue - x.cogs)))).toBe(true)
+      expect(near(sum(pc.map((x) => x.b2b + x.b2c)) - alloc.sharedUnsplit, alloc.totals.grossProfit - alloc.totals.costs), 'totals reconcile').toBe(true)
     })
   }
 })

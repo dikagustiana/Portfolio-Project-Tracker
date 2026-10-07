@@ -162,6 +162,7 @@ export function DetailPanel2({ data, day, toggles, selected, follow, followPlatf
           {kv('Settlement', `${formatDays(v.settlementDays)} setelah order selesai`)}
           {kv('Biaya modal dana tertahan', formatRp(v.capital), capTrace(toggles.costOfCapital, v.netSettlement, v.settlementDays))}
           {kv('GMV', formatRpShort(v.gmv))}
+          {kv('Harga pokok (HPP)', formatRpShort(v.cogs))}
           {kv('Kontribusi', formatRpShort(v.contribution))}
           <div style={{ marginTop: 6 }}>
             <button type="button" className="btn ghost" style={{ padding: '2px 10px' }} onClick={() => onFollowPlatform(followPlatform === pf ? null : pf)}>
@@ -338,6 +339,7 @@ export function OrderWaterfall({ data, orderId }: { data: Computed2; orderId: st
           { label: 'GMV', value: o.gmv, kind: 'start' },
           { label: 'Voucher penjual', value: -o.voucher, kind: 'cost' },
           { label: 'Fee platform', value: -e.fee, kind: 'cost' },
+          { label: 'Harga pokok (HPP)', value: -e.cogs, kind: 'cost' },
           ...(e.sellerShipping > 0 ? [{ label: 'Ongkir penjual', value: -e.sellerShipping, kind: 'cost' as const }] : []),
           { label: 'Kemasan', value: -e.packaging, kind: 'cost' },
           ...(e.returnCost > 0 ? [{ label: 'Retur', value: -e.returnCost, kind: 'cost' as const }] : []),
