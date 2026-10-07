@@ -52,3 +52,16 @@ All in `src/sim/worlds/b2b-b2c/engine/config.ts`. Generic labels only (MP-A…E,
 | — | Shared pools S1–S5: ASN 2×Rp 9 jt; inbound 6×Rp 10 jt; putaway 4×Rp 9,5 jt; storage 10×Rp 9 jt; stock mgmt 3×Rp 8 jt. ISD 4×Rp 10 jt; replenishment 3×Rp 8,5 jt; CS 2×Rp 8 jt; shop 2×Rp 9 jt; returns 2×Rp 8 jt | `POOLS` | Aturan alokasi, pool table in sim-report |
 | — | B2C value share: C 45 %, E 20 %, F 15 %, A/B 10 % each, D 0 (B2B only). Vouchers: F 6 % of GMV, others ≤ 2 %. Returns: E 12 %, others ≤ 3 % | `B2C_VALUE_SHARE`, `VOUCHER_SHARE`, `RETURN_RATE` | Principal×channel view |
 | — | Couriers: Kurir 1 Rp 6.000 + 3.200/kg (2 pickup/hari), Kurir 2 5.500 + 2.900 (1), Kurir 3 6.500 + 3.500 (2) | `COURIERS` | Courier lanes, bay, package panel |
+
+## Brief 3 — display-only schedules in the 3D view
+
+The engine works per day; the 3D view also needs a time of day for things the engine does not
+time. These schedules only place objects and statuses on screen — no cost, allocation or trace
+uses them (`sim-report` for both worlds is byte-identical before and after Brief 3).
+
+| What | Schedule shown | Where defined | Where it shows |
+|---|---|---|---|
+| Courier pickups | Two-pickup couriers (Kurir 1, 3) at **11.00 and 17.00**; one-pickup courier (Kurir 2) at **17.00**, after the 16.00 cut-off so P1 orders still leave the same day | `pickupHour` (`src/sim/ui3d/bindings2.ts`) | Dock list (manifests), bay card, "Pelacakan alur" handover |
+| B2B trips | Leave from **07.00**, one every 90 minutes, the last by 14.00; four hours out | `tripDepartHour`, `TRIP_HOURS` | Truk list status (Muat / Jalan / Kembali) |
+| Inbound POs | Dock from **08.00**, one every two hours (last 18.00); unloading two hours | `inboundHour` | Dock list status (Dijadwalkan / Bongkar / Masuk rak) |
+| Order flow within the ship day | Pick from 30 min after the order (07.00 for next-day orders), packing from 90 min; handed over at the courier's first pickup after that; "Selesai" three hours after a same-day handover | `orderStep`, `handoverHour` | "Pelacakan alur" steps, Order list status |

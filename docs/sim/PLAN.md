@@ -163,3 +163,19 @@ with the reference pending the owner attaching `reference-waretrack.png`. Stop f
   the binding shape (`world`/`onWorld`, day/hour/speed/playing).
 - Gate (7 Oct 2026): frames `v1-1366x768-light` and `v1-390x844-light` (plus dark, 1920, shell,
   interior) in `.sim-local/`; layout sweep green at all 32 sizes. Waiting for "lanjut" before V2.
+
+### V2 as built — engine bindings
+
+- `SimHost` opens world 2 in 3D by default (lazy `Sim3D` chunk + a separate `three` vendor
+  chunk; the app shell bundle is unchanged). 2D stays when WebGL is missing, when the viewer
+  prefers reduced motion, or after "Tampilan 2D" (remembered per browser as `simView`); a
+  runtime 3D failure falls back to 2D (`Boundary3D`). The 3D view has its own world selector.
+- Every card is engine-bound through `bindings2.ts` (pure, unit-tested): KPI row = the 2D
+  metrics bar's figures (`metrics2.ts`, shared) with day-on-day deltas; Dock/Truk/Order lists,
+  "Pelacakan alur", the selected-object card and the day summary from the world at the clock's
+  day and hour; "Aturan alokasi" = world 2's own toggles; "Jejak angka" = `TraceView`;
+  "Detail" = the 2D `DetailPanel2` (follow principal/platform, order waterfalls).
+- Pins open their object; search finds objects, orders and B2B trucks. Clock pace matches the
+  2D world (2,2 s per day ÷ speed; reduced motion steps an hour).
+- Intra-day times the engine does not model are display-only schedules (ASSUMPTIONS.md).
+- Proof: `sim-report` for both worlds is byte-identical to `2a21ed6` (before Brief 3).

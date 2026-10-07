@@ -1,5 +1,5 @@
 // Brief 3 V1 gate: layout sweep + style frames for the 3D sim, in a real browser.
-// Run: node scripts/sim3d-frames.ts [--sweep-only]
+// Run: node scripts/sim3d-frames.ts [--sweep-only] [--tag=v2]
 // Starts its own Vite dev server, opens the dev preview (?v=3d) at every size in SWEEP and
 // fails (exit 1) if any overlay cards overlap, spill sideways, leave the sim area or make the
 // page scroll sideways (src/sim/ui3d/layoutCheck.ts). Then writes the style frames into the
@@ -28,6 +28,8 @@ interface LayoutReport {
 }
 
 const OUT = '.sim-local'
+/** Frame name prefix, so each milestone's frames sit side by side (`v1-…`, `v2-…`). */
+const TAG = process.argv.find((a) => a.startsWith('--tag='))?.slice('--tag='.length) ?? 'frame'
 const PREVIEW = 'src/sim/worlds/distribusi/ui/preview.html'
 
 const SWEEP: Shot[] = [
@@ -47,13 +49,13 @@ const SWEEP: Shot[] = [
 ]
 
 const FRAMES: (Shot & { name: string })[] = [
-  { name: 'v1-1366x768-light', w: 1366, h: 768 },
-  { name: 'v1-390x844-light', w: 390, h: 844, phone: true },
-  { name: 'v1-1366x768-dark', w: 1366, h: 768, dark: true },
-  { name: 'v1-390x844-dark', w: 390, h: 844, phone: true, dark: true },
-  { name: 'v1-1920x1080-light', w: 1920, h: 1080 },
-  { name: 'v1-1366x768-shell', w: 1366, h: 768, shell: true },
-  { name: 'v1-1366x768-interior', w: 1366, h: 768, press: 'Lihat dalam gudang' },
+  { name: `${TAG}-1366x768-light`, w: 1366, h: 768 },
+  { name: `${TAG}-390x844-light`, w: 390, h: 844, phone: true },
+  { name: `${TAG}-1366x768-dark`, w: 1366, h: 768, dark: true },
+  { name: `${TAG}-390x844-dark`, w: 390, h: 844, phone: true, dark: true },
+  { name: `${TAG}-1920x1080-light`, w: 1920, h: 1080 },
+  { name: `${TAG}-1366x768-shell`, w: 1366, h: 768, shell: true },
+  { name: `${TAG}-1366x768-interior`, w: 1366, h: 768, press: 'Lihat dalam gudang' },
 ]
 
 async function launch(): Promise<Browser> {
@@ -77,7 +79,7 @@ async function open(browser: Browser, base: string, s: Shot): Promise<{ page: Pa
   })
   const page = await ctx.newPage()
   page.on('pageerror', (e) => console.log(`  [pageerror] ${String(e).slice(0, 300)}`))
-  const q = new URLSearchParams({ v: '3d' })
+  const q = new URLSearchParams({ v: '3d', day: '8', hour: '10.75' })
   if (s.shell) q.set('shell', '1')
   if (s.dark) q.set('theme', 'dark')
   await page.goto(`${base}${PREVIEW}?${q.toString()}`)

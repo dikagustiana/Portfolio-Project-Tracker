@@ -325,7 +325,7 @@ function Overview2({ data, follow, followPlatform, onFollow, onFollowPlatform }:
   )
 }
 
-function OrderWaterfall({ data, orderId }: { data: Computed2; orderId: string }) {
+export function OrderWaterfall({ data, orderId }: { data: Computed2; orderId: string }) {
   const e = data.alloc.perOrder.find((x) => x.id === orderId)
   const o = data.world.orders.find((x) => x.id === orderId)
   if (!e || !o) return null

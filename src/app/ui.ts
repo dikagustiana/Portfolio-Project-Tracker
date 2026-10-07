@@ -6,6 +6,8 @@ export type View = 'dash' | 'week' | 'team' | 'project' | 'admin' | 'sim'
 export type Tab = 'milestone' | 'vc' | 'list' | 'pipeline' | 'gantt'
 
 export type SimWorld = 'distribusi' | 'b2b-b2c'
+/** World 2 view: the 3D scene (default when the browser supports it) or the 2D canvas. */
+export type SimView = '3d' | '2d'
 
 export interface UIState {
   view: View
@@ -20,6 +22,7 @@ export interface UIState {
   ent: string
   vcStep: string
   simWorld: SimWorld
+  simView: SimView
 }
 
 const DEFAULTS: UIState = {
@@ -35,6 +38,7 @@ const DEFAULTS: UIState = {
   ent: '',
   vcStep: '',
   simWorld: 'distribusi',
+  simView: '3d',
 }
 
 const KEY = 'gpm-ui'
