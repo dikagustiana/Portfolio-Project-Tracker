@@ -191,15 +191,16 @@ export interface PalletRule {
   label: string
   widthM: number
   depthM: number
-  /** Total stacking height including the wooden pallet. */
+  /** Load height of the goods, excluding the wooden pallet (brief §11.3). */
   heightM: number
+  /** Wooden pallet thickness, for the total display height. */
   woodHeightM: number
 }
 
-/** DUMMY — two pallet rules; cartons stack in the height above the wood. */
+/** DUMMY — two pallet rules; cartons stack in the load height above the wood. */
 export const PALLET_RULES: Record<'std' | 'tall', PalletRule> = {
-  std: { id: 'std', label: '1,1 × 1,2 m, tinggi 1,0 m', widthM: 1.1, depthM: 1.2, heightM: 1.0, woodHeightM: 0.15 },
-  tall: { id: 'tall', label: '1,0 × 1,2 m, tinggi 1,8 m', widthM: 1.0, depthM: 1.2, heightM: 1.8, woodHeightM: 0.15 },
+  std: { id: 'std', label: '1,1 × 1,2 m, muatan 1,0 m', widthM: 1.1, depthM: 1.2, heightM: 1.0, woodHeightM: 0.15 },
+  tall: { id: 'tall', label: '1,0 × 1,2 m, muatan 1,8 m', widthM: 1.0, depthM: 1.2, heightM: 1.8, woodHeightM: 0.15 },
 }
 
 // --- Volume and allocation parameters (§4.3, §4.5) ------------------------------------------

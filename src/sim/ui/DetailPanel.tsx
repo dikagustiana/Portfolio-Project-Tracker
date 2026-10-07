@@ -122,7 +122,7 @@ export function DetailPanel({ data, day, toggles, selected, follow, onSelect, on
           {alloc.unallocated.truckCapacity > 0 && <> · kapasitas truk tak terpakai {formatRpShort(alloc.unallocated.truckCapacity)}</>}
         </div>
         <div style={{ fontSize: 11, color: 'var(--muted)' }}>
-          Toggle aturan alokasi ada di tombol "Aturan alokasi". Hari {day} dari {world.days}. Palet: {palletRuleLabel}.
+          Toggle aturan alokasi ada di tombol "Aturan alokasi". Hari {day} dari {world.days}. Palet: {palletRuleLabel} (tinggi muatan, tanpa palet kayu).
         </div>
       </div>
     )

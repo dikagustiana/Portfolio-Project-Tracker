@@ -34,7 +34,7 @@ export function palletFit(sku: Sku, toggles: Toggles): PalletFit {
   const d = sku.dCm / 100
   const h = sku.hCm / 100
   const perLayer = Math.max(1, Math.floor(rule.widthM / w) * Math.floor(rule.depthM / d), Math.floor(rule.widthM / d) * Math.floor(rule.depthM / w))
-  const layers = Math.max(1, Math.min(sku.stackFactor, Math.floor((rule.heightM - rule.woodHeightM) / h)))
+  const layers = Math.max(1, Math.min(sku.stackFactor, Math.floor(rule.heightM / h)))
   return { perLayer, layers, perPallet: perLayer * layers, rule: rule.label }
 }
 
