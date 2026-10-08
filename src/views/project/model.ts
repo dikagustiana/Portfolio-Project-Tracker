@@ -17,15 +17,32 @@ import type {
 } from '../../domain/index.ts'
 import type { Tab } from '../../app/ui.ts'
 
-/** Tabs of a project, in prototype order. Value chain only when the project has a template in use. */
-export function projectTabs(d: Domain, p: Project): [Tab, string][] {
+/** Top-level project tabs (spec §52). "Task" holds the four task views. */
+export type TopTab = 'milestone' | 'task' | 'keputusan' | 'aktivitas' | 'anggota'
+export const TOP_TABS: [TopTab, string][] = [
+  ['milestone', 'Milestone'],
+  ['task', 'Task'],
+  ['keputusan', 'Keputusan'],
+  ['aktivitas', 'Aktivitas'],
+  ['anggota', 'Anggota'],
+]
+const TASK_VIEWS: readonly Tab[] = ['list', 'pipeline', 'gantt', 'vc']
+export const isTaskView = (t: Tab): boolean => TASK_VIEWS.includes(t)
+export const topOf = (t: Tab): TopTab => (isTaskView(t) ? 'task' : (t as TopTab))
+
+/** The task views of a project. Value chain only when the project has a template in use. */
+export function taskViews(d: Domain, p: Project): [Tab, string][] {
   return [
-    ['milestone', 'Milestone'],
-    ...(d.hasVC(p) ? ([['vc', 'Value chain']] as [Tab, string][]) : []),
     ['list', 'Checklist'],
     ['pipeline', 'Pipeline'],
-    ['gantt', 'Gantt chart'],
+    ['gantt', 'Gantt'],
+    ...(d.hasVC(p) ? ([['vc', 'Value chain']] as [Tab, string][]) : []),
   ]
+}
+
+/** The tab in effect: one the project has, else Milestone (e.g. Value chain without a template). */
+export function projectTab(d: Domain, p: Project, tab: Tab): Tab {
+  return tab === 'vc' && !d.hasVC(p) ? 'list' : tab
 }
 
 /** People who are members of the project, in board order (the PIC filter's options). */
@@ -47,9 +64,26 @@ export function filterTasks(d: Domain, projectId: Id, who: string, q: string): T
     .filter(
       (t) =>
         (who === 'all' || (who === 'none' ? !t.assignee : t.assignee === who)) &&
-        (!s || `${t.title} ${t.desc || ''}`.toLowerCase().includes(s)),
+        (!s || `${t.ref} ${t.title} ${t.desc || ''}`.toLowerCase().includes(s)),
     )
     .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end))
+}
+
+/** A row with the sub-tasks that are in the same (filtered) list. */
+export interface Nested {
+  t: Task
+  kids: Task[]
+}
+
+/**
+ * Packages with their sub-tasks under them, in the order of rows. A sub-task whose package is
+ * filtered out stays in the list on its own, so a filter never hides a match.
+ */
+export function nestRows(rows: readonly Task[]): Nested[] {
+  const inList = new Set(rows.map((t) => t.id))
+  return rows
+    .filter((t) => !t.parentId || !inList.has(t.parentId))
+    .map((t) => ({ t, kids: rows.filter((c) => c.parentId === t.id) }))
 }
 
 export interface ListGroup {
@@ -91,17 +125,17 @@ export function vcSelected(d: Domain, p: Project, vcStep: string): string {
   return vcAll(d, p).some((s) => s.code === vcStep) ? vcStep : ''
 }
 
-/** Value chain tab groups (prototype viewVC), only those with rows. */
+/** Value chain tab groups (prototype viewVC), only those with rows. Leaf tasks, like the step progress. */
 export function vcGroups(d: Domain, p: Project, ts: readonly Task[], sel: string): VcGroup[] {
   const groups: VcGroup[] = vcAll(d, p)
     .filter((s) => !sel || s.code === sel)
-    .map((s) => ({ step: s, title: d.vcLabel(s), need: s.need, rows: ts.filter((t) => d.vcOf(t).includes(s.code)) }))
+    .map((s) => ({ step: s, title: d.vcLabel(s), need: s.need, rows: ts.filter((t) => d.isLeaf(t) && d.vcOf(t).includes(s.code)) }))
   if (!sel)
     groups.push({
       step: null,
       title: 'Tidak masuk value chain',
       need: 'Paket fondasi, BAU dan planning',
-      rows: ts.filter((t) => !d.vcOf(t).length),
+      rows: ts.filter((t) => d.isLeaf(t) && !d.vcOf(t).length),
     })
   return groups.filter((g) => g.rows.length > 0)
 }
@@ -116,22 +150,13 @@ export function openAsks(d: Domain, p: Project): Ask[] {
     .sort((x, y) => (x.due || '9').localeCompare(y.due || '9') || x.createdAt - y.createdAt)
 }
 
-export type LogEntry =
-  | { kind: 'project'; at: number; d: Decision }
-  | { kind: 'gate'; at: number; d: Decision }
-  | { kind: 'ask'; at: number; a: Ask }
-
-/** "Log keputusan": gate and project decisions plus decided asks, newest first (stable). */
-export function decisionLog(d: Domain, p: Project): LogEntry[] {
-  const out: LogEntry[] = [
-    ...d.board.decisions
-      .filter((x) => x.projectId === p.id)
-      .map((x): LogEntry => (x.kind === 'project' ? { kind: 'project', at: x.at, d: x } : { kind: 'gate', at: x.at, d: x })),
-    ...d.board.asks
-      .filter((x) => x.projectId === p.id && x.status === 'decided')
-      .map((x): LogEntry => ({ kind: 'ask', at: x.decidedAt || 0, a: x })),
-  ]
-  return out.sort((a, b) => b.at - a.at)
+/**
+ * "Log keputusan": every recorded decision of the project (gates, project close/reopen and
+ * Keputusan answers or reopenings), newest first. The log is append-only, so a reopened
+ * Keputusan keeps its earlier answer here.
+ */
+export function decisionLog(d: Domain, p: Project): Decision[] {
+  return d.board.decisions.filter((x) => x.projectId === p.id).sort((a, b) => b.at - a.at)
 }
 
 // ---------- Gantt ----------
@@ -166,7 +191,7 @@ export type GanttRow =
       target: { left: number; labelLeft: number } | null
     }
   | { kind: 'loose'; key: string }
-  | { kind: 'task'; key: string; t: Task; left: number; width: number }
+  | { kind: 'task'; key: string; t: Task; left: number; width: number; child: boolean }
 
 export interface GanttArrow {
   key: string
@@ -255,22 +280,25 @@ export function ganttLayout(
       target: m.target && td >= a && td <= b ? { left: (td - a) * DW + DW - 8, labelLeft: (td - a) * DW + DW + 14 } : null,
     }
   }
-  const taskRow = (t: Task): GanttRow => ({
+  const taskRow = (t: Task, child = false): GanttRow => ({
     kind: 'task',
     key: t.id,
     t,
     left: (dn(t.start) - a) * DW,
     width: d.durDays(t) * DW,
+    child,
   })
+  // Sub-tasks right under their package.
+  const tree = (list: readonly Task[]): GanttRow[] => nestRows(list).flatMap((n) => [taskRow(n.t, !!n.t.parentId), ...n.kids.map((k) => taskRow(k, true))])
   for (const m of ms) {
     const mine = ts.filter((t) => t.milestoneId === m.id)
     if (mine.length || !filtering) rows.push(msRow(m))
-    rows.push(...mine.map(taskRow))
+    rows.push(...tree(mine))
   }
   const loose = ts.filter((t) => !t.milestoneId || !d.mstone(t.milestoneId))
   if (loose.length) {
     if (rows.length) rows.push({ kind: 'loose', key: 'loose' })
-    rows.push(...loose.map(taskRow))
+    rows.push(...tree(loose))
   }
 
   let y = 0

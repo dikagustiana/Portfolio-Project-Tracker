@@ -57,8 +57,9 @@ select is_empty(
   $$ select tablename
        from pg_publication_tables
       where pubname = 'supabase_realtime'
-        and tablename in ('people_contact', 'app_roles', 'activity_log', 'email_log') $$,
-  'contact details, roles and logs are not streamed over Realtime'
+        and tablename in ('people_contact', 'profiles', 'pending_system_roles', 'invitations', 'invitation_projects',
+                          'migration_flags', 'activity_log', 'email_log') $$,
+  'contact details, roles, invitations, migration notes and logs are not streamed over Realtime'
 );
 
 select * from finish();

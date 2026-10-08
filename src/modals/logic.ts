@@ -9,17 +9,19 @@ export const ACTIVITY =
   /^(urus|mengurus|buat|bikin|membuat|siapkan|menyiapkan|lakukan|melakukan|kerjakan|proses|memproses|susun|menyusun|cari|mencari|follow ?up|koordinasi|meeting|rapat)\b/i
 
 export const LOCK_MSG = 'Project ini sudah ditutup atau dihentikan. Buka lagi project-nya untuk mengubah.'
-export const PM_ONLY_MSG = 'Hanya Project Manager yang bisa melakukan ini.'
+export const PM_ONLY_MSG = 'Hanya Project Admin yang bisa melakukan ini.'
 
 /** People with one of `roles` on the project, in the board's (name) order. */
 export function projectPeople(board: Board, projectId: Id, roles: readonly ProjectRole[]): Person[] {
   const ids = new Set(board.memberships.filter((m) => m.projectId === projectId && roles.includes(m.role)).map((m) => m.personId))
   return board.people.filter((p) => ids.has(p.id))
 }
-/** Who can be PIC: PM or officer members of this project. */
-export const picPeople = (board: Board, projectId: Id): Person[] => projectPeople(board, projectId, ['pm', 'officer'])
-/** Who can be PM, pemeriksa, pemutus or ask decider: PM members of this project. */
-export const pmPeople = (board: Board, projectId: Id): Person[] => projectPeople(board, projectId, ['pm'])
+/** Who can be PIC: project admins and members of this project. */
+export const picPeople = (board: Board, projectId: Id): Person[] => projectPeople(board, projectId, ['project_admin', 'member'])
+/** Who can judge (pemeriksa, pemutus, Keputusan decider): admins and members; never viewers (ARCHITECTURE §D). */
+export const judgePeople = (board: Board, projectId: Id): Person[] => projectPeople(board, projectId, ['project_admin', 'member'])
+/** Who can be the project's PM: its project admins. */
+export const adminPeople = (board: Board, projectId: Id): Person[] => projectPeople(board, projectId, ['project_admin'])
 /** `id` when it is one of `people`, else '' (a select cannot show a value it has no option for). */
 export const pick = (people: readonly Person[], id: Id | null | undefined): Id => (id && people.some((p) => p.id === id) ? id : '')
 
@@ -45,25 +47,32 @@ export function reopenNote(d: Domain, old: Task | null | undefined, next: { mile
 }
 export const withNote = (msg: string, note: string): string => (note ? `${msg} · ${note}` : msg)
 
-export interface TaskPreset {
-  milestoneId?: Id
-  title?: string
-  desc?: string
-}
+import type { TaskPreset } from '../app/flows.ts'
+export type { TaskPreset }
 
-/** A new task as the prototype's openTask pre-fills it. */
+/**
+ * A new task as the prototype's openTask pre-fills it, inheriting what the context already knows
+ * (ARCHITECTURE §I): the project, the gate, and for a sub-task its package (gate, PIC, function,
+ * and dates inside the package's window).
+ */
 export function newTask(d: Domain, projectId: Id, today: string, preset: TaskPreset = {}): Task {
   const p = d.project(projectId)
-  const msId = preset.milestoneId || (p ? d.currentMs(p)?.id : '') || d.pms(projectId)[0]?.id || ''
+  const parent = preset.parentId ? d.task(preset.parentId) : undefined
+  const msId = parent ? parent.milestoneId : preset.milestoneId || (p ? d.currentMs(p)?.id : '') || d.pms(projectId)[0]?.id || ''
+  const start = parent ? (today < parent.start ? parent.start : today > parent.end ? parent.start : today) : today
+  const end = parent ? (addDays(start, 3) > parent.end ? parent.end : addDays(start, 3)) : addDays(today, 3)
   return {
     id: '',
     projectId,
+    ref: '',
+    parentId: parent?.id ?? '',
+    ownerFunctionId: parent?.ownerFunctionId ?? '',
     milestoneId: msId,
     title: preset.title ?? '',
     desc: preset.desc ?? '',
-    start: today,
-    end: addDays(today, 3),
-    assignee: '',
+    start,
+    end: end < start ? start : end,
+    assignee: parent?.assignee ?? '',
     validator: '',
     proof: '',
     stage: 'todo',
@@ -80,6 +89,7 @@ export function newTask(d: Domain, projectId: Id, today: string, preset: TaskPre
     rejectedBy: null,
     doneAt: null,
     deps: [],
+    acceptDeps: [],
     steps: [],
     createdAt: 0,
   }
@@ -92,7 +102,7 @@ export function taskSaveError(d: Domain, t: Task, gated: boolean, hasMilestones:
   if (t.end < t.start) return 'Tanggal selesai tidak boleh sebelum tanggal mulai.'
   if (gated && t.assignee && t.assignee === t.validator) return 'Pemeriksa tidak boleh orang yang sama dengan PIC.'
   if (gated && d.selfAccept(t)) return 'Penerima task ini jatuh ke PIC-nya sendiri. Pilih pemeriksa lain.'
-  if (gated && hasMilestones && !t.milestoneId)
+  if (gated && hasMilestones && !t.milestoneId && !t.parentId)
     return 'Pilih milestone. Di project dengan alur pemeriksaan, setiap task harus masuk milestone.'
   return ''
 }
@@ -101,6 +111,8 @@ export function taskSaveError(d: Domain, t: Task, gated: boolean, hasMilestones:
 export interface TaskPayload {
   id?: string
   project_id?: string
+  parent_task_id?: string
+  owner_function_id: string
   milestone_id: string
   title: string
   description: string
@@ -109,8 +121,8 @@ export interface TaskPayload {
   assignee_person_id: string
   validator_person_id?: string
   proof_requested?: string
-  stage: string
-  deps: string[]
+  stage?: string
+  deps: { task_id: string; kind: 'start' | 'accept' }[]
   steps?: string[]
   commit?: 'on' | 'off'
 }
@@ -120,9 +132,13 @@ export interface TaskPayload {
  * value-chain template; commit is omitted when the toggle was hidden (the database then clears
  * the commitment if dates or PIC changed).
  */
-export function taskPayload(t: Task, o: { isNew: boolean; gated: boolean; hasTemplate: boolean; commit?: 'on' | 'off' }): TaskPayload {
+export function taskPayload(
+  t: Task,
+  o: { isNew: boolean; gated: boolean; hasTemplate: boolean; commit?: 'on' | 'off'; admin?: boolean },
+): TaskPayload {
   return {
-    ...(o.isNew ? { project_id: t.projectId } : { id: t.id }),
+    ...(o.isNew ? { project_id: t.projectId, ...(t.parentId ? { parent_task_id: t.parentId } : {}) } : { id: t.id }),
+    owner_function_id: t.ownerFunctionId,
     milestone_id: t.milestoneId,
     title: t.title,
     description: t.desc,
@@ -130,8 +146,9 @@ export function taskPayload(t: Task, o: { isNew: boolean; gated: boolean; hasTem
     end_date: t.end,
     assignee_person_id: t.assignee,
     ...(o.gated ? { validator_person_id: t.validator, proof_requested: t.proof } : {}),
-    stage: t.stage,
-    deps: [...t.deps],
+    // Only project admins set the stage here; members move work through the workflow RPCs.
+    ...(o.admin !== false ? { stage: t.stage } : {}),
+    deps: [...t.deps.map((id) => ({ task_id: id, kind: 'start' as const })), ...t.acceptDeps.map((id) => ({ task_id: id, kind: 'accept' as const }))],
     ...(o.hasTemplate ? { steps: [...t.steps] } : {}),
     ...(o.gated && o.commit ? { commit: o.commit } : {}),
   }

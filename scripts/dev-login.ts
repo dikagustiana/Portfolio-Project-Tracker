@@ -1,5 +1,5 @@
 // Local development only: create logins for people with an e-mail on file and print a one-time
-// sign-in link for each, so the board can be tried as owner, PM or officer without a mailbox.
+// sign-in link for each, so the board can be tried as super admin, Project Admin or Member without a mailbox.
 //   node --env-file=.env.local scripts/dev-login.ts [email …]
 // Refuses to run against anything but a local Supabase stack.
 import { createClient } from '@supabase/supabase-js'

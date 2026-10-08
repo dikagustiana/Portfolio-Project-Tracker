@@ -98,7 +98,7 @@ describe('commitAfterEdit (prototype saveTask)', () => {
     expect(base.commitAfterEdit(moved, committed, null)).toEqual({ committed: true, stamp: true })
     const b = prototypeBoard()
     b.people = b.people.map((p) => ({ ...p, userId: `u-${p.id}` }))
-    const as = (personId: string): Viewer => ({ userId: `u-${personId}`, personId, isOwner: false, isGroupViewer: false })
+    const as = (personId: string): Viewer => ({ userId: `u-${personId}`, personId, isSuperAdmin: false })
     expect(domain(b, as('m-yani')).commitAfterEdit(moved, committed, null)).toEqual({ committed: true, stamp: true })
     expect(domain(b, as('m-david')).commitAfterEdit(moved, committed, null)).toEqual({ committed: false, stamp: false })
     expect(base.commitAfterEdit({ ...committed, assignee: 'm-muti' }, committed, null)).toEqual({
@@ -155,6 +155,13 @@ describe('reaches (dependency cycle check)', () => {
     expect(d.reaches('MB01', 'MB03')).toBe(true)
     expect(d.reaches('MB01', 'MB04')).toBe(false)
   })
+
+  it('follows acceptance-only prerequisites too, as the database does', () => {
+    const b = prototypeBoard()
+    must(b.tasks.find((t) => t.id === 'MB05'), 'MB05').acceptDeps = ['MB04']
+    const d = domain(b)
+    expect(d.reaches('MB05', 'MB04')).toBe(true)
+  })
 })
 
 describe('dates and text', () => {
@@ -206,9 +213,19 @@ describe('status chips (prototype due/statusChip)', () => {
 })
 
 describe('milestone numbers', () => {
-  it('fall back to M1…Mn by order when a gate has no code', () => {
+  it('fall back to the immutable ref when a gate has no code', () => {
     const b = prototypeBoard()
     for (const m of b.milestones) m.code = null
+    const d = domain(b)
+    expect(d.msNo(must(d.mstone('G10'), 'G10'))).toBe('G10')
+  })
+
+  it('fall back to M1…Mn by order when a gate has neither code nor ref (prototype data)', () => {
+    const b = prototypeBoard()
+    for (const m of b.milestones) {
+      m.code = null
+      m.ref = ''
+    }
     const d = domain(b)
     expect(d.msNo(must(d.mstone('G0'), 'G0'))).toBe('M1')
     expect(d.msNo(must(d.mstone('G10'), 'G10'))).toBe('M11')
@@ -263,7 +280,8 @@ describe('digest e-mail', () => {
     const d = domain(withEmail())
     const mail = d.emailFor(must(d.digestFor('m-yani'), 'digest'))
     expect(mail.to).toBe('yani@example.com')
-    expect(mail.html).toContain(`<b>&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; 'q'</b>`)
+    expect(mail.html).toContain(`>&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; 'q'</a></b>`)
+    expect(mail.html).toContain(`href="${PROTOTYPE_URL}/#/p/MB/t/MB04"`)
     expect(mail.html).not.toContain('<script>')
     expect(mail.html).toContain(`href="${PROTOTYPE_URL}"`)
     expect(mail.text).toContain(`• <script>alert("x")</script> & 'q'\n  Project Margin Bridge · G2 · `)
@@ -361,7 +379,7 @@ describe('calendar links', () => {
   const t = taskOf(base, 'MB01')
   it('describes the task', () => {
     expect(base.calDetails(t)).toBe(
-      `Project: Project Margin Bridge\nMilestone: G0 · ${must(base.mstone('G0'), 'G0').title}\nPIC: -\nPemeriksa: Dika\nJadwal: 5 Okt – 9 Okt\nBukti yang diminta: ${t.proof}\n\nBuka di SAMB Project Board: ${PROTOTYPE_URL}`,
+      `Project: Project Margin Bridge\nMilestone: G0 · ${must(base.mstone('G0'), 'G0').title}\nPIC: -\nPemeriksa: Dika\nJadwal: 5 Okt – 9 Okt\nBukti yang diminta: ${t.proof}\n\nBuka di SAMB Project Board: ${PROTOTYPE_URL}/#/p/MB/t/${t.id}`,
     )
   })
 
@@ -408,11 +426,11 @@ describe('planning helpers', () => {
       { ok: false, text: 'Tanggal task G0 dikomit PIC (0/3)', action: { kind: 'week' } },
     ])
     expect(steps).toHaveLength(10)
-    const owner = domain(prototypeBoard(), { userId: 'u', personId: 'm-dika', isOwner: true, isGroupViewer: false })
+    const owner = domain(prototypeBoard(), { userId: 'u', personId: 'm-dika', isSuperAdmin: true })
     const last = must(owner.nextSteps(p).at(-1), 'last step')
     expect(last.ok).toBe(false)
-    expect(last.text).toMatch(/^4 orang belum dihubungkan ke akunnya oleh Project Manager \(/)
-    expect(last.action).toEqual({ kind: 'team' })
+    expect(last.text).toMatch(/^4 orang belum punya akun: undang lewat Anggota \(/)
+    expect(last.action).toEqual({ kind: 'members' })
   })
 
   it('health reports overdue asks and late tasks', () => {

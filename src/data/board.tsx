@@ -21,15 +21,23 @@ export function BoardProvider({ supa, viewer, children, loading }: { supa: Supa;
   const qc = useQueryClient()
   const today = useToday()
   const results = useQueries({
-    queries: BOARD_TABLES.map((t) => ({ queryKey: ['t', t, viewer.userId], queryFn: () => fetchAll(supa, t), staleTime: 30_000 })),
+    // The system role is part of the key: when it changes, every table is read again under the new rights.
+    queries: BOARD_TABLES.map((t) => ({
+      queryKey: ['t', t, viewer.userId, viewer.isSuperAdmin],
+      queryFn: () => fetchAll(supa, t),
+      staleTime: 30_000,
+    })),
   })
 
   // Realtime: any change on a published table refetches that table (debounced).
   useEffect(() => {
     const timers = new Map<string, ReturnType<typeof setTimeout>>()
+    // A membership change changes which projects are readable at all: refetch everything.
+    const SCOPE = new Set(['project_members'])
     const bump = (table: string) => {
-      clearTimeout(timers.get(table))
-      timers.set(table, setTimeout(() => void qc.invalidateQueries({ queryKey: ['t', table] }), 250))
+      const key = SCOPE.has(table) ? '*' : table
+      clearTimeout(timers.get(key))
+      timers.set(key, setTimeout(() => void qc.invalidateQueries({ queryKey: key === '*' ? ['t'] : ['t', table] }), 250))
     }
     const channel = supa
       .channel('board')

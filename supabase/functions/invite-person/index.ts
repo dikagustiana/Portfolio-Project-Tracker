@@ -1,11 +1,15 @@
-// Owner-only invitation (BRIEF §10 M3). Public sign-up is closed, so logins are created here.
+// Login links for invited people (docs/ARCHITECTURE.md §K). Public sign-up is closed, so logins
+// are created here.
 //
 // POST { person_id, mode: 'email' | 'link', redirect_to? }
 //   email → Supabase sends the invite (new login) or a magic link (existing login). Needs SMTP
 //           for addresses outside the Supabase team until custom SMTP is configured.
-//   link  → returns a one-time link the owner can pass on (WhatsApp, Outlook) without SMTP.
+//   link  → returns a one-time link the caller can pass on (WhatsApp, Outlook) without SMTP.
 //
-// The caller is checked with their own JWT (whoami); only then is the service role used.
+// Who may do this is decided by the database, with the caller's own JWT: login_link_target lets
+// the super admin through, and a Project Admin only for someone with a pending invitation to one of
+// their projects; it also refuses revoked or expired invitations. Only then is the service role
+// used, and only for the auth call.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 
 const cors = {
@@ -28,10 +32,6 @@ Deno.serve(async (req) => {
   if (!url || !anonKey || !serviceKey) return reply(500, { error: 'Konfigurasi fungsi belum lengkap.' })
   if (!authHeader) return reply(401, { error: 'Kamu perlu masuk dulu.' })
 
-  const caller = createClient(url, anonKey, { global: { headers: { Authorization: authHeader } } })
-  const { data: who, error: whoErr } = await caller.rpc('whoami')
-  if (whoErr || !who?.is_owner) return reply(403, { error: 'Hanya owner yang bisa mengundang.' })
-
   let body: { person_id?: string; mode?: string; redirect_to?: string }
   try {
     body = await req.json()
@@ -41,23 +41,25 @@ Deno.serve(async (req) => {
   const mode = body.mode === 'link' ? 'link' : 'email'
   if (!body.person_id) return reply(400, { error: 'Pilih orangnya.' })
 
-  const admin = createClient(url, serviceKey, { auth: { persistSession: false } })
-  const { data: person } = await admin.from('people').select('id, user_id, display_name').eq('id', body.person_id).maybeSingle()
-  if (!person) return reply(404, { error: 'Orang ini tidak ditemukan.' })
-  const { data: contact } = await admin.from('people_contact').select('email').eq('person_id', person.id).maybeSingle()
-  if (!contact?.email) return reply(400, { error: `${person.display_name} belum punya email kantor. Isi dulu emailnya.` })
+  const caller = createClient(url, anonKey, { global: { headers: { Authorization: authHeader } } })
+  const { data: target, error: denied } = await caller.rpc('login_link_target', { p_person: body.person_id })
+  if (denied) {
+    const status = denied.code === '42501' ? 403 : denied.code === 'P0002' ? 404 : 400
+    return reply(status, { error: denied.message })
+  }
+  const { email, has_login: hasLogin } = target as { email: string; has_login: boolean }
 
-  const email = String(contact.email)
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false } })
   const redirectTo = body.redirect_to || undefined
 
   if (mode === 'link') {
-    const type = person.user_id ? 'magiclink' : 'invite'
+    const type = hasLogin ? 'magiclink' : 'invite'
     const { data, error } = await admin.auth.admin.generateLink({ type, email, options: { redirectTo } })
     if (error) return reply(400, { error: error.message })
     return reply(200, { mode, type, email, link: data.properties?.action_link ?? null })
   }
 
-  if (person.user_id) {
+  if (hasLogin) {
     const { error } = await admin.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: redirectTo } })
     if (error) return reply(400, { error: error.message })
     return reply(200, { mode, type: 'magiclink', email })

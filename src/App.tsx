@@ -33,8 +33,8 @@ function SessionGate({ supa }: { supa: Supa }) {
 interface WhoAmI {
   user_id: string
   person_id: string | null
-  is_owner: boolean
-  is_group_viewer: boolean
+  system_role: 'super_admin' | 'user'
+  is_super_admin: boolean
 }
 
 function SignedIn({ supa, userId }: { supa: Supa; userId: string }) {
@@ -45,14 +45,17 @@ function SignedIn({ supa, userId }: { supa: Supa; userId: string }) {
       if (error) throw new Error(error.message)
       return data as unknown as WhoAmI
     },
+    // Roles live in profiles, which is not streamed over Realtime: re-ask every minute and on focus,
+    // so a withdrawn super admin role closes the admin screens and reloads the board within a minute.
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   })
   if (who.isError) return <Notice title="Gagal memuat akun" text={who.error.message} retry />
   if (!who.data) return <Loading />
   const viewer: Viewer = {
     userId: who.data.user_id,
     personId: who.data.person_id,
-    isOwner: who.data.is_owner,
-    isGroupViewer: who.data.is_group_viewer,
+    isSuperAdmin: who.data.is_super_admin,
   }
   return (
     <OverlayProvider>

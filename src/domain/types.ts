@@ -8,7 +8,10 @@ export type DateStr = string
 /** Epoch milliseconds. */
 export type Ts = number
 
-export type ProjectRole = 'pm' | 'officer' | 'viewer'
+/** project_admin plans and administers; member works on items they hold; viewer reads. */
+export type ProjectRole = 'project_admin' | 'member' | 'viewer'
+export type SystemRole = 'super_admin' | 'user'
+export type DepKind = 'start' | 'accept'
 export type Stage = 'todo' | 'progress' | 'review' | 'done'
 export type ProjectStatus = 'aktif' | 'selesai' | 'dihentikan'
 export type Maturity = 'prototype' | 'release' | 'decision' | 'bau'
@@ -36,7 +39,16 @@ export interface Person {
   /** Only present where the viewer may read it (owner, PMs of a shared project, server jobs). */
   email: string | null
   emailDaily: boolean
+  /** Primary business function, '' when unset. */
+  functionId: Id
   createdAt: Ts
+}
+
+/** A business function (Accounting, Commercial, …): responsibility before a named PIC exists. */
+export interface BusinessFunction {
+  id: Id
+  name: string
+  sort: number
 }
 
 export interface Membership {
@@ -47,6 +59,8 @@ export interface Membership {
 
 export interface Project {
   id: Id
+  /** Immutable short code used in addresses (MB). '' only in prototype fixtures. */
+  code: string
   name: string
   entity: string
   outcome: string
@@ -69,7 +83,9 @@ export interface Project {
 export interface Milestone {
   id: Id
   projectId: Id
-  /** Gate code such as 'G3'; null falls back to M1…Mn. */
+  /** Immutable short id (G3); '' only in prototype fixtures. */
+  ref: string
+  /** Gate code such as 'G3'; null falls back to the ref, then M1…Mn. */
   code: string | null
   title: string
   target: DateStr
@@ -88,6 +104,12 @@ export interface Milestone {
 export interface Task {
   id: Id
   projectId: Id
+  /** Immutable short id (MB12, MB05.1); '' only in prototype fixtures. */
+  ref: string
+  /** Package this sub-task belongs to, '' for a top-level task. */
+  parentId: Id
+  /** Business function that owns the task, '' when unset. */
+  ownerFunctionId: Id
   /** '' when the task sits outside any milestone. */
   milestoneId: Id
   title: string
@@ -113,8 +135,10 @@ export interface Task {
   rejectedAt: Ts | null
   rejectedBy: Id | null
   doneAt: Ts | null
-  /** Finish-to-start: ids of tasks this one waits for. */
+  /** Finish-to-start ('start'): ids of tasks this one waits for before it can start. */
   deps: Id[]
+  /** Acceptance-only ('accept'): may run in parallel, cannot be accepted before these. */
+  acceptDeps: Id[]
   /** Template step codes this task fills (e.g. 'store', 'lp'). */
   steps: string[]
   createdAt: Ts
@@ -123,8 +147,17 @@ export interface Task {
 export interface Ask {
   id: Id
   projectId: Id
+  /** Immutable short id (K01); '' only in prototype fixtures. */
+  ref: string
   milestoneId: Id
   question: string
+  context: string
+  options: string[]
+  recommendation: string
+  /** Why the decision was taken (with the answer). */
+  rationale: string
+  /** Tasks this Keputusan blocks or concerns. */
+  taskIds: Id[]
   /** Assigned pemutus (people id), '' means the project PM. */
   decider: Id
   due: DateStr
@@ -143,10 +176,13 @@ export interface Decision {
   id: Id
   projectId: Id
   milestoneId: Id | null
-  kind: 'gate' | 'project'
-  /** Gate: lulus | rescope | stop. Project: selesai | dihentikan | aktif. */
+  kind: 'gate' | 'project' | 'ask'
+  /** Gate: lulus | rescope | stop. Project: selesai | dihentikan | aktif. Ask: decided | reopened. */
   status: string
+  /** Gate/project note, or the Keputusan's answer. */
   note: string
+  rationale: string
+  askId: Id | null
   /** Recorder (people id). */
   by: Id | null
   at: Ts
@@ -205,6 +241,118 @@ export interface CalendarEntry {
   at: Ts
 }
 
+/** A task flagged Terhambat: an overlay, not a stage. At most one open per task. */
+export interface Blocker {
+  id: Id
+  projectId: Id
+  taskId: Id
+  reason: string
+  need: string
+  neededFromPerson: Id
+  neededFromFunction: Id
+  target: DateStr
+  raisedBy: Id | null
+  raisedAt: Ts
+  resolvedBy: Id | null
+  resolvedAt: Ts | null
+  resolution: string | null
+  /** Keputusan this blocker was escalated to. */
+  askId: Id
+}
+
+/** One submission round of a task: never overwritten. */
+export interface ReviewRound {
+  id: Id
+  projectId: Id
+  taskId: Id
+  round: number
+  submittedBy: Id | null
+  submittedAt: Ts
+  evidence: string
+  reviewer: Id | null
+  reviewedAt: Ts | null
+  verdict: 'accepted' | 'rejected' | 'withdrawn' | null
+  feedback: string | null
+  reopenedAt: Ts | null
+  reopenedBy: Id | null
+}
+
+/** One commitment of a task's dates; the first is the baseline. */
+export interface Commitment {
+  id: Id
+  seq: number
+  projectId: Id
+  taskId: Id
+  start: DateStr
+  end: DateStr
+  by: Id | null
+  at: Ts
+}
+
+export interface Comment {
+  id: Id
+  projectId: Id
+  taskId: Id
+  askId: Id
+  author: Id | null
+  body: string
+  at: Ts
+}
+
+export type EventVerb =
+  | 'task_created' | 'task_started' | 'task_submitted' | 'task_withdrawn' | 'task_accepted' | 'task_completed'
+  | 'task_rejected' | 'task_reopened' | 'task_deleted' | 'pic_changed'
+  | 'commitment_made' | 'commitment_changed' | 'commitment_cleared'
+  | 'blocker_raised' | 'blocker_resolved' | 'blocker_escalated'
+  | 'gate_passed' | 'gate_stopped' | 'gate_rescoped'
+  | 'decision_requested' | 'decision_made' | 'decision_reopened'
+  | 'project_created' | 'project_closed' | 'project_stopped' | 'project_reopened'
+  | 'member_added' | 'member_role_changed' | 'member_removed' | 'comment_added'
+
+/** Human-readable, append-only project history (separate from the forensic activity log). */
+export interface ProjectEvent {
+  id: number
+  projectId: Id
+  objectType: 'project' | 'task' | 'milestone' | 'ask' | 'member'
+  objectId: Id
+  objectRef: string
+  objectTitle: string
+  verb: EventVerb
+  actor: Id | null
+  actorName: string
+  at: Ts
+  meta: Record<string, unknown>
+}
+
+export type InvitationStatus = 'pending' | 'accepted' | 'revoked' | 'expired'
+export interface Invitation {
+  id: Id
+  email: string
+  displayName: string
+  personId: Id
+  invitedBy: Id | null
+  status: InvitationStatus
+  expiresAt: Ts
+  createdAt: Ts
+  acceptedAt: Ts | null
+  revokedAt: Ts | null
+  /** Only the rows the viewer may read (their projects, or all for the super admin). */
+  projects: { projectId: Id; role: ProjectRole; previousRole: ProjectRole | null }[]
+}
+
+/** Something the structure extraction could not map reliably. */
+export interface MigrationFlag {
+  id: number
+  projectId: Id
+  objectType: string
+  objectId: Id
+  ref: string
+  code: string
+  detail: string
+  createdAt: Ts
+  resolvedAt: Ts | null
+}
+
 export interface Board {
   people: Person[]
   memberships: Membership[]
@@ -217,6 +365,14 @@ export interface Board {
   holidays: Holiday[]
   templates: StepTemplate[]
   settings: Settings
+  functions: BusinessFunction[]
+  blockers: Blocker[]
+  reviews: ReviewRound[]
+  commitments: Commitment[]
+  comments: Comment[]
+  events: ProjectEvent[]
+  invitations: Invitation[]
+  flags: MigrationFlag[]
 }
 
 /**
@@ -227,8 +383,8 @@ export interface Viewer {
   userId: string
   /** The people row linked to this login, if any. */
   personId: Id | null
-  isOwner: boolean
-  isGroupViewer: boolean
+  /** profiles.system_role = 'super_admin': every project, administration. */
+  isSuperAdmin: boolean
 }
 
 export interface DomainContext {

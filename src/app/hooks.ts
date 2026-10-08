@@ -1,9 +1,12 @@
 import { useBoard } from '../data/board-context.ts'
 
-/** Badge count shared by sidebar, dashboard banner and "Minggu ini" (prototype actionCount). */
+/**
+ * Badge count of Beranda (prototype actionCount): the length of the Perlu tindakan view it opens,
+ * plus the viewer's own calendar events that need updating (shown in the same block).
+ */
 export function useActionCount(): number {
   const { d, extras } = useBoard()
-  return d.inbox('').n + d.calIssues(extras.calendar).length
+  return d.actions('').length + d.calIssues(extras.calendar).length
 }
 
 /**

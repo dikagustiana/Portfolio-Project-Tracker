@@ -2,10 +2,11 @@
 import { useFlows } from '../../app/flows.ts'
 import { useBoard } from '../../data/board-context.ts'
 import type { NextStepAction, Project } from '../../domain/index.ts'
+import { setUI } from '../../app/ui.ts'
 import { useGo, useReadOnly } from './hooks.ts'
 
 const LABEL: Record<NextStepAction['kind'], string> = {
-  team: 'Buka Tim',
+  members: 'Buka Anggota',
   editProject: 'Edit project',
   newMs: 'Tambah milestone',
   newTask: 'Tambah task',
@@ -16,7 +17,7 @@ const LABEL: Record<NextStepAction['kind'], string> = {
 const PLAN_ONLY: ReadonlySet<NextStepAction['kind']> = new Set(['editProject', 'newMs', 'newTask'])
 
 export function NextSteps({ p }: { p: Project }) {
-  const { d, viewer } = useBoard()
+  const { d } = useBoard()
   const flows = useFlows()
   const go = useGo()
   const ro = useReadOnly(p)
@@ -34,8 +35,8 @@ export function NextSteps({ p }: { p: Project }) {
 
   const run = (a: NextStepAction) => {
     switch (a.kind) {
-      case 'team':
-        return go({ view: 'team' })
+      case 'members':
+        return setUI({ tab: 'anggota' })
       case 'week':
         return go({ view: 'week' })
       case 'editProject':
@@ -48,8 +49,7 @@ export function NextSteps({ p }: { p: Project }) {
         return flows.openTask(a.taskId)
     }
   }
-  // "Buka Tim" is for the owner only (the Team screen is where people are linked).
-  const shown = (a: NextStepAction | null): a is NextStepAction => !!a && !ro && (a.kind !== 'team' || viewer.isOwner)
+  const shown = (a: NextStepAction | null): a is NextStepAction => !!a && !ro
 
   const todo = L.filter((x) => !x.ok)
   return (

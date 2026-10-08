@@ -1,7 +1,7 @@
 // BRIEF §6.7 regression: the prototype's task form saved the chosen pemeriksa into a stray field, so
 // changes never persisted. Change the validator in the real form, save, and read the row back.
 import { expect, test } from '@playwright/test'
-import { addPerson, adminClient, cleanup, run, signIn } from './helpers.ts'
+import { addSuperAdmin, adminClient, cleanup, peekOf, run, signIn } from './helpers.ts'
 
 const suffix = `.${run}@e2e.test`
 
@@ -9,7 +9,7 @@ test('changing the pemeriksa in the task form changes validator_person_id', asyn
   const admin = adminClient()
   const base = baseURL ?? 'http://localhost:5173'
   const people: string[] = []
-  const mb = await admin.from('projects').select('id').eq('legacy_id', 'samb-timeline').single()
+  const mb = await admin.from('projects').select('id, code').eq('legacy_id', 'samb-timeline').single()
   const pm = (legacy: string) => admin.from('people').select('id, display_name').eq('legacy_id', legacy).single()
   const [dika, david] = await Promise.all([pm('m-dika'), pm('m-david')])
   // A not-yet-submitted task that Dika checks and David is not PIC of.
@@ -26,17 +26,19 @@ test('changing the pemeriksa in the task form changes validator_person_id', asyn
   expect(task.data, 'a seeded task checked by Dika').toBeTruthy()
   const t = task.data!
   try {
-    people.push(await addPerson(admin, `Owner ${run}`, `owner${suffix}`))
-    const login = await admin.auth.admin.createUser({ email: `owner${suffix}`, email_confirm: true })
-    await admin.from('app_roles').insert({ user_id: login.data.user?.id ?? '', role: 'owner' })
-    await signIn(page, admin, `owner${suffix}`, base)
+    people.push(await addSuperAdmin(admin, `Owner ${run}`, `owner-form${suffix}`))
+    await signIn(page, admin, `owner-form${suffix}`, base)
 
-    await page.goto(`${base}/#/p/${mb.data?.id ?? ''}/list`)
+    // The checklist row opens the task in the side peek; Edit opens the planning form.
+    await page.goto(`${base}/#/p/${mb.data?.code ?? ''}/list`)
     await page.getByLabel('Cari task').fill(t.title.slice(0, 40))
     await page.locator('.trow .open', { hasText: t.title }).first().click()
-    await expect(page.getByRole('dialog')).toContainText('Edit task')
+    await expect(peekOf(page)).toContainText(t.title)
+    await peekOf(page).getByRole('button', { name: 'Edit', exact: true }).click()
+    const form = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: /^Edit [A-Z]/ }) })
+    await expect(form).toBeVisible()
     await page.locator('#tVal').selectOption(david.data?.id ?? '')
-    await page.getByRole('dialog').getByRole('button', { name: 'Simpan', exact: true }).click()
+    await form.getByRole('button', { name: 'Simpan', exact: true }).click()
     await expect(page.getByText('Task disimpan')).toBeVisible()
 
     const after = await admin.from('tasks').select('validator_person_id').eq('id', t.id).single()

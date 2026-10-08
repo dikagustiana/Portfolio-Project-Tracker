@@ -9,11 +9,14 @@ import type { Inbox } from './inbox.ts'
 import type { BoardIndex } from './lookup.ts'
 import type { Rules } from './rules.ts'
 import type { DateStr, Id, Person, Reminder, Task } from './types.ts'
+import type { RecordTarget, Views } from './views.ts'
 
 export interface DigestItem {
   id: Id
   title: string
   sub: string
+  /** Deep link to the record (HTML e-mail and preview). */
+  href?: string
 }
 export interface DigestSection {
   title: string
@@ -93,10 +96,12 @@ export function makeDigest(deps: {
   cal: HolidayCalendar
   rules: Rules
   inbox: (who?: Id) => Inbox
+  views: Views
+  urlOf: (target: RecordTarget) => string
   today: DateStr
   appUrl: string
 }): DigestApi {
-  const { ix, cal, rules, inbox, today, appUrl } = deps
+  const { ix, cal, rules, inbox, views, urlOf, today, appUrl } = deps
   const { board } = ix
   const pname = (projectId: Id): string => ix.project(projectId)?.name ?? ''
 
@@ -106,11 +111,18 @@ export function makeDigest(deps: {
     const ib = inbox(mid)
     const seen = new Set<Id>()
     const live = (t: Task): boolean => rules.pActive(ix.project(t.projectId))
-    const mine = board.tasks.filter((t) => live(t) && t.assignee === mid && !rules.isDone(t) && t.stage !== 'review')
+    // Execution units only: a package with sub-tasks shows up through its sub-tasks.
+    const mine = board.tasks.filter((t) => live(t) && t.assignee === mid && !rules.isDone(t) && t.stage !== 'review' && rules.isLeaf(t))
     const tk = (t: Task): DigestItem => {
       const ms = ix.milestone(t.milestoneId)
-      return { id: t.id, title: t.title, sub: `${pname(t.projectId)}${ms ? ` · ${rules.msNo(ms)}` : ''} · ${range(t.start, t.end)}` }
+      return {
+        id: t.id,
+        title: t.title,
+        sub: `${pname(t.projectId)}${ms ? ` · ${rules.msNo(ms)}` : ''} · ${range(t.start, t.end)}`,
+        href: urlOf({ kind: 'task', id: t.id }),
+      }
     }
+    const extra = views.actions(mid)
     const once = (arr: readonly Task[], f: (t: Task) => DigestItem): DigestItem[] =>
       arr
         .filter((x) => {
@@ -128,7 +140,19 @@ export function makeDigest(deps: {
           (t) => ({ ...tk(t), sub: `${tk(t).sub} · telat ${dn(date) - dn(t.end)} hari` }),
         ),
       ],
+      [
+        'Hambatan yang butuh kamu',
+        extra
+          .filter((a) => a.kind === 'blocker')
+          .map((a) => ({ id: a.key, title: a.title, sub: `${pname(a.projectId)} · ${a.detail}`, href: urlOf(a.target) })),
+      ],
       ['Ditolak, perlu diperbaiki', once(ib.rejected, (t) => ({ ...tk(t), sub: `Alasan: ${t.rejectReason || '-'}` }))],
+      [
+        'Paket siap diajukan',
+        extra
+          .filter((a) => a.kind === 'submit-package')
+          .map((a) => ({ id: a.key, title: a.title, sub: `${pname(a.projectId)} · semua sub-task diterima`, href: urlOf(a.target) })),
+      ],
       ['Tanggal perlu kamu komit', once(ib.commits, tk)],
       ['Mulai hari ini', once(mine.filter((t) => t.start === date), tk)],
       [
@@ -145,21 +169,33 @@ export function makeDigest(deps: {
             id: x.id,
             title: `${rules.msNo(x)} · ${x.title}`,
             sub: `${pname(x.projectId)} · semua task diterima`,
+            href: urlOf({ kind: 'gate', id: x.id }),
           })),
           ...ib.stops.map((x) => ({
             id: x.id,
             title: `${rules.msNo(x)} · ${x.title}`,
             sub: `${pname(x.projectId)} · dihentikan, perlu tindak lanjut`,
+            href: urlOf({ kind: 'gate', id: x.id }),
           })),
         ],
       ],
       [
         'Keputusan dibutuhkan',
-        ib.asks.map((a) => ({ id: a.id, title: a.question, sub: pname(a.projectId) + (a.due ? ` · batas ${fmt(a.due)}` : '') })),
+        ib.asks.map((a) => ({
+          id: a.id,
+          title: a.question,
+          sub: pname(a.projectId) + (a.due ? ` · batas ${fmt(a.due)}` : ''),
+          href: urlOf({ kind: 'ask', id: a.id }),
+        })),
       ],
       [
         'Project siap ditutup',
-        ib.closes.map((p) => ({ id: p.id, title: p.name, sub: 'Semua milestone lulus · buktikan hasil akhir lalu tutup' })),
+        ib.closes.map((p) => ({
+          id: p.id,
+          title: p.name,
+          sub: 'Semua milestone lulus · buktikan hasil akhir lalu tutup',
+          href: urlOf({ kind: 'project', id: p.id }),
+        })),
       ],
     ]
     const sections = sec.filter((x) => x[1].length).map(([title, items]) => ({ title, items }))
@@ -184,7 +220,7 @@ export function makeDigest(deps: {
             `<p style="margin:18px 0 6px;font-size:12px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:#3e55d8">${E(s.title)}</p><ul style="margin:0;padding-left:18px">${s.items
               .map(
                 (i) =>
-                  `<li style="margin:0 0 6px"><b>${E(i.title)}</b><br><span style="color:#66727e;font-size:13px">${E(i.sub)}</span></li>`,
+                  `<li style="margin:0 0 6px"><b>${i.href ? `<a href="${E(i.href)}" style="color:#14212c">${E(i.title)}</a>` : E(i.title)}</b><br><span style="color:#66727e;font-size:13px">${E(i.sub)}</span></li>`,
               )
               .join('')}</ul>`,
         )

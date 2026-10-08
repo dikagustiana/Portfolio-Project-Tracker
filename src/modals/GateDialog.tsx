@@ -26,9 +26,9 @@ function GateBody({ m }: { m: Milestone }) {
   const { close } = useOverlay()
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
-  const ts = d.mtasks(m.id)
-  const n = ts.filter((t) => d.isDone(t)).length
-  const all = ts.length > 0 && n === ts.length
+  // Leaf tasks, like every progress number (packages count through their sub-tasks).
+  const pr = d.msProg(m)
+  const all = pr.n > 0 && pr.d === pr.n
   const [dec, setDec] = useState<GateDecision | ''>(all ? 'lulus' : 'rescope')
   const [note, setNote] = useState('')
   const [src, setSrc] = useState(() => newDecSrc(today))
@@ -51,7 +51,7 @@ function GateBody({ m }: { m: Milestone }) {
         <b>{m.title}</b>
         <br />
         <span className="sub">
-          {n}/{ts.length} task diterima
+          {pr.d}/{pr.n} task diterima
         </span>
       </div>
       <div className="gate" style={{ margin: 0 }}>

@@ -1,5 +1,6 @@
-// Definition of done (BRIEF §13): a PM granted Margin Bridge and MAM only cannot obtain any row of
-// another project through the REST API or Realtime. Runs against a local Supabase stack with real
+// Definition of done (BRIEF §13, ARCHITECTURE §C "no membership = the project does not exist"): a
+// Project Admin granted Margin Bridge and MAM only cannot obtain any row of another project, or
+// anyone who only works there, through the REST API, RPCs or Realtime. Runs against a local Supabase stack with real
 // sign-ins (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY + VITE_SUPABASE_PUBLISHABLE_KEY); skipped otherwise.
 import { createClient, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -30,7 +31,7 @@ async function signIn(admin: Client, mail: string): Promise<Client> {
 describe.skipIf(!local)('project isolation through the API and Realtime', () => {
   let admin: Client
   let david: Client
-  const ids = { mb: '', mam: '', bmg: '', person: '', bmgTask: '', mbTask: '' }
+  const ids = { mb: '', mam: '', bmg: '', person: '', outsider: '', bmgTask: '', mbTask: '' }
 
   beforeAll(async () => {
     admin = createClient<Database>(url, service, { auth: { persistSession: false } })
@@ -43,10 +44,16 @@ describe.skipIf(!local)('project isolation through the API and Realtime', () => 
       if (p.error) throw new Error(p.error.message)
       ids[k] = p.data.id
     }
-    await admin.from('project_members').insert([
-      { project_id: ids.mb, person_id: ids.person, role: 'pm' },
-      { project_id: ids.mam, person_id: ids.person, role: 'pm' },
+    const outsider = await admin.from('people').insert({ display_name: `Orang BMG ${run}`, job_title: 'BMG' }).select('id').single()
+    if (outsider.error) throw new Error(outsider.error.message)
+    ids.outsider = outsider.data.id
+    await admin.from('people_contact').insert({ person_id: ids.outsider, email: email('bmg') })
+    const m = await admin.from('project_members').insert([
+      { project_id: ids.mb, person_id: ids.person, role: 'project_admin' },
+      { project_id: ids.mam, person_id: ids.person, role: 'project_admin' },
+      { project_id: ids.bmg, person_id: ids.outsider, role: 'member' },
     ])
+    if (m.error) throw new Error(m.error.message)
     const t = await admin
       .from('tasks')
       .insert([
@@ -57,14 +64,19 @@ describe.skipIf(!local)('project isolation through the API and Realtime', () => 
     if (t.error) throw new Error(t.error.message)
     ids.bmgTask = t.data.find((x) => x.project_id === ids.bmg)?.id ?? ''
     ids.mbTask = t.data.find((x) => x.project_id === ids.mb)?.id ?? ''
-    await admin.from('asks').insert({ project_id: ids.bmg, question: 'Rahasia?' })
+    const ask = await admin.from('asks').insert({ project_id: ids.bmg, question: 'Rahasia?' }).select('id').single()
+    if (ask.error) throw new Error(ask.error.message)
+    // History, blockers and discussion in BMG: none of it may leak either.
+    await admin.from('comments').insert({ project_id: ids.bmg, task_id: ids.bmgTask, author_person_id: ids.outsider, body: 'Rahasia komentar' })
+    await admin.from('task_blockers').insert({ project_id: ids.bmg, task_id: ids.bmgTask, reason: 'Rahasia hambatan', raised_by: ids.outsider })
+    await admin.from('ask_tasks').insert({ project_id: ids.bmg, ask_id: ask.data.id, task_id: ids.bmgTask })
     david = await signIn(admin, email('david'))
   })
 
   afterAll(async () => {
     if (!admin) return
     await admin.from('projects').delete().in('id', [ids.mb, ids.mam, ids.bmg])
-    await admin.from('people').delete().eq('id', ids.person)
+    await admin.from('people').delete().in('id', [ids.person, ids.outsider])
     const { data } = await admin.auth.admin.listUsers()
     for (const u of data.users.filter((x) => x.email?.endsWith(`.${run}@isolasi.test`))) await admin.auth.admin.deleteUser(u.id)
     await david?.removeAllChannels()
@@ -77,13 +89,49 @@ describe.skipIf(!local)('project isolation through the API and Realtime', () => 
   })
 
   it('REST: no table returns a row of the other project, even when asked for it by id', async () => {
-    for (const t of ['tasks', 'milestones', 'asks', 'decisions', 'reminders', 'project_members', 'task_deps'] as const) {
+    const tables = [
+      'tasks',
+      'milestones',
+      'asks',
+      'decisions',
+      'reminders',
+      'project_members',
+      'task_deps',
+      'ask_tasks',
+      'task_reviews',
+      'task_commitments',
+      'task_blockers',
+      'comments',
+      'project_events',
+      'migration_flags',
+      'invitation_projects',
+    ] as const
+    for (const t of tables) {
       const { data, error } = await david.from(t).select('*').eq('project_id', ids.bmg)
       expect(error, t).toBeNull()
       expect(data, t).toEqual([])
     }
     const byId = await david.from('tasks').select('*').eq('id', ids.bmgTask)
     expect(byId.data).toEqual([])
+    // The BMG project produced events (task created, comment, blocker); none are readable.
+    const ev = await admin.from('project_events').select('id').eq('project_id', ids.bmg)
+    expect(ev.data?.length ?? 0).toBeGreaterThan(0)
+  })
+
+  it('REST: people who only work in the other project are not visible, nor their e-mail', async () => {
+    const pe = await david.from('people').select('id').eq('id', ids.outsider)
+    expect(pe.data).toEqual([])
+    const c = await david.from('people_contact').select('*').eq('person_id', ids.outsider)
+    expect(c.data).toEqual([])
+  })
+
+  it('RPC: reading or acting on the other project\'s records looks like they do not exist', async () => {
+    const block = await david.rpc('raise_blocker', { p_task: ids.bmgTask, p_reason: 'x' })
+    expect(block.error?.code).toBe('P0002')
+    const cmt = await david.rpc('add_comment', { p_target: 'task', p_id: ids.bmgTask, p_body: 'x' })
+    expect(cmt.error?.code).toBe('P0002')
+    const role = await david.rpc('set_member_role', { p_project: ids.bmg, p_person: ids.person, p_role: 'member' })
+    expect(role.error?.code).toBe('P0002')
   })
 
   it('RPC: writing into the other project looks like it does not exist', async () => {

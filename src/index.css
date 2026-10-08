@@ -4,6 +4,7 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import './styles/board.css';
+@import './styles/app.css';
 
 /* Dark variant follows the theme switch: explicit data-theme wins, otherwise the device setting (prototype applyTheme). */
 @custom-variant dark {

@@ -1,43 +1,55 @@
-// App shell: sidebar + main view (prototype render/renderSide/renderMain).
+// App shell: sidebar + main view + side peek + Quick Find (docs/ARCHITECTURE.md §G, spec §52–53).
+// Navigation: Beranda (personal attention), Minggu ini, Keputusan, Portofolio, Tinjauan mingguan,
+// Orang, Admin and Lab for the super admin. The project list shows the few most relevant
+// readable projects; everything else is one click away in Portofolio or Quick Find.
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useBoard } from '../data/board-context.ts'
 import type { Project } from '../domain/index.ts'
 import { supabase } from '../lib/supabase.ts'
-import { Dashboard } from '../views/Dashboard.tsx'
+import { Decisions } from '../views/Decisions.tsx'
+import { Home } from '../views/Home.tsx'
+import { People } from '../views/People.tsx'
+import { Portfolio } from '../views/Portfolio.tsx'
 import { ProjectView } from '../views/ProjectView.tsx'
-import { Team } from '../views/Team.tsx'
+import { RecordPage, PeekHost } from '../views/record/RecordView.tsx'
+import { Review } from '../views/Review.tsx'
 import { Week } from '../views/Week.tsx'
-import { Avatar, Icon } from './bits.tsx'
+import { Avatar, Head, Icon } from './bits.tsx'
+import { openFind, useFindShortcut } from './find.ts'
 import { useFlows } from './flows.ts'
 import { useActionCount } from './hooks.ts'
+import { QuickFind } from './QuickFind.tsx'
 import { ShellCtx } from './shell-context.ts'
-import { applyTheme, setUI, useTheme, useUI } from './ui.ts'
+import { addrPath, applyTheme, go, useTheme, useUI } from './ui.ts'
 import type { View } from './ui.ts'
 
-// Owner-only screens load on demand, so everyone else's bundle stays smaller.
+// Super-admin screens load on demand, so everyone else's bundle stays smaller.
 const Admin = lazy(() => import('../views/Admin.tsx').then((m) => ({ default: m.Admin })))
 const Sim = lazy(() => import('../sim/SimHost.tsx').then((m) => ({ default: m.SimHost })))
+
+/** How many projects the sidebar lists before "Lihat semua project". */
+const SIDEBAR_PROJECTS = 6
 
 export function Shell() {
   const ui = useUI()
   const { d, viewer } = useBoard()
   const [drawer, setDrawer] = useState(false)
   const shell = useMemo(() => ({ toggleDrawer: () => setDrawer((x) => !x), closeDrawer: () => setDrawer(false) }), [])
+  useFindShortcut()
 
-  // Read-only without a person (and not owner); only the owner creates projects or manages admin.
-  const ro = !viewer.isOwner && !viewer.personId
+  // Read-only without a person (and not super admin); only the super admin creates projects or opens Admin.
+  const ro = !viewer.isSuperAdmin && !viewer.personId
   useEffect(() => {
     const b = document.body.classList
     b.toggle('ro', ro)
-    b.toggle('nocreate', ro || !viewer.isOwner)
-    b.toggle('noadmin', ro || !viewer.isOwner)
-  }, [ro, viewer.isOwner])
+    b.toggle('nocreate', ro || !viewer.isSuperAdmin)
+    b.toggle('noadmin', ro || !viewer.isSuperAdmin)
+  }, [ro, viewer.isSuperAdmin])
 
   let view: View = ui.view
-  const p = ui.view === 'project' ? d.project(ui.pid) : undefined
-  if (view === 'project' && !p) view = 'dash'
-  if (view === 'admin' && !viewer.isOwner) view = 'dash'
-  if (view === 'sim' && !viewer.isOwner) view = 'dash'
+  const pid = view === 'project' || view === 'record' ? d.resolveProject(ui.pid ?? '') : ''
+  const p = pid ? d.project(pid) : undefined
+  if ((view === 'admin' || view === 'sim') && !viewer.isSuperAdmin) view = 'home'
 
   // Per project: locked (closed/stopped) or read-only role hides write buttons (.w); no plan rights hides .wp.
   const role = p ? d.roleIn(p.id) : null
@@ -58,14 +70,18 @@ export function Shell() {
         </aside>
         <main className={`main${plock ? ' plock' : ''}${noplan ? ' noplan' : ''}`} id="main">
           {ro && (
-            <div className="banner">
-              Kamu bisa melihat, tapi belum bisa mengubah apa pun. Minta owner menambahkanmu sebagai anggota project.
-            </div>
+            <div className="banner">Kamu bisa melihat, tapi belum bisa mengubah apa pun. Minta admin menambahkanmu sebagai anggota project.</div>
           )}
-          {view === 'team' ? (
-            <Team />
-          ) : view === 'week' ? (
+          {view === 'week' ? (
             <Week />
+          ) : view === 'decisions' ? (
+            <Decisions />
+          ) : view === 'portfolio' ? (
+            <Portfolio />
+          ) : view === 'review' ? (
+            <Review />
+          ) : view === 'team' ? (
+            <People />
           ) : view === 'sim' ? (
             <Suspense fallback={<div className="skel" />}>
               <Sim />
@@ -74,14 +90,35 @@ export function Shell() {
             <Suspense fallback={<div className="skel" />}>
               <Admin />
             </Suspense>
-          ) : view === 'project' && p ? (
-            <ProjectView p={p} />
+          ) : view === 'record' && ui.rec ? (
+            <RecordPage key={addrPath(ui.rec)} a={ui.rec} />
+          ) : view === 'project' ? (
+            p ? <ProjectView p={p} /> : <NoProject />
           ) : (
-            <Dashboard />
+            <Home />
           )}
         </main>
+        <PeekHost />
+        <QuickFind />
       </div>
     </ShellCtx>
+  )
+}
+
+/** A project that does not exist and one the viewer may not read look the same. */
+function NoProject() {
+  return (
+    <>
+      <Head eyebrow="Project" title="Tidak ditemukan" />
+      <div className="sec">
+        <p style={{ margin: 0 }}>Project ini tidak ada, atau kamu tidak punya akses. Minta admin project menambahkanmu kalau seharusnya kamu bisa melihatnya.</p>
+        <div className="row" style={{ marginTop: 12 }}>
+          <button className="btn" onClick={() => go({ view: 'portfolio' })}>
+            Lihat project yang bisa kamu akses
+          </button>
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -91,19 +128,39 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   const flows = useFlows()
   const theme = useTheme()
   const count = useActionCount()
+  const decide = d.asksFor('').length
   const me = d.person(viewer.personId)
-  const go = (patch: Parameters<typeof setUI>[0]) => {
-    setUI(patch)
+  const nav = (patch: Parameters<typeof go>[0]) => {
+    go(patch)
     onNavigate()
-    window.scrollTo(0, 0)
   }
-  const ps = [...board.projects].sort((a, b) => Number(d.pActive(b)) - Number(d.pActive(a)) || a.createdAt - b.createdAt)
+  const last = (p: Project) => d.lastMovement(p.id)?.at ?? p.createdAt
+  const active = board.projects.filter((p) => d.pActive(p))
+  const mine = active.filter((p) => d.involved(p.id)).sort((a, b) => last(b) - last(a))
+  const rest = active.filter((p) => !mine.includes(p)).sort((a, b) => last(b) - last(a))
+  const listed = [...mine, ...rest].slice(0, SIDEBAR_PROJECTS)
+  const cur = ui.view === 'project' || ui.view === 'record' ? d.resolveProject(ui.pid ?? '') : ''
+  const curP = cur ? d.project(cur) : undefined
+  if (curP && !listed.includes(curP)) listed.push(curP)
   const pCount = (p: Project) => {
     if (!d.pActive(p)) return p.status === 'selesai' ? '✓' : '✕'
     const g = d.prog(p.id)
     return g.n ? `${g.p}%` : '–'
   }
-  const roleLabel = viewer.isOwner ? 'Owner' : viewer.isGroupViewer ? 'Group viewer' : me ? 'Anggota tim' : ''
+  const roleLabel = viewer.isSuperAdmin
+    ? 'Owner · Super Admin'
+    : board.projects.some((p) => d.isAdminIn(p.id))
+      ? 'Project Admin'
+      : me
+        ? 'Anggota'
+        : ''
+  const item = (v: View, label: string, icon: Parameters<typeof Icon>[0]['name'], extra?: React.ReactNode) => (
+    <button className={ui.view === v ? 'on' : ''} onClick={() => nav({ view: v })}>
+      <Icon name={icon} />
+      <span className="t">{label}</span>
+      {extra}
+    </button>
+  )
 
   return (
     <>
@@ -123,53 +180,39 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
         </svg>
         <small>Project Board</small>
       </div>
+      <button className="qf-btn" onClick={() => openFind()} aria-label="Cari cepat">
+        <Icon name="search" /> Cari…
+        <span className="kbd">/</span>
+      </button>
       <nav className="nav" aria-label="Menu utama">
-        <button className={ui.view === 'dash' ? 'on' : ''} onClick={() => go({ view: 'dash' })}>
-          <Icon name="grid" />
-          <span className="t">Dashboard</span>
-        </button>
-        <button className={ui.view === 'week' ? 'on' : ''} onClick={() => go({ view: 'week' })}>
-          <Icon name="cal" />
-          <span className="t">Minggu ini</span>
-          {count > 0 && <span className="badge">{count}</span>}
-        </button>
-        <button className={ui.view === 'team' ? 'on' : ''} onClick={() => go({ view: 'team' })}>
-          <Icon name="team" />
-          <span className="t">Tim</span>
-          <span className="count">{board.people.length}</span>
-        </button>
-        {viewer.isOwner && (
-          <button className={ui.view === 'admin' ? 'on' : ''} onClick={() => go({ view: 'admin' })}>
-            <Icon name="boxes" />
-            <span className="t">Admin</span>
-          </button>
-        )}
-        {viewer.isOwner && (
-          <button className={ui.view === 'sim' ? 'on' : ''} onClick={() => go({ view: 'sim' })}>
-            <Icon name="grid" />
-            <span className="t">Simulasi proses</span>
-          </button>
-        )}
+        {item('home', 'Beranda', 'grid', count > 0 ? <span className="badge" aria-label={`${count} perlu tindakan`}>{count}</span> : null)}
+        {item('week', 'Minggu ini', 'cal')}
+        {item('decisions', 'Keputusan', 'flame', decide > 0 ? <span className="badge">{decide}</span> : null)}
+        {item('portfolio', 'Portofolio', 'boxes')}
+        {item('review', 'Tinjauan mingguan', 'link')}
+        {item('team', 'Orang', 'team', <span className="count">{board.people.length}</span>)}
+        {viewer.isSuperAdmin && item('admin', 'Admin', 'boxes')}
+        {viewer.isSuperAdmin && item('sim', 'Lab · Simulasi', 'grid')}
       </nav>
       <div>
         <div className="nav-label">
-          <span>Project</span>
+          <span>{mine.length ? 'Project saya' : 'Project'}</span>
           <button className="icon-btn w wc" aria-label="Project baru" onClick={() => flows.startWizard()}>
             <Icon name="plus" />
           </button>
         </div>
         <nav className="nav" style={{ marginTop: 6 }} aria-label="Daftar project">
-          {ps.length ? (
-            ps.map((p) => (
+          {listed.length ? (
+            listed.map((p) => (
               <button
                 key={p.id}
                 title={p.name}
-                className={ui.view === 'project' && ui.pid === p.id ? 'on' : ''}
-                onClick={() => go({ view: 'project', pid: p.id, who: 'all', q: '' })}
+                className={cur === p.id ? 'on' : ''}
+                onClick={() => nav({ view: 'project', pid: p.code || p.id, tab: 'milestone', who: 'all', q: '' })}
               >
                 <span className={`dot g-${p.color || 'samb3'}`} />
                 <span className="t">
-                  {p.entity && <span className="ent">{p.entity}</span>}
+                  <span className="ent">{p.code}</span>
                   {p.name}
                 </span>
                 <span className="count">{pCount(p)}</span>
@@ -181,6 +224,11 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
             </div>
           )}
         </nav>
+        {board.projects.length > listed.length && (
+          <button className="sidebar-more" onClick={() => nav({ view: 'portfolio', pf: 'all' })}>
+            Lihat semua project ({board.projects.length})
+          </button>
+        )}
       </div>
       <div className="side-foot">
         {me ? (
@@ -192,17 +240,17 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
               {roleLabel}
             </div>
           </div>
-        ) : viewer.isOwner ? (
+        ) : viewer.isSuperAdmin ? (
           <div className="me-card">
             <div>
-              <b style={{ color: 'var(--ink)' }}>Owner</b>
+              <b style={{ color: 'var(--ink)' }}>Owner · Super Admin</b>
               <br />
               Akunmu belum dihubungkan ke daftar orang.
             </div>
           </div>
         ) : (
           <div className="me-card">
-            <div>Akunmu belum terhubung ke daftar orang. Minta owner menghubungkannya.</div>
+            <div>Akunmu belum terhubung ke daftar orang. Minta admin menghubungkannya.</div>
           </div>
         )}
         <div className="themerow">

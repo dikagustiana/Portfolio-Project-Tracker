@@ -95,6 +95,8 @@ function KCard({ t, p, draggable, dragging, onDrag }: CardProps) {
   const { d } = useBoard()
   const flows = useFlows()
   const m = d.mstone(t.milestoneId)
+  const par = t.parentId ? d.task(t.parentId) : undefined
+  const pkg = d.hasChildren(t) ? d.taskProg(t) : null
   return (
     <article
       className={`kcard s-${t.stage}${dragging ? ' dragging' : ''}`}
@@ -111,13 +113,18 @@ function KCard({ t, p, draggable, dragging, onDrag }: CardProps) {
         if (e.key === 'Enter' && e.target === e.currentTarget) flows.openTask(t.id)
       }}
     >
-      <div className="tt">{t.title}</div>
+      <div className="tt">
+        {t.ref && <span className="ref">{t.ref}</span>}
+        {t.title}
+      </div>
       <div className="line2">
         <WhoLine t={t} p={p} />
       </div>
       <div className="line2">
         {m ? `${d.msNo(m)} · ` : ''}
+        {par ? `paket ${par.ref} · ` : ''}
         {range(t.start, t.end)}
+        {pkg ? ` · ${pkg.d}/${pkg.n} sub-task` : ''}
       </div>
       <Flags t={t} p={p} />
       <div className="f">

@@ -106,10 +106,10 @@ interface SeedTemplate {
 
 /** Per-project roles for Margin Bridge (BRIEF §7). */
 const MEMBERSHIPS: Membership[] = [
-  { projectId: PROJECT_ID, personId: 'm-dika', role: 'pm' },
-  { projectId: PROJECT_ID, personId: 'm-david', role: 'pm' },
-  { projectId: PROJECT_ID, personId: 'm-yani', role: 'officer' },
-  { projectId: PROJECT_ID, personId: 'm-muti', role: 'officer' },
+  { projectId: PROJECT_ID, personId: 'm-dika', role: 'project_admin' },
+  { projectId: PROJECT_ID, personId: 'm-david', role: 'project_admin' },
+  { projectId: PROJECT_ID, personId: 'm-yani', role: 'member' },
+  { projectId: PROJECT_ID, personId: 'm-muti', role: 'member' },
 ]
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -127,11 +127,13 @@ const toPerson = (m: SeedMember): Person => ({
   userId: null,
   email: m.email || null,
   emailDaily: m.emailDaily ?? true,
+  functionId: '',
   createdAt: m.createdAt,
 })
 
 const toProject = (p: SeedProject): Project => ({
   id: p.id,
+  code: 'MB',
   name: p.name,
   entity: p.entity,
   outcome: p.outcome,
@@ -153,6 +155,7 @@ const toProject = (p: SeedProject): Project => ({
 const toMilestone = (m: SeedMilestone): Milestone => ({
   id: m.id,
   projectId: m.projectId,
+  ref: m.id,
   code: m.code || null,
   title: m.title,
   target: m.target ?? '',
@@ -170,6 +173,9 @@ const toMilestone = (m: SeedMilestone): Milestone => ({
 const toTask = (t: SeedTask): Task => ({
   id: t.id,
   projectId: t.projectId,
+  ref: t.id,
+  parentId: '',
+  ownerFunctionId: '',
   milestoneId: t.milestoneId ?? '',
   title: t.title,
   desc: t.desc ?? '',
@@ -192,6 +198,7 @@ const toTask = (t: SeedTask): Task => ({
   rejectedBy: null,
   doneAt: null,
   deps: [...(t.deps ?? [])],
+  acceptDeps: [],
   steps: [...(t.steps ?? [])],
   createdAt: t.createdAt,
 })
@@ -199,8 +206,14 @@ const toTask = (t: SeedTask): Task => ({
 const toAsk = (a: SeedAsk): Ask => ({
   id: a.id,
   projectId: a.projectId,
+  ref: a.id,
   milestoneId: a.milestoneId ?? '',
   question: a.question,
+  context: '',
+  options: [],
+  recommendation: '',
+  rationale: '',
+  taskIds: [],
   decider: a.decider ?? '',
   due: a.due ?? '',
   status: a.status,
@@ -236,5 +249,13 @@ export function prototypeBoard(settings: Partial<Settings> = {}): Board {
     holidays,
     templates: [template],
     settings: { ...DEFAULT_SETTINGS, ...settings },
+    functions: [],
+    blockers: [],
+    reviews: [],
+    commitments: [],
+    comments: [],
+    events: [],
+    invitations: [],
+    flags: [],
   }
 }

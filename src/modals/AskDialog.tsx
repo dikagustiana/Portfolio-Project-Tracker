@@ -1,192 +1,143 @@
-// "Keputusan dibutuhkan" (prototype openAsk): record or edit an open ask (planners), decide it
-// (its pemutus), or read a decided one and reopen it. Reopening clears the answer and the
-// attribution in the database.
+// Keputusan form (prototype openAsk, upgraded in the architecture pass): raise or edit a decision
+// request with its context, options, recommendation, decider, due date, gate and the tasks it
+// concerns. Members raise; the creator or a project admin edits; deciding happens on the record.
 import { useState } from 'react'
-import { Linkified, Tip } from '../app/bits.tsx'
+import { Tip } from '../app/bits.tsx'
+import type { AskPreset } from '../app/flows.ts'
 import { useOverlay } from '../app/overlay-context.ts'
 import { TwoStep } from '../app/overlay.tsx'
+import { setUI } from '../app/ui.ts'
 import { useBoard } from '../data/board-context.ts'
-import { addDays, fmtTs } from '../domain/index.ts'
-import type { Ask, Id, Project } from '../domain/index.ts'
-import { DecisionSource } from './DecisionSource.tsx'
-import { decSrcInput, newDecSrc, useBad, useSubmit } from './form.ts'
-import { pick, pmPeople } from './logic.ts'
+import { addDays } from '../domain/index.ts'
+import type { Id } from '../domain/index.ts'
+import { useBad, useSubmit } from './form.ts'
+import { judgePeople, pick } from './logic.ts'
 import { Gone, PersonOptions } from './parts.tsx'
 
-export function AskDialog({ projectId, id }: { projectId: Id; id?: Id }) {
-  const { d, board } = useBoard()
-  const a = id ? board.asks.find((x) => x.id === id) : undefined
-  const p = d.project(a ? a.projectId : projectId)
-  if (!p || (id && !a)) return <Gone />
-  if (a?.status === 'decided') return <AskDecided a={a} p={p} />
-  return <AskForm p={p} a={a ?? null} />
-}
-
-function AskDecided({ a, p }: { a: Ask; p: Project }) {
-  const { d, actions } = useBoard()
-  const { close } = useOverlay()
-  const { busy, err, run } = useSubmit()
-  const may = !d.locked(a) && d.canDecideAsk(a)
-  return (
-    <>
-      <h2>Keputusan</h2>
-      <div className="prompt">
-        <b>{a.question}</b>
-        <br />
-        <span className="sub">{p.name}</span>
-      </div>
-      <div className="f">
-        Jawaban
-        <div className="evidence">
-          <Linkified text={a.answer} />
-        </div>
-      </div>
-      <div className="sub">
-        Diputuskan {d.decWho(a.src, a.decidedBy)}
-        {a.src.deciderName ? '' : a.decidedAt ? ` · ${fmtTs(a.decidedAt)}` : ''}
-      </div>
-      {err && <div className="err">{err}</div>}
-      <div className="mfoot">
-        <span />
-        <div className="row">
-          <button className="btn ghost" onClick={close}>
-            Tutup
-          </button>
-          {may && (
-            <button className="btn" disabled={busy} onClick={() => void run(() => actions.reopenAsk(a.id), { ok: 'Keputusan dibuka lagi' })}>
-              Buka lagi keputusan
-            </button>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
-
-interface Fields {
-  question: string
-  decider: Id
-  due: string
-  milestoneId: Id
-}
-
-function AskForm({ p, a }: { p: Project; a: Ask | null }) {
+export function AskDialog({ projectId, id, preset = {} }: { projectId: Id; id?: Id; preset?: AskPreset }) {
   const { d, board, today, actions } = useBoard()
   const { close } = useOverlay()
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
-  const pms = pmPeople(board, p.id)
-  const ms = d.pms(p.id)
-  const [f0] = useState<Fields>(() => ({
-    question: a?.question ?? '',
-    decider: pick(pms, a?.decider),
-    due: a ? a.due : addDays(today, 3),
-    milestoneId: (a ? a.milestoneId : d.currentMs(p)?.id) ?? '',
-  }))
-  const [f, setF] = useState<Fields>(() => ({ ...f0, milestoneId: ms.some((m) => m.id === f0.milestoneId) ? f0.milestoneId : '' }))
-  const [ans, setAns] = useState('')
-  const [src, setSrc] = useState(() => newDecSrc(today))
-  const lk = d.locked(p)
-  const editable = !lk && d.canPlan(p)
-  const may = !!a && !lk && d.canDecideAsk(a)
+  const a = id ? d.ask(id) : undefined
+  const p = d.project(a ? a.projectId : projectId)
+  const pms = p ? judgePeople(board, p.id) : []
+  const ms = p ? d.pms(p.id) : []
+  const [question, setQuestion] = useState(() => a?.question ?? preset.question ?? '')
+  const [context, setContext] = useState(() => a?.context ?? preset.context ?? '')
+  const [options, setOptions] = useState(() => (a?.options ?? []).join('\n'))
+  const [rec, setRec] = useState(() => a?.recommendation ?? '')
+  const [decider, setDecider] = useState(() => pick(pms, a?.decider))
+  const [due, setDue] = useState(() => (a ? a.due : addDays(today, 3)))
+  const [msId, setMsId] = useState(() => (a ? a.milestoneId : (preset.milestoneId ?? (p ? (d.currentMs(p)?.id ?? '') : ''))))
+  const [refs, setRefs] = useState(() =>
+    (a?.taskIds ?? preset.taskIds ?? [])
+      .map((x) => d.task(x)?.ref)
+      .filter(Boolean)
+      .join(', '),
+  )
+  if (!p || (id && !a)) return <Gone />
   const pm = d.pmOf(p)
-  const set = <K extends keyof Fields>(k: K, v: Fields[K], fieldId?: string) => {
-    setF((x) => ({ ...x, [k]: v }))
-    setErr('')
-    if (fieldId) bad.ok(fieldId)
-  }
-  const fields = () => ({
-    question: f.question.trim(),
-    decider_person_id: f.decider,
-    due: f.due,
-    milestone_id: f.milestoneId,
-  })
+  const tokens = refs.split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean)
+  const linked = tokens.map((r) => ({ r, t: d.task(d.resolveRecord(p.id, 'task', r)) }))
+  const unknown = linked.filter((x) => !x.t).map((x) => x.r)
 
   const save = () => {
     const e = bad.need([
-      ['aQ', f.question, 'Tulis apa yang harus diputuskan.'],
-      ['aDue', f.due, 'Isi batas waktu.'],
+      ['aQ', question, 'Tulis apa yang harus diputuskan.'],
+      ['aDue', due, 'Isi batas waktu.'],
     ])
     if (e) return setErr(e)
-    const who = d.mname(d.pmOnly(f.decider, p.id) || pm) || 'Project Manager'
-    void run(() => actions.saveAsk({ ...(a ? { id: a.id } : { project_id: p.id }), ...fields() }), {
-      ok: a ? 'Disimpan' : `Keputusan dicatat. ${who} akan melihatnya di Minggu ini.`,
-    })
-  }
-  const decide = () => {
-    if (!a) return
-    if (!ans.trim()) return setErr('Tulis jawaban keputusannya dulu.')
-    const edited = f.question !== f0.question || f.decider !== f0.decider || f.due !== f0.due || f.milestoneId !== f0.milestoneId
+    if (unknown.length) return setErr(`Task ${unknown.join(', ')} tidak ada di project ini.`)
+    const who = d.mname(decider || pm) || 'PM project'
+    let saved = ''
     void run(
-      async () => {
-        // Prototype saved the edited fields together with the decision.
-        if (editable && edited) await actions.saveAsk({ id: a.id, ...fields() })
-        await actions.decideAsk(a.id, ans.trim(), decSrcInput(src, today))
+      async () =>
+        (saved = await actions.saveAsk({
+          ...(a ? { id: a.id } : { project_id: p.id }),
+          question: question.trim(),
+          context: context.trim(),
+          options: options.split('\n').map((x) => x.trim()).filter(Boolean),
+          recommendation: rec.trim(),
+          decider_person_id: decider,
+          due,
+          milestone_id: ms.some((m) => m.id === msId) ? msId : '',
+          task_ids: linked.flatMap((x) => (x.t ? [x.t.id] : [])),
+        })),
+      {
+        ok: a ? 'Keputusan disimpan' : `Keputusan dicatat. ${who} akan melihatnya di Perlu tindakan.`,
+        // Show the new record; its short id is assigned by the database, so address it by id.
+        after: () => {
+          if (!a && saved) setUI({ peek: { code: p.code || p.id, kind: 'ask', ref: saved } })
+        },
       },
-      { ok: 'Keputusan tercatat di log' },
     )
   }
 
   return (
     <>
-      <h2>{a ? 'Keputusan dibutuhkan' : 'Catat keputusan yang dibutuhkan'}</h2>
+      <h2>{a ? `Edit ${a.ref}` : 'Keputusan dibutuhkan'}</h2>
+      <div className="sub">{p.name}</div>
       <label className="f">
         Apa yang harus diputuskan
-        <span className="hint">
-          Tulis sebagai pertanyaan yang bisa dijawab. Contoh: &quot;Biaya gudang dialokasikan pakai pallet-days atau CBM untuk laporan November?&quot;
-        </span>
-        <textarea className={bad.cls('aQ')} id="aQ" disabled={!editable} value={f.question} onChange={(e) => set('question', e.target.value, 'aQ')} />
+        <span className="hint">Tulis sebagai pertanyaan yang bisa dijawab. Contoh: &quot;Biaya gudang dialokasikan pakai pallet-days atau CBM untuk laporan November?&quot;</span>
+        <textarea className={bad.cls('aQ')} id="aQ" value={question} onChange={(e) => setQuestion(e.target.value)} />
       </label>
+      <label className="f">
+        Konteks
+        <textarea className="inp" rows={2} value={context} onChange={(e) => setContext(e.target.value)} placeholder="Kenapa ini perlu diputuskan, apa dampaknya" />
+      </label>
+      <div className="fgrid">
+        <label className="f">
+          Pilihan (satu per baris)
+          <textarea className="inp" rows={3} value={options} onChange={(e) => setOptions(e.target.value)} placeholder={'Pallet-days\nCBM'} />
+        </label>
+        <label className="f">
+          Rekomendasi
+          <textarea className="inp" rows={3} value={rec} onChange={(e) => setRec(e.target.value)} placeholder="Usulan dan alasannya" />
+        </label>
+      </div>
       <div className="fgrid">
         <label className="f">
           <span>
             Pemutus
             <Tip k="pemutus" />
           </span>
-          <select className="inp" id="aDec" disabled={!editable} value={f.decider} onChange={(e) => set('decider', e.target.value)}>
-            <PersonOptions people={pms} empty={pm ? `PM (${d.mname(pm)})` : 'Project Manager'} />
+          <select className="inp" id="aDec" value={decider} onChange={(e) => setDecider(e.target.value)}>
+            <PersonOptions people={pms} empty={pm ? `PM (${d.mname(pm)})` : 'PM project'} />
           </select>
         </label>
         <label className="f">
           Batas waktu
-          <input className={bad.cls('aDue')} type="date" id="aDue" disabled={!editable} value={f.due} onChange={(e) => set('due', e.target.value, 'aDue')} />
+          <input className={bad.cls('aDue')} type="date" id="aDue" value={due} onChange={(e) => setDue(e.target.value)} />
         </label>
       </div>
-      <label className="f">
-        Terkait milestone
-        <select className="inp" id="aMs" disabled={!editable} value={f.milestoneId} onChange={(e) => set('milestoneId', e.target.value)}>
-          <option value="">Tidak spesifik</option>
-          {ms.map((m) => (
-            <option key={m.id} value={m.id}>
-              {d.msNo(m)} · {m.title}
-            </option>
-          ))}
-        </select>
-      </label>
-      {a && may && (
-        <>
-          <label className="f">
-            Jawaban keputusan
-            <span className="hint">Isi kalau keputusannya sudah diambil. Akan tercatat di log keputusan.</span>
-            <textarea
-              className="inp"
-              id="aAns"
-              placeholder="Keputusan dan alasannya"
-              value={ans}
-              onChange={(e) => {
-                setAns(e.target.value)
-                setErr('')
-              }}
-            />
-          </label>
-          <DecisionSource px="a" value={src} onChange={setSrc} />
-        </>
-      )}
-      {a && !may && <div className="sub">Menunggu keputusan {d.mname(d.deciderOf(a)) || 'Project Manager'}.</div>}
+      <div className="fgrid">
+        <label className="f">
+          Terkait milestone
+          <select className="inp" id="aMs" value={msId} onChange={(e) => setMsId(e.target.value)}>
+            <option value="">Tidak spesifik</option>
+            {ms.map((m) => (
+              <option key={m.id} value={m.id}>
+                {d.msNo(m)} · {m.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="f">
+          Task terkait (ID)
+          <input className="inp" value={refs} onChange={(e) => setRefs(e.target.value)} placeholder="mis. MB12, MB13" />
+          <span className="hint">
+            {linked.filter((x) => x.t).length
+              ? linked.flatMap((x) => (x.t ? [`${x.t.ref} · ${x.t.title.slice(0, 40)}`] : [])).join(' | ')
+              : 'Task yang terhambat atau terdampak keputusan ini.'}
+          </span>
+        </label>
+      </div>
       <div className="err">{err}</div>
       <div className="mfoot">
         <div>
-          {a && editable && (
+          {a && d.isAdminIn(p.id) && (
             <TwoStep
               className="btn danger"
               label="Hapus keputusan"
@@ -198,18 +149,11 @@ function AskForm({ p, a }: { p: Project; a: Ask | null }) {
         </div>
         <div className="row">
           <button className="btn ghost" onClick={close}>
-            {editable ? 'Batal' : 'Tutup'}
+            Batal
           </button>
-          {editable && (
-            <button className={a && may ? 'btn' : 'btn primary'} onClick={save} disabled={busy}>
-              {a ? 'Simpan' : 'Catat keputusan'}
-            </button>
-          )}
-          {a && may && (
-            <button className="btn primary" onClick={decide} disabled={busy}>
-              Simpan keputusan
-            </button>
-          )}
+          <button className="btn primary" onClick={save} disabled={busy}>
+            {a ? 'Simpan' : 'Catat keputusan'}
+          </button>
         </div>
       </div>
     </>

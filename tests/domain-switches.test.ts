@@ -162,9 +162,17 @@ describe('validator regression (BRIEF §6.7)', () => {
     expect(d.validatorOf(saved)).toBe('m-david')
   })
 
-  it('a validator who is not a PM of the project falls back to the gate approver', () => {
+  it('a member can be pemeriksa: judgment is record-level, not tied to project admin (ARCHITECTURE §D)', () => {
     const d = domain(withTask(board, t.id, { validator: 'm-muti' }))
+    expect(d.validatorOf(must(d.task(t.id), t.id))).toBe('m-muti')
+  })
+
+  it('a pemeriksa who is a viewer or not on the project falls back to the gate approver', () => {
+    const viewer = { ...board, memberships: board.memberships.map((m) => (m.personId === 'm-muti' ? { ...m, role: 'viewer' as const } : m)) }
+    const d = domain(withTask(viewer, t.id, { validator: 'm-muti' }))
     expect(d.validatorOf(must(d.task(t.id), t.id))).toBe('m-dika')
+    const out = domain(withTask(board, t.id, { validator: 'm-stranger' }))
+    expect(out.validatorOf(must(out.task(t.id), t.id))).toBe('m-dika')
   })
 
   it('changing only the validator keeps the date commitment', () => {
@@ -181,8 +189,7 @@ describe('permission helpers', () => {
   const as = (personId: string | null, extra: Partial<Viewer> = {}): Viewer => ({
     userId: `u-${personId ?? 'x'}`,
     personId,
-    isOwner: false,
-    isGroupViewer: false,
+    isSuperAdmin: false,
     ...extra,
   })
   const b = linked(prototypeBoard())
@@ -196,22 +203,21 @@ describe('permission helpers', () => {
     'Dika task validated by David',
   )
 
-  it('roleIn follows memberships, owner and group viewer', () => {
-    expect(domain(b, as('m-dika')).roleIn(PROJECT_ID)).toBe('pm')
-    expect(domain(b, as('m-muti')).roleIn(PROJECT_ID)).toBe('officer')
-    expect(domain(b, as(null, { isOwner: true })).roleIn(PROJECT_ID)).toBe('pm')
-    expect(domain(b, as(null, { isGroupViewer: true })).roleIn(PROJECT_ID)).toBe('viewer')
+  it('roleIn follows memberships and the super admin; no membership means no role', () => {
+    expect(domain(b, as('m-dika')).roleIn(PROJECT_ID)).toBe('project_admin')
+    expect(domain(b, as('m-muti')).roleIn(PROJECT_ID)).toBe('member')
+    expect(domain(b, as(null, { isSuperAdmin: true })).roleIn(PROJECT_ID)).toBe('project_admin')
     expect(domain(b, as('stranger')).roleIn(PROJECT_ID)).toBeNull()
-    expect(domain(b, null).roleIn(PROJECT_ID)).toBe('pm')
+    expect(domain(b, null).roleIn(PROJECT_ID)).toBe('project_admin')
   })
 
-  it('a PM who is not the validator cannot validate a linked validator’s task', () => {
+  it('a project admin who is not the validator cannot validate a linked validator’s task', () => {
     expect(domain(b, as('m-david')).canValidate(yaniTask)).toBe(false)
-    expect(domain(b, as(null, { isOwner: true })).canValidate(yaniTask)).toBe(false)
+    expect(domain(b, as(null, { isSuperAdmin: true })).canValidate(yaniTask)).toBe(false)
     expect(domain(b, as('m-dika')).canValidate(yaniTask)).toBe(true)
   })
 
-  it('a PM can act for a validator without a login', () => {
+  it('a project admin can act for a validator without a login', () => {
     const d = domain(linked(prototypeBoard(), ['m-dika']), as('m-david'))
     expect(d.canAct('m-dika', PROJECT_ID)).toBe(true)
     expect(d.canValidate(yaniTask)).toBe(true)
@@ -220,7 +226,7 @@ describe('permission helpers', () => {
   it('the PIC can never validate their own task', () => {
     for (const board of [b, linked(prototypeBoard(), ['m-david'])]) {
       expect(domain(board, as('m-dika')).canValidate(dikaTask)).toBe(false)
-      expect(domain(board, as('m-dika', { isOwner: true })).canValidate(dikaTask)).toBe(false)
+      expect(domain(board, as('m-dika', { isSuperAdmin: true })).canValidate(dikaTask)).toBe(false)
     }
     expect(domain(b, as('m-david')).canValidate(dikaTask)).toBe(true)
     const self = { ...dikaTask, validator: 'm-dika' }
@@ -228,7 +234,7 @@ describe('permission helpers', () => {
     expect(domain(b, null).canValidate(self)).toBe(false)
   })
 
-  it('an officer cannot validate, even for a validator without a login', () => {
+  it('a member who is not the pemeriksa cannot validate, even for a pemeriksa without a login', () => {
     expect(domain(b, as('m-muti')).canValidate(yaniTask)).toBe(false)
     expect(domain(linked(prototypeBoard(), ['m-dika']), as('m-muti')).canValidate(yaniTask)).toBe(false)
   })
@@ -238,7 +244,7 @@ describe('permission helpers', () => {
     expect(domain(b, null).canValidate(dikaTask)).toBe(true)
   })
 
-  it('canCommit: own task, or a PM for a PIC without a login', () => {
+  it('canCommit: own task, or a project admin for a PIC without a login', () => {
     const muti = must(b.tasks.find((t) => t.assignee === 'm-muti'), 'Muti task')
     expect(domain(b, as('m-muti')).canCommit(muti)).toBe(true)
     expect(domain(b, as('m-muti')).canCommit(yaniTask)).toBe(false)
@@ -248,7 +254,7 @@ describe('permission helpers', () => {
     expect(domain(b, as('m-david')).canCommit({ ...yaniTask, assignee: '' })).toBe(false)
   })
 
-  it('canAct: self, or a PM for an empty or unlinked person', () => {
+  it('canAct: self, or a project admin for an empty or unlinked person', () => {
     const dika = domain(b, as('m-dika'))
     expect(dika.canAct('m-dika', PROJECT_ID)).toBe(true)
     expect(dika.canAct('', PROJECT_ID)).toBe(true)
@@ -258,11 +264,14 @@ describe('permission helpers', () => {
     expect(dika.canAct('', 'another-project')).toBe(false)
   })
 
-  it('canDecide: any PM member decides gates (A5); officers and viewers do not', () => {
+  it('canDecide: the pemutus, or a project admin recording for the forum (A5); others do not', () => {
     const g0 = must(b.milestones.find((m) => m.id === 'G0'), 'G0')
     expect(domain(b, as('m-david')).canDecide(g0)).toBe(true)
     expect(domain(b, as('m-muti')).canDecide(g0)).toBe(false)
-    expect(domain(b, as(null, { isGroupViewer: true })).canDecide(g0)).toBe(false)
+    expect(domain(b, as('stranger')).canDecide(g0)).toBe(false)
+    const muti = { ...g0, approver: 'm-muti' }
+    expect(domain(b, as('m-muti')).canDecide(muti)).toBe(true)
+    expect(domain(b, as('m-yani')).canDecide(muti)).toBe(false)
   })
 
   it('locked: a closed or stopped project is read-only', () => {

@@ -155,6 +155,12 @@ export function CkBtn({ t }: { t: Task }) {
   const flows = useFlows()
   const st = d.isDone(t) ? 'on' : t.stage === 'review' ? 'rv' : ''
   if (d.locked(t)) return <button className={`ck ${st}`} disabled aria-label="Project tidak aktif" />
+  // A package is submitted only once its sub-tasks are accepted.
+  const open = d.isDone(t) || t.stage === 'review' ? [] : d.children(t.id).filter((k) => !d.isDone(k))
+  if (open.length) {
+    const why = `Menunggu sub-task diterima: ${open.map((k) => k.ref).join(', ')}`
+    return <button className={`ck ${st}`} disabled aria-label={`${why}: ${t.title}`} title={why} />
+  }
   const lbl = d.isDone(t) ? 'Sudah diterima' : t.stage === 'review' ? 'Menunggu pemeriksa' : 'Ajukan selesai'
   return (
     <button
@@ -178,7 +184,7 @@ export function WhoLine({ t, p }: { t: Task; p: Project | null | undefined }) {
       {d.gated(p) && (
         <>
           {' · Pemeriksa: '}
-          <b>{d.mname(d.validatorOf(t)) || 'Project Manager'}</b>
+          <b>{d.mname(d.validatorOf(t)) || 'Project Admin'}</b>
         </>
       )}
     </>
@@ -224,17 +230,23 @@ export function RowActs({ t }: { t: Task }) {
   )
 }
 
-/** One checklist row (prototype trowHtml). */
-export function TRow({ t, p }: { t: Task; p: Project | null | undefined }) {
+/** One checklist row (prototype trowHtml). A package shows its sub-task progress; `child` indents a sub-task. */
+export function TRow({ t, p, child }: { t: Task; p: Project | null | undefined; child?: boolean }) {
   const { d } = useBoard()
   const flows = useFlows()
+  const pkg = d.hasChildren(t) ? d.taskProg(t) : null
   return (
-    <div className={`trow ${d.isDone(t) ? 'done' : ''}`}>
+    <div className={`trow${d.isDone(t) ? ' done' : ''}${child ? ' child' : ''}${pkg ? ' pkg' : ''}`}>
       <CkBtn t={t} />
       <button className="open" onClick={() => flows.openTask(t.id)}>
-        <div className="tt">{t.title}</div>
+        <div className="tt">
+          {t.ref && <span className="ref">{t.ref}</span>}
+          {t.title}
+        </div>
         <div className="line2">
           <WhoLine t={t} p={p} /> · {range(t.start, t.end)}
+          {pkg && ` · ${pkg.d}/${pkg.n} sub-task diterima`}
+          {!t.assignee && t.ownerFunctionId && ` · fungsi ${d.fn(t.ownerFunctionId)?.name ?? ''}`}
         </div>
         <Flags t={t} p={p} />
       </button>

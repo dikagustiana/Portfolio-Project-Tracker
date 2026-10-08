@@ -4,7 +4,7 @@
 // time (07.00 WIB by default); on weekends and holidays the run is logged with its reason and skipped.
 //
 // POST { date?: 'YYYY-MM-DD' }  — date defaults to today in Asia/Jakarta.
-// Auth: the service-role key (pg_cron via Vault), or a signed-in owner (manual run from the app).
+// Auth: the service-role key (pg_cron via Vault), or a signed-in super admin (manual run from the app).
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import { BOARD_TABLES, toBoard } from '../../../src/data/adapter.ts'
 import type { BoardRows } from '../../../src/data/adapter.ts'
@@ -41,13 +41,13 @@ Deno.serve(async (req) => {
 
   const bearer = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
   const secretKey = Deno.env.get('SUPABASE_SECRET_KEY') ?? ''
-  let trigger: 'cron' | 'owner'
+  let trigger: 'cron' | 'super_admin'
   if (sameSecret(bearer, serviceKey) || sameSecret(bearer, secretKey)) trigger = 'cron'
   else {
     const caller = createClient(url, anonKey, { global: { headers: { Authorization: `Bearer ${bearer}` } } })
     const { data: who } = await caller.rpc('whoami')
-    if (!who?.is_owner) return reply(403, { error: 'Hanya owner atau jadwal otomatis yang bisa menjalankan email harian.' })
-    trigger = 'owner'
+    if (!who?.is_super_admin) return reply(403, { error: 'Hanya super admin atau jadwal otomatis yang bisa menjalankan email harian.' })
+    trigger = 'super_admin'
   }
 
   let body: { date?: string } = {}

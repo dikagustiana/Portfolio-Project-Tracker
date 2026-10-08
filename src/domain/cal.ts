@@ -5,6 +5,7 @@ import type { BoardIndex } from './lookup.ts'
 import type { Permissions } from './permissions.ts'
 import type { Rules } from './rules.ts'
 import type { CalendarEntry, DateStr, Id, Task } from './types.ts'
+import type { RecordTarget } from './views.ts'
 
 export type CalProvider = 'google' | 'outlook365'
 export const CAL_PROV: readonly (readonly [CalProvider, string])[] = [
@@ -19,14 +20,19 @@ export type CalIssue =
   | { id: Id; kind: 'changed'; title: string; old: DateStr; end: DateStr; t: Task }
 
 export interface CalendarLinks {
-  /** Event body: project, milestone, PIC, pemeriksa, schedule, proof, link. */
+  /** Event body: project, milestone, PIC, pemeriksa, schedule, proof, deep link to the task. */
   calDetails: (t: Task) => string
   /** All-day event on the deadline, prefilled for Google Calendar or Outlook on the web. */
   calUrl: (t: Task, prov: CalProvider) => string
   calIssues: (entries: readonly CalendarEntry[]) => CalIssue[]
 }
 
-export function makeCalendarLinks(ix: BoardIndex, perms: Permissions, rules: Rules, appUrl: string): CalendarLinks {
+export function makeCalendarLinks(
+  ix: BoardIndex,
+  perms: Permissions,
+  rules: Rules,
+  urlOf: (target: RecordTarget) => string,
+): CalendarLinks {
   const calDetails = (t: Task): string => {
     const p = ix.project(t.projectId)
     const m = ix.milestone(t.milestoneId)
@@ -38,7 +44,7 @@ export function makeCalendarLinks(ix: BoardIndex, perms: Permissions, rules: Rul
       `Jadwal: ${range(t.start, t.end)}`,
       t.proof ? `Bukti yang diminta: ${t.proof}` : '',
       '',
-      `Buka di SAMB Project Board: ${appUrl}`,
+      `Buka di SAMB Project Board: ${urlOf({ kind: 'task', id: t.id })}`,
     ]
       .filter((x, i) => x !== '' || i === 6)
       .join('\n')

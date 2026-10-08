@@ -1,16 +1,17 @@
 // Edit project (prototype openProject with an id). New projects go through the wizard. Only the
-// owner deletes a project and changes the value-chain template or the parallel-gates switch.
+// super admin deletes a project, changes the value-chain template or the parallel-gates switch,
+// and turns the review flow off (without it a PIC could tick their own work done).
 import { useState } from 'react'
 import { Tip } from '../app/bits.tsx'
 import { useFlows } from '../app/flows.ts'
 import { useOverlay } from '../app/overlay-context.ts'
 import { TwoStep } from '../app/overlay.tsx'
-import { setUI } from '../app/ui.ts'
+import { go, setUI } from '../app/ui.ts'
 import { useBoard } from '../data/board-context.ts'
 import { GRADS, MATURITY } from '../domain/index.ts'
 import type { Id, Maturity, Project } from '../domain/index.ts'
 import { useBad, useSubmit } from './form.ts'
-import { LOCK_MSG, pick, pmPeople } from './logic.ts'
+import { LOCK_MSG, pick, adminPeople } from './logic.ts'
 import { Gone, PersonOptions } from './parts.tsx'
 
 export function ProjectForm({ id }: { id: Id }) {
@@ -39,8 +40,8 @@ function ProjectBody({ p }: { p: Project }) {
   const { close } = useOverlay()
   const { busy, err, setErr, run } = useSubmit()
   const bad = useBad()
-  const pms = pmPeople(board, p.id)
-  const isOwner = viewer.isOwner
+  const pms = adminPeople(board, p.id)
+  const isSuper = viewer.isSuperAdmin
   const lk = !d.pActive(p)
   const [f, setF] = useState<Fields>(() => ({
     name: p.name,
@@ -80,9 +81,9 @@ function ProjectBody({ p }: { p: Project }) {
           gate_mode: f.gate,
           maturity: f.maturity,
           color: f.color,
-          ...(isOwner ? { parallel_gates: f.parallel, step_template_id: f.template } : {}),
+          ...(isSuper ? { parallel_gates: f.parallel, step_template_id: f.template } : {}),
         }),
-      { ok: 'Project disimpan', after: () => setUI({ view: 'project', pid: p.id }) },
+      { ok: 'Project disimpan', after: () => setUI({ view: 'project', pid: p.code || p.id }) },
     )
   }
 
@@ -161,12 +162,21 @@ function ProjectBody({ p }: { p: Project }) {
         <summary>Pengaturan lanjutan</summary>
         <div className="in">
           <label className="toggle">
-            <input type="checkbox" id="pGate" checked={f.gate} disabled={lk} onChange={(e) => set('gate', e.target.checked)} />
+            <input
+              type="checkbox"
+              id="pGate"
+              checked={f.gate}
+              disabled={lk || (d.gated(p) && !isSuper)}
+              onChange={(e) => set('gate', e.target.checked)}
+            />
             <span>
               <b>Pakai alur pemeriksaan</b>
               <Tip k="pemeriksaan" />
               <br />
-              <span className="sub">Task selesai diajukan dengan bukti dan diterima pemeriksa.</span>
+              <span className="sub">
+                Task selesai diajukan dengan bukti dan diterima pemeriksa.
+                {d.gated(p) && !isSuper && ' Hanya super admin yang bisa mematikannya.'}
+              </span>
             </span>
           </label>
           <label className="f">
@@ -198,7 +208,7 @@ function ProjectBody({ p }: { p: Project }) {
               ))}
             </div>
           </div>
-          {isOwner && (
+          {isSuper && (
             <>
               <label className="toggle">
                 <input type="checkbox" id="pPar" checked={f.parallel} disabled={lk} onChange={(e) => set('parallel', e.target.checked)} />
@@ -233,13 +243,13 @@ function ProjectBody({ p }: { p: Project }) {
       <div className="err">{err}</div>
       <div className="mfoot">
         <div className="row" style={{ gap: 6 }}>
-          {isOwner && (
+          {isSuper && (
             <TwoStep
               className="btn danger"
               label="Hapus project"
               armed={`Yakin? ${d.ptasks(p.id).length} task ikut terhapus`}
               disabled={busy}
-              onConfirm={() => void run(() => actions.deleteProject(p.id), { ok: 'Project dihapus', after: () => setUI({ view: 'dash' }) })}
+              onConfirm={() => void run(() => actions.deleteProject(p.id), { ok: 'Project dihapus', after: () => go({ view: 'portfolio' }) })}
             />
           )}
           {d.pActive(p) && d.canOwn(p) && (

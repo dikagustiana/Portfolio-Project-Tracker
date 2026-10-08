@@ -1,6 +1,8 @@
-// Task form for planners (prototype openTask + saveTask): new or edit. Officers and viewers get the
-// review dialog instead (the flow routes them there). The database clears the commitment whenever
-// dates or PIC change; the commit toggle only says what this save should do about it.
+// Task form (prototype openTask + saveTask): new or edit, for project admins, and for the PIC of a
+// package planning its sub-tasks. A new task inherits its context (project, gate, package). A draft
+// may leave PIC, pemeriksa and requested proof empty; commitment and submission need them. The
+// database clears the commitment whenever dates or PIC change; the commit toggle only says what
+// this save should do about it.
 import { useState } from 'react'
 import { Tip } from '../app/bits.tsx'
 import { useOverlay } from '../app/overlay-context.ts'
@@ -9,7 +11,7 @@ import { useBoard } from '../data/board-context.ts'
 import { fmt, STAGES } from '../domain/index.ts'
 import type { Id, Project, Stage, Task } from '../domain/index.ts'
 import { useBad, useSubmit } from './form.ts'
-import { newTask, picPeople, pick, pmPeople, taskPayload, taskSaveError, taskSavedToast } from './logic.ts'
+import { judgePeople, newTask, picPeople, pick, taskPayload, taskSaveError, taskSavedToast } from './logic.ts'
 import type { TaskPreset } from './logic.ts'
 import { Gone, PersonOptions, TaskActions, WarnList } from './parts.tsx'
 
@@ -31,8 +33,10 @@ interface Fields {
   proof: string
   stage: Stage
   desc: string
-  deps: Id[]
+  /** Prerequisite id → kind. */
+  deps: Record<Id, 'start' | 'accept'>
   steps: string[]
+  fn: Id
 }
 
 const toggle = (list: readonly string[], v: string, on: boolean): string[] => (on ? [...list.filter((x) => x !== v), v] : list.filter((x) => x !== v))
@@ -48,8 +52,11 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
   const g = d.gated(p)
   const ms = d.pms(p.id)
   const pics = picPeople(board, p.id)
-  const pms = pmPeople(board, p.id)
+  const pms = judgePeople(board, p.id)
   const steps = d.vcSteps(p)?.all ?? null
+  const admin = d.canPlan(p)
+  const parent = t0.parentId ? d.task(t0.parentId) : undefined
+  const parentMs = parent ? d.mstone(parent.milestoneId) : undefined
   const [f, setF] = useState<Fields>(() => ({
     title: t0.title,
     milestoneId: ms.some((m) => m.id === t0.milestoneId) ? t0.milestoneId : '',
@@ -60,12 +67,13 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
     proof: t0.proof,
     stage: t0.stage,
     desc: t0.desc,
-    deps: [...t0.deps],
+    deps: Object.fromEntries([...t0.deps.map((x) => [x, 'start'] as const), ...t0.acceptDeps.map((x) => [x, 'accept'] as const)]),
     steps: [...t0.steps],
+    fn: t0.ownerFunctionId,
   }))
   /** null until the viewer touches the commit box. */
   const [commitPick, setCommitPick] = useState<boolean | null>(null)
-  const [adv, setAdv] = useState(() => t0.deps.length > 0 || !!t0.desc || t0.steps.length > 0)
+  const [adv, setAdv] = useState(() => t0.deps.length + t0.acceptDeps.length > 0 || !!t0.desc || t0.steps.length > 0)
 
   const set = <K extends keyof Fields>(k: K, v: Fields[K], fieldId?: string) => {
     setF((x) => ({ ...x, [k]: v }))
@@ -84,8 +92,10 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
     proof: g ? f.proof.trim() : t0.proof,
     stage: f.stage,
     desc: f.desc.trim(),
-    deps: f.deps,
+    deps: Object.keys(f.deps).filter((x) => f.deps[x] === 'start'),
+    acceptDeps: Object.keys(f.deps).filter((x) => f.deps[x] === 'accept'),
     steps: f.steps,
+    ownerFunctionId: f.fn,
   }
   const changed = !isNew && (t0.start !== f.start || t0.end !== f.end || t0.assignee !== f.assignee)
   const canCommit = g && !!f.assignee && d.canCommit(draft)
@@ -99,24 +109,24 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
       : ''
   const others = d
     .ptasks(p.id)
-    .filter((x) => x.id !== t0.id)
-    .sort((a, b) => a.start.localeCompare(b.start))
+    .filter((x) => x.id !== t0.id && x.id !== t0.parentId && x.parentId !== t0.id)
+    .sort((a, b) => a.start.localeCompare(b.start) || a.ref.localeCompare(b.ref, 'en', { numeric: true }))
+  const [depQ, setDepQ] = useState('')
+  const depList = others.filter((o) => !!f.deps[o.id] || !depQ.trim() || `${o.ref} ${o.title}`.toLowerCase().includes(depQ.trim().toLowerCase()))
+  const draftNote = g && (!f.assignee || !f.proof.trim()) ? `Disimpan sebagai draf: ${[!f.assignee && 'PIC', !f.proof.trim() && 'bukti yang diminta'].filter(Boolean).join(' dan ')} belum diisi. Task baru bisa dikomit dan diajukan setelah lengkap.` : ''
 
   const save = () => {
     const e = bad.need([
       ['tTitle', f.title, 'Isi judul task.'],
-      g && ms.length > 0 && ['tMs', f.milestoneId, 'Pilih milestone.'],
+      g && ms.length > 0 && !parent && ['tMs', f.milestoneId, 'Pilih milestone.'],
       ['tStart', f.start, 'Isi tanggal mulai.'],
       ['tEnd', f.end, 'Isi tanggal selesai.'],
-      ['tWho', f.assignee, 'Pilih PIC.'],
-      g && ['tVal', f.validator, 'Pilih pemeriksa.'],
-      g && ['tProof', f.proof, 'Tulis bukti yang diminta.'],
     ])
     if (e) return setErr(e)
     const e2 = taskSaveError(d, draft, g, ms.length > 0)
     if (e2) return setErr(e2)
     const commit = canCommit ? (committed ? 'on' : 'off') : undefined
-    const payload = taskPayload(draft, { isNew, gated: g, hasTemplate: !!steps, commit })
+    const payload = taskPayload(draft, { isNew, gated: g, hasTemplate: !!steps, commit, admin })
     const ok = taskSavedToast(d, draft, isNew ? null : t0, g, commit)
     void run(() => actions.saveTask(payload), { ok })
   }
@@ -124,8 +134,17 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
   const meIsPic = !!viewer.personId && viewer.personId === f.assignee
   return (
     <>
-      <h2>{isNew ? 'Task baru' : 'Edit task'}</h2>
-      <div className="req-note">Isian utama wajib diisi. Detail lanjutan boleh dilengkapi nanti.</div>
+      <h2>{isNew ? (parent ? 'Sub-task baru' : 'Task baru') : `Edit ${t0.ref || 'task'}`}</h2>
+      <div className="req-note">Judul dan tanggal wajib. PIC, pemeriksa, dan bukti boleh menyusul (draf); dibutuhkan sebelum komit dan pengajuan.</div>
+      {parent && (
+        <div className="prompt" style={{ margin: 0 }}>
+          Sub-task dari <b>{parent.ref}</b> · {parent.title}
+          <br />
+          <span className="sub">
+            Ikut milestone paketnya{parentMs ? ` (${d.msNo(parentMs)})` : ''}. Jadwal paket {fmt(parent.start)} – {fmt(parent.end)}. Tanpa pemeriksa sendiri, sub-task diperiksa pemeriksa paketnya.
+          </span>
+        </div>
+      )}
       {live?.rejectReason && (
         <div className="banner" style={{ margin: 0, background: 'var(--danger-soft)' }}>
           <span>
@@ -140,11 +159,11 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
           id="tTitle"
           value={f.title}
           placeholder="mis. Kirim data pallet-days per principal"
-          maxLength={120}
+          maxLength={200}
           onChange={(e) => set('title', e.target.value, 'tTitle')}
         />
       </label>
-      <label className="f">
+      <label className="f" hidden={!!parent}>
         <span>
           Milestone
           <Tip k="milestone" />
@@ -204,6 +223,22 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
           </label>
         )}
       </div>
+      {board.functions.length > 0 && (
+        <label className="f">
+          <span>
+            Fungsi pemilik
+            <Tip k="fungsi" />
+          </span>
+          <select className="inp" id="tFn" value={f.fn} onChange={(e) => set('fn', e.target.value)}>
+            <option value="">Tidak ditentukan</option>
+            {board.functions.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {g && (
         <>
           <label className="f">
@@ -242,8 +277,9 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
         </>
       )}
       {!pics.length && (
-        <div className="sub">Belum ada anggota di project ini. Owner menambahkannya di menu Admin agar bisa dipilih sebagai PIC dan pemeriksa.</div>
+        <div className="sub">Belum ada anggota di project ini. Project Admin menambahkannya di tab Anggota agar bisa dipilih sebagai PIC dan pemeriksa.</div>
       )}
+      {draftNote && <div className="sub" style={{ color: 'var(--warn-ink)' }}>{draftNote}</div>}
       <WarnList list={d.warnings(draft, p)} />
       <details className="adv" open={adv} onToggle={(e) => setAdv(e.currentTarget.open)}>
         <summary>Detail lanjutan</summary>
@@ -264,7 +300,7 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
               </div>
             </div>
           )}
-          {g && (
+          {g && admin && (
             <label className="f">
               Tahap
               <select className="inp" id="tStage" value={f.stage} onChange={(e) => set('stage', e.target.value as Stage)}>
@@ -276,29 +312,54 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
           )}
           <div className="f">
             <span>
-              Menunggu task lain
+              Prasyarat
               <Tip k="tunggu" />
             </span>
             {others.length ? (
-              <div className="deps">
-                {others.map((o) => {
-                  const cyc = !isNew && d.reaches(o.id, t0.id)
-                  return (
-                    <label key={o.id} className={cyc ? 'dis' : ''}>
-                      <input
-                        type="checkbox"
-                        value={o.id}
-                        checked={f.deps.includes(o.id)}
-                        disabled={cyc}
-                        onChange={(e) => set('deps', toggle(f.deps, o.id, e.target.checked))}
-                      />{' '}
-                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.title}</span>
-                      <span className="sub mono">{fmt(o.end)}</span>
-                      {cyc && <span className="sub">(melingkar)</span>}
-                    </label>
-                  )
-                })}
-              </div>
+              <>
+                <input className="inp" placeholder="Cari ID atau judul task" value={depQ} onChange={(e) => setDepQ(e.target.value)} aria-label="Cari prasyarat" />
+                <div className="deps">
+                  {depList.map((o) => {
+                    const cyc = !isNew && d.reaches(o.id, t0.id)
+                    const kind = f.deps[o.id]
+                    return (
+                      <label key={o.id} className={cyc ? 'dis' : ''}>
+                        <input
+                          type="checkbox"
+                          value={o.id}
+                          checked={!!kind}
+                          disabled={cyc}
+                          onChange={(e) => {
+                            const next = { ...f.deps }
+                            if (e.target.checked) next[o.id] = 'start'
+                            else delete next[o.id]
+                            set('deps', next)
+                          }}
+                        />{' '}
+                        <span className="ref" style={{ minWidth: 0 }}>{o.ref}</span>
+                        <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.title}</span>
+                        {kind ? (
+                          <select
+                            className="inp"
+                            style={{ width: 'auto', padding: '2px 6px', fontSize: 12 }}
+                            aria-label={`Jenis prasyarat ${o.ref}`}
+                            value={kind}
+                            onClick={(e) => e.preventDefault()}
+                            onChange={(e) => set('deps', { ...f.deps, [o.id]: e.target.value as 'start' | 'accept' })}
+                          >
+                            <option value="start">Mulai setelah</option>
+                            <option value="accept">Diterima setelah</option>
+                          </select>
+                        ) : (
+                          <span className="sub mono">{fmt(o.end)}</span>
+                        )}
+                        {cyc && <span className="sub">(melingkar)</span>}
+                      </label>
+                    )
+                  })}
+                </div>
+                <span className="hint">Mulai setelah: task ini baru boleh mulai setelah prasyaratnya diterima. Diterima setelah: boleh jalan paralel, tapi baru bisa diterima setelah prasyaratnya diterima.</span>
+              </>
             ) : (
               <span className="hint">Belum ada task lain di project ini.</span>
             )}
@@ -313,7 +374,7 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
       {live && <TaskActions t={live} />}
       <div className="mfoot">
         <div>
-          {!isNew && (
+          {!isNew && admin && (
             <TwoStep
               className="btn danger"
               label="Hapus task"
@@ -328,7 +389,7 @@ function TaskFormBody({ p, live, seed }: { p: Project; live: Task | null; seed: 
             Batal
           </button>
           <button className="btn primary" onClick={save} disabled={busy}>
-            {isNew ? 'Tambah task' : 'Simpan'}
+            {isNew ? (parent ? 'Tambah sub-task' : 'Tambah task') : 'Simpan'}
           </button>
         </div>
       </div>

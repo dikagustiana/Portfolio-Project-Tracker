@@ -1,4 +1,4 @@
--- Access test matrix A1–A17 (BRIEF §3). Fixture: _fixture.psql.
+-- Access test matrix A1–A17 (BRIEF §3, as amended by docs/ARCHITECTURE.md §D). Fixture: _fixture.psql.
 begin;
 create extension if not exists pgtap with schema extensions;
 \ir _fixture.psql
@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 select * from no_plan();
 
 -- ---------------------------------------------------------------------------------------
--- A1–A5 · David (pm on MB and MAM)
+-- A1–A5 · David (project_admin on MB and MAM)
 -- ---------------------------------------------------------------------------------------
 select pg_temp.login('david');
 
@@ -25,15 +25,15 @@ select set_eq($$ select id from public.people $$,
   'A3 David sees only people sharing MB or MAM with him');
 select set_eq($$ select person_id from public.people_contact $$,
   $$ select pg_temp.p(n) from unnest(array['dika', 'david', 'muti', 'yani', 'vera', 'rina', 'mira']) n $$,
-  'A3 David (pm on both) sees e-mails of people on MB and MAM, not Bimo or Gita');
+  'A3 David (project admin on both) sees e-mails of people on MB and MAM, not Bimo or Gita');
 
 reset role;
-update public.project_members set role = 'officer' where project_id = pg_temp.prj('MAM') and person_id = pg_temp.p('david');
+update public.project_members set role = 'member' where project_id = pg_temp.prj('MAM') and person_id = pg_temp.p('david');
 select pg_temp.login('david');
-select ok(exists (select 1 from public.people where id = pg_temp.p('mira')), 'A3 as officer on MAM, David still sees Mira''s name');
-select ok(not exists (select 1 from public.people_contact where person_id = pg_temp.p('mira')), 'A3 … but not Mira''s e-mail (he is not PM on her project)');
+select ok(exists (select 1 from public.people where id = pg_temp.p('mira')), 'A3 as member on MAM, David still sees Mira''s name');
+select ok(not exists (select 1 from public.people_contact where person_id = pg_temp.p('mira')), 'A3 … but not Mira''s e-mail (he is not project admin on her project)');
 reset role;
-update public.project_members set role = 'pm' where project_id = pg_temp.prj('MAM') and person_id = pg_temp.p('david');
+update public.project_members set role = 'project_admin' where project_id = pg_temp.prj('MAM') and person_id = pg_temp.p('david');
 update public.projects set pm_person_id = pg_temp.p('david') where id = pg_temp.prj('MAM');
 select pg_temp.login('david');
 
@@ -52,7 +52,7 @@ select throws_ok($$ select public.decide_gate(pg_temp.ms('BMG-B1'), 'stop', 'x')
   'A5 … but not a BMG gate');
 
 -- ---------------------------------------------------------------------------------------
--- A6–A10 · Muti (officer on MB)
+-- A6–A10 · Muti (member on MB)
 -- ---------------------------------------------------------------------------------------
 select pg_temp.login('muti');
 
@@ -110,13 +110,18 @@ select throws_ok($$ insert into public.tasks (project_id, title, start_date, end
 select throws_ok($$ delete from public.tasks where project_id = pg_temp.prj('MB') $$, '42501', null, 'A11 delete tasks');
 select throws_ok($$ update public.milestones set status = 'lulus' $$, '42501', null, 'A11 update milestones');
 select throws_ok($$ insert into public.decisions (project_id, kind, status) values (pg_temp.prj('MB'), 'gate', 'lulus') $$, '42501', null, 'A11 insert decisions');
-select throws_ok($$ insert into public.project_members values (pg_temp.prj('MB'), pg_temp.p('vera'), 'pm') $$, '42501', null, 'A11 cannot promote herself');
-select throws_ok($$ insert into public.app_roles values (pg_temp.u('vera'), 'owner') $$, '42501', null, 'A11 cannot make herself owner');
+select throws_ok($$ insert into public.project_members values (pg_temp.prj('MB'), pg_temp.p('vera'), 'project_admin') $$, '42501', null, 'A11 cannot promote herself');
+select throws_ok($$ select public.set_member_role(pg_temp.prj('MB'), pg_temp.p('vera'), 'member') $$, '42501', null, 'A11 cannot promote herself through the RPC');
+select throws_ok($$ insert into public.profiles values (pg_temp.u('vera'), 'super_admin') $$, '42501', null, 'A11 cannot make herself super admin');
+select throws_ok($$ select public.set_system_role(pg_temp.p('vera'), 'super_admin') $$, '42501', null, 'A11 … not through the RPC either');
+select throws_ok($$ select public.add_comment('task', pg_temp.t('muti'), 'halo') $$, '42501', null, 'A11 add_comment');
+select throws_ok($$ select public.raise_blocker(pg_temp.t('muti'), 'x') $$, '42501', null, 'A11 raise_blocker');
+select throws_ok($$ select public.invite_member(jsonb_build_object('email', 'x@samb.test', 'assignments', jsonb_build_array(jsonb_build_object('project_id', pg_temp.prj('MB'), 'role', 'viewer')))) $$, '42501', null, 'A11 invite_member');
 select throws_ok($$ insert into public.people (display_name) values ('x') $$, '42501', null, 'A11 insert people');
 select throws_ok($$ insert into public.people_contact values (pg_temp.p('vera'), 'x@y.z') $$, '42501', null, 'A11 insert people_contact');
 select throws_ok($$ insert into public.activity_log (table_name, action) values ('tasks', 'insert') $$, '42501', null, 'A11 insert activity_log');
 update public.people set display_name = 'Diubah' where id = pg_temp.p('muti');
-update public.project_members set role = 'pm' where person_id = pg_temp.p('vera');
+update public.project_members set role = 'project_admin' where person_id = pg_temp.p('vera');
 update public.org_settings set email_paused = true;
 delete from public.project_members where project_id = pg_temp.prj('MB');
 reset role;
@@ -138,47 +143,57 @@ select throws_ok($$ select public.save_task('{}'::jsonb) $$, '42501', null, 'A12
 reset role;
 
 -- ---------------------------------------------------------------------------------------
--- A13 · Validator = assignee is rejected, even for the owner
+-- A13 · Validator = assignee is rejected, even for the super admin. Judgment no longer needs
+-- the project admin role (ARCHITECTURE §D): a member may be pemeriksa, a viewer may not.
 -- ---------------------------------------------------------------------------------------
 select pg_temp.login('dika');
 select throws_ok($$ select public.save_task(jsonb_build_object('id', pg_temp.t('rina'), 'validator_person_id', pg_temp.p('rina'))) $$,
-  '23514', null, 'A13 owner cannot set the validator to a non-PM (the PIC is an officer)');
+  '23514', null, 'A13 super admin cannot set the validator to the PIC (a member)');
+select throws_ok($$ select public.save_task(jsonb_build_object('id', pg_temp.t('rina'), 'validator_person_id', pg_temp.p('vera'))) $$,
+  '23514', null, 'A13 a viewer cannot be pemeriksa');
+select throws_ok($$ select public.save_task(jsonb_build_object('id', pg_temp.t('rina'), 'validator_person_id', pg_temp.p('mira'))) $$,
+  '23514', null, 'A13 a non-member cannot be pemeriksa');
+select lives_ok($$ select public.save_task(jsonb_build_object('id', pg_temp.t('rina'), 'validator_person_id', pg_temp.p('yani'))) $$,
+  'A13 a member who is not the PIC can be pemeriksa without being project admin');
+select lives_ok($$ select public.save_task(jsonb_build_object('id', pg_temp.t('rina'), 'validator_person_id', pg_temp.p('dika'))) $$,
+  'A13 (pemeriksa back to Dika)');
 reset role;
-update public.project_members set role = 'pm' where project_id = pg_temp.prj('MB') and person_id = pg_temp.p('rina');
+update public.project_members set role = 'project_admin' where project_id = pg_temp.prj('MB') and person_id = pg_temp.p('rina');
 select pg_temp.login('dika');
 select throws_ok($$ select public.save_task(jsonb_build_object('id', pg_temp.t('rina'), 'validator_person_id', pg_temp.p('rina'))) $$,
-  '23514', null, 'A13 owner cannot set validator = assignee, even when the PIC is a PM');
+  '23514', null, 'A13 super admin cannot set validator = assignee, even when the PIC is a project admin');
 reset role;
 select throws_ok($$ update public.tasks set validator_person_id = assignee_person_id where id = pg_temp.t('rina') $$,
   '23514', null, 'A13 the check constraint holds for privileged writes too');
-update public.project_members set role = 'officer' where project_id = pg_temp.prj('MB') and person_id = pg_temp.p('rina');
+update public.project_members set role = 'member' where project_id = pg_temp.prj('MB') and person_id = pg_temp.p('rina');
 
 -- ---------------------------------------------------------------------------------------
 -- A14 · activity_log is append-only for everyone
 -- ---------------------------------------------------------------------------------------
 select pg_temp.login('dika');
-select ok((select count(*) from public.activity_log) > 0, 'A14 the owner can read the activity log');
-select throws_ok($$ update public.activity_log set action = 'delete' $$, '42501', null, 'A14 owner cannot update activity_log');
-select throws_ok($$ delete from public.activity_log $$, '42501', null, 'A14 owner cannot delete activity_log');
+select ok((select count(*) from public.activity_log) > 0, 'A14 the super admin can read the activity log');
+select throws_ok($$ update public.activity_log set action = 'delete' $$, '42501', null, 'A14 super admin cannot update activity_log');
+select throws_ok($$ delete from public.activity_log $$, '42501', null, 'A14 super admin cannot delete activity_log');
 select pg_temp.login('david');
-select throws_ok($$ update public.activity_log set action = 'delete' $$, '42501', null, 'A14 PM cannot update activity_log');
-select throws_ok($$ delete from public.activity_log $$, '42501', null, 'A14 PM cannot delete activity_log');
+select throws_ok($$ update public.activity_log set action = 'delete' $$, '42501', null, 'A14 project admin cannot update activity_log');
+select throws_ok($$ delete from public.activity_log $$, '42501', null, 'A14 project admin cannot delete activity_log');
 reset role;
 select throws_ok($$ update public.activity_log set action = 'delete' $$, '42501', null, 'A14 not even a privileged role can update activity_log');
 select throws_ok($$ delete from public.activity_log $$, '42501', null, 'A14 … or delete from it');
 select throws_ok($$ truncate public.activity_log $$, '42501', null, 'A14 … or truncate it');
 
 -- ---------------------------------------------------------------------------------------
--- A15 · Owner reads everything
+-- A15 · Super admin reads everything
 -- ---------------------------------------------------------------------------------------
 select pg_temp.login('dika');
-select is((select count(*) from public.projects), 3::bigint, 'A15 owner sees all projects');
-select is((select count(*) from public.tasks), 6::bigint, 'A15 owner sees all tasks');
-select is((select count(*) from public.people), 9::bigint, 'A15 owner sees all people');
-select is((select count(*) from public.people_contact), 9::bigint, 'A15 owner sees all e-mail addresses');
-select is((select count(*) from public.app_roles), 2::bigint, 'A15 owner sees all app roles');
-select is((select count(*) from public.decisions where project_id = pg_temp.prj('BMG')), 1::bigint, 'A15 owner sees BMG decisions');
-select lives_ok($$ select count(*) from public.email_log $$, 'A15 owner can read the e-mail log');
+select is((select count(*) from public.projects), 3::bigint, 'A15 super admin sees all projects');
+select is((select count(*) from public.tasks), 6::bigint, 'A15 super admin sees all tasks');
+select is((select count(*) from public.people), 9::bigint, 'A15 super admin sees all people');
+select is((select count(*) from public.people_contact), 9::bigint, 'A15 super admin sees all e-mail addresses');
+select is((select count(*) from public.profiles), 8::bigint, 'A15 super admin sees every account''s system role');
+select is((select count(*) from public.decisions where project_id = pg_temp.prj('BMG')), 1::bigint, 'A15 super admin sees BMG decisions');
+select lives_ok($$ select count(*) from public.email_log $$, 'A15 super admin can read the e-mail log');
+select is((public.whoami() ->> 'system_role'), 'super_admin', 'A15 whoami reports the system role');
 
 -- ---------------------------------------------------------------------------------------
 -- A16 · Only the validator reopens an accepted task
@@ -187,20 +202,20 @@ select pg_temp.login('david');
 select lives_ok($$ select public.review_task(pg_temp.t('muti'), 'accept') $$, 'David (validator) accepts Muti''s task');
 select pg_temp.login('dika');
 select throws_ok($$ select public.reopen_task(pg_temp.t('muti')) $$, '42501', null,
-  'A16 a PM who is not the validator (here also the owner) cannot reopen it');
+  'A16 a project admin who is not the validator (here also the super admin) cannot reopen it');
 select throws_ok($$ select public.review_task(pg_temp.t('yani'), 'accept') $$, '42501', null,
   'A16 … nor accept a task whose validator (David) has a login');
 select pg_temp.login('david');
 select lives_ok($$ select public.reopen_task(pg_temp.t('muti')) $$, 'A16 the validator can reopen it');
 select is((select stage from public.tasks where id = pg_temp.t('muti')), 'progress', 'A16 the reopened task is back in progress');
 
--- A PM may act for a validator who has no login (prototype canAct).
+-- A project admin may act for a validator who has no login (prototype canAct).
 reset role;
 update public.tasks set validator_person_id = pg_temp.p('david') where id = pg_temp.t('rina');
 update public.people set user_id = null where id = pg_temp.p('david');
 select pg_temp.login('dika');
-select lives_ok($$ select public.submit_task(pg_temp.t('rina'), 'bukti atas nama Rina') $$, 'a PM submits for a PIC without a login');
-select lives_ok($$ select public.review_task(pg_temp.t('rina'), 'accept') $$, 'a PM reviews for a validator without a login');
+select lives_ok($$ select public.submit_task(pg_temp.t('rina'), 'bukti atas nama Rina') $$, 'a project admin submits for a PIC without a login');
+select lives_ok($$ select public.review_task(pg_temp.t('rina'), 'accept') $$, 'a project admin reviews for a validator without a login');
 reset role;
 update public.people set user_id = pg_temp.u('david') where id = pg_temp.p('david');
 
@@ -216,12 +231,13 @@ select throws_ok($$ select public.review_task(pg_temp.t('davidpic'), 'accept') $
   'A17 nobody can accept while the effective validator is the PIC');
 
 -- ---------------------------------------------------------------------------------------
--- Group viewer and other outsiders
+-- Outsiders: no membership = the project does not exist
 -- ---------------------------------------------------------------------------------------
 select pg_temp.login('gita');
-select is((select count(*) from public.projects), 3::bigint, 'group viewer reads every project');
-select is((select count(*) from public.people_contact), 0::bigint, 'group viewer reads no e-mail addresses');
-select throws_ok($$ select public.set_task_stage(pg_temp.t('bmg'), 'progress') $$, '42501', null, 'group viewer cannot write');
+select is((select count(*) from public.projects), 0::bigint, 'a login without memberships reads no project');
+select is((select count(*) from public.people), 1::bigint, '… sees only herself among people');
+select is((select count(*) from public.people_contact), 0::bigint, '… reads no e-mail addresses');
+select throws_ok($$ select public.set_task_stage(pg_temp.t('bmg'), 'progress') $$, 'P0002', null, '… and a write on a project she cannot see looks like a missing row');
 select pg_temp.login('bimo');
 select is((select count(*) from public.tasks where project_id <> pg_temp.prj('BMG')), 0::bigint, 'Bimo sees only BMG tasks');
 select is((public.whoami() ->> 'person_id')::uuid, pg_temp.p('bimo'), 'whoami resolves the signed-in person');
