@@ -124,16 +124,18 @@ export interface StepDef<I, S> {
   stage(inputs: I, state: S): Stage
 }
 
-/** A drawer field. The world's inputs are a flat record; `id` is its key. */
+/** A drawer field. The world's inputs are a flat record; `id` is its key. (Methods, not
+ *  function properties, so a world's scenario can stand in for the shell's AnyScenario.) */
 export type Field<I> = {
-  id: keyof I & string
+  id: string
   label: string
   help?: string
-  show?: (i: I) => boolean
+  show?(i: I): boolean
 } & (
-  | { kind: 'seg'; options: (i: I) => [string, string][] }
-  | { kind: 'number'; unit: (i: I) => string; min: number; step: number }
-  | { kind: 'checks'; groups: (i: I) => { label: string; options: [string, string][] }[] }
+  | { kind: 'seg'; options(i: I): [string, string][] }
+  /** a number; `choice` puts a unit switch (another field) beside it instead of a fixed unit */
+  | { kind: 'number'; unit(i: I): string; min: number; step: number; choice?: { id: string; options: [string, string][] } }
+  | { kind: 'checks'; groups(i: I): { label: string; options: [string, string][] }[] }
 )
 
 export interface Preset<I> {
@@ -163,9 +165,12 @@ export interface ScenarioDef<I, S> {
   /** keep dependent inputs in step after a change (a newly chosen principal brings its SKUs, …) */
   adjust?(next: I, prev: I): I
   /** errors by field id; none means the run can start */
-  validate(i: I): Partial<Record<keyof I & string, string>>
-  /** the live conversion preview under the inputs */
+  validate(i: I): Partial<Record<string, string>>
+  /** the live conversion preview, shown after the field `previewAfter` (or after all inputs) */
   preview(i: I): Line[]
+  /** a table under the preview's first line (cartons per pallet per SKU, …), every cell badged */
+  previewTable?(i: I): { head: string[]; rows: { label: string; cells: Fig[] }[] } | null
+  previewAfter?: string
   /** the scenario unit the ledger divides by (100 palet, 800 karton, …) */
   units(i: I): Fig
   /** the inputs as rows for Ringkasan */
@@ -174,6 +179,9 @@ export interface ScenarioDef<I, S> {
   /** the teams in the order the result card lists them */
   teams: string[]
 }
+
+/** a world's scenario as the shell holds it, whatever its inputs and state */
+export type AnyScenario = ScenarioDef<object, unknown>
 
 export type Assumptions = Record<string, number>
 

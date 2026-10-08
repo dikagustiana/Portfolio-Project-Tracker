@@ -30,7 +30,10 @@ const ONLY = arg('only')
 const CONFIG = 'vite.sim3d.config.ts'
 const PREVIEW = '/src/sim/worlds/distribusi/ui/preview.html'
 
-const FRAMES: Frame[] = [
+/** opens the scenario drawer on a preset (with the dedicated sales admin for the pause frames) */
+const SCN = `(async () => { const s = window.sim.scenario; const wait = (ms) => new Promise((r) => setTimeout(r, ms)); s.open('p100', window.__khusus ? { sa: 'khusus' } : {})`
+
+const FRAMES: (Frame & { khusus?: boolean })[] = [
   // W0: the distribution world after the refactor, staged as B4's V1 frame
   { name: 'w0-distribusi-1366x768-light', world: 'distribusi', w: 1366, h: 768, q: { select: 'L-03', open: 'gudang' } },
   // W1: one still of each new world, network view, places labelled, one place open as a section
@@ -44,6 +47,13 @@ const FRAMES: Frame[] = [
   { name: 'w1-rpa-390x844-light', world: 'rpa', w: 390, h: 844, phone: true, full: true, q: { open: 'hall', select: 'Chilling dan split-off' } },
   { name: 'w1-rpa-lensa-data-1366x768-light', world: 'rpa', w: 1366, h: 768, q: { lens: 'data', open: 'hall,kantor', select: 'TBC-03' } },
   { name: 'w1-rpa-kantor-1366x768-light', world: 'rpa', w: 1366, h: 768, q: { open: 'kantor', select: 'Kantor' } },
+  // B6 S0: the scenario shell on the distribution world, steps 1–3
+  { name: 's0-drawer-1366x768-light', world: 'distribusi', w: 1366, h: 768, act: `window.sim.scenario.open('p100')` },
+  { name: 's0-director-1366x768-light', world: 'distribusi', w: 1366, h: 768, act: `${SCN}; await wait(400); s.start(); await wait(900); s.goto(2, 0.55); s.pause(); })()` },
+  { name: 's0-pause-1366x768-light', world: 'distribusi', w: 1366, h: 768, act: `${SCN}; await wait(400); s.start(); await wait(500); s.speed(0); })()`, khusus: true },
+  { name: 's0-result-1366x768-light', world: 'distribusi', w: 1366, h: 768, act: `${SCN}; await wait(400); s.start(); await wait(500); s.speed(0); await wait(500); s.asm({ 'admin-khusus-A': 12000000 }); })()`, khusus: true },
+  { name: 's0-result-1366x768-dark', world: 'distribusi', w: 1366, h: 768, dark: true, act: `${SCN}; await wait(400); s.start(); await wait(500); s.speed(0); await wait(500); s.asm({ 'admin-khusus-A': 12000000 }); })()`, khusus: true },
+  { name: 's0-director-390x844-light', world: 'distribusi', w: 390, h: 844, phone: true, full: true, act: `${SCN}; await wait(400); s.start(); await wait(900); s.goto(2, 0.55); s.pause(); })()` },
 ]
 
 async function launch(): Promise<Browser> {
@@ -75,6 +85,7 @@ async function open(browser: Browser, base: string, f: Frame): Promise<{ page: P
     await page.waitForTimeout(300)
   }
   await page.evaluate('document.fonts.ready')
+  if ((f as { khusus?: boolean }).khusus) await page.evaluate('window.__khusus = true')
   if (f.act) await page.evaluate(f.act)
   await page.waitForTimeout(1500)
   return { page, problems: async () => [...errors, ...(await page.evaluate<string[]>('window.__csp'))], close: () => ctx.close() }

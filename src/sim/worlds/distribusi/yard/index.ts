@@ -8,6 +8,7 @@ import { computeAll2 } from '../../b2b-b2c/engine/index.ts'
 import { MISSING, STAGES, costLens, pulse } from './bind.ts'
 import { PLACES, PLACE_LABELS, PLATE } from './layout.ts'
 import { buildWorld } from './world.ts'
+import { distribusiScenario } from '../scenario/index.ts'
 
 const fills = Object.fromEntries(Object.entries(PRINCIPAL_COLOR).map(([k, c]) => [`p${k}`, c])) as Record<PrincipalFill, string>
 
@@ -32,6 +33,7 @@ const distribusi: WorldDef = {
   idle: 'Klik apa saja di peta — truk, dok, rak, meja, toko, dokumen — untuk status, driver biaya, angka engine dan langkah berikutnya.',
   trackerIdle: 'Pilih order, trip, truk atau dokumen untuk melihat tahapnya.',
   fills,
+  scenario: distribusiScenario,
   build(scene, { day = 8, hour = 10.75 }) {
     const data = computeAll2()
     const world = buildWorld(scene, data, day, hour)

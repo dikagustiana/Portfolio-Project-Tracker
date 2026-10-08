@@ -2,7 +2,8 @@
 // simulation is the shared yard shell around one of three worlds — #/simulasi and
 // #/simulasi/distribusi (and the earlier #/simulasi/b2b-b2c) open the distribution network,
 // #/simulasi/pabrik-singkong the cassava chip plant (BMG), #/simulasi/rpa the poultry
-// slaughterhouse (KGR). The shell carries its own world switcher. Without WebGL the distribution
+// slaughterhouse (KGR); #/simulasi/<world>/skenario?s=… opens a saved scenario (Brief B6). The
+// shell carries its own world switcher. Without WebGL the distribution
 // worlds fall back to the 2D canvases, and the plant worlds show the shell with its WebGL note.
 
 import { lazy, Suspense } from 'react'
@@ -42,7 +43,13 @@ export function SimHost() {
       <div className="yd-host" style={{ minHeight: 520 }}>
         <Boundary3D fallback={world2d}>
           <Suspense fallback={<div className="skel" style={{ height: '100%' }} />}>
-            <YardScreen world={yardWorld(world)} onWorld={(w) => setUI({ simWorld: w })} onMenu={toggleDrawer} />
+            <YardScreen
+              world={yardWorld(world)}
+              onWorld={(w) => setUI({ simWorld: w, simScenario: null })}
+              onMenu={toggleDrawer}
+              scenario={ui.simScenario}
+              onScenario={(s) => setUI({ simScenario: s })}
+            />
           </Suspense>
         </Boundary3D>
       </div>
@@ -76,7 +83,7 @@ export function SimHost() {
         ) : (
           <div className="yd-host" style={{ minHeight: 520 }}>
             <Suspense fallback={<div className="skel" />}>
-              <YardScreen world={world} onWorld={(w) => setUI({ simWorld: w })} onMenu={toggleDrawer} />
+              <YardScreen world={world} onWorld={(w) => setUI({ simWorld: w, simScenario: null })} onMenu={toggleDrawer} />
             </Suspense>
           </div>
         )}

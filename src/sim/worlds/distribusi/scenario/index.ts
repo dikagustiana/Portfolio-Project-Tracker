@@ -410,7 +410,6 @@ function preview(i: DistInputs): Line[] {
   const zone = ZONES.find((z) => String(z.id) === i.zone)
   return [
     head,
-    ...plan.map((x) => ({ t: `${x.sku.code} · {0} · {1} · {2}`, f: [x.perPallet, x.pallets, x.cartons] })),
     { t: 'Volume dibagi ke SKU menurut porsi forecast engine bulan ini.' },
     i.ch === 'b2c'
       ? { t: 'Kanal B2C: paket lewat kurir (langkah 6–7 dihitung di S1).' }
@@ -419,6 +418,11 @@ function preview(i: DistInputs): Line[] {
           f: [inp('Porsi B2B', (i.ch === 'mix' ? i.mix : 100) / 100, '%'), eng(`Jarak zona ${i.zone}`, zone?.oneWayKm ?? 0, 'km', SRC), inp('Toko', i.stores, 'toko'), inp('Drop per trip', i.drops, 'drop per trip')],
         },
   ]
+}
+
+function previewTable(i: DistInputs): { head: string[]; rows: { label: string; cells: Fig[] }[] } | null {
+  if (!i.p.length || !i.sku.length || !(i.vol > 0)) return null
+  return { head: ['SKU', 'karton/palet', 'palet', 'karton'], rows: planOf(i).map((x) => ({ label: x.sku.code, cells: [x.perPallet, x.pallets, x.cartons] })) }
 }
 
 function summary(i: DistInputs): Line[] {
@@ -440,10 +444,9 @@ export const distribusiScenario: ScenarioDef<DistInputs, DistState> = {
   dataHash,
   dataLabel: 'Engine distribusi (world 2, ekspor B2B = model world 1) · data dummy',
   fields: [
-    { id: 'p', kind: 'checks', label: 'Prinsipal', groups: () => [{ label: '', options: PIDS.map((p) => [p, `Prinsipal ${p}`]) }] },
-    { id: 'sku', kind: 'checks', label: 'SKU', groups: (i) => PIDS.filter((p) => i.p.includes(p)).map((p) => ({ label: `Prinsipal ${p}`, options: principal(p).skus.map((s) => [s, b2b().skus[s]?.code ?? s]) })) },
-    { id: 'vu', kind: 'seg', label: 'Satuan volume', options: () => [['palet', 'Palet'], ['karton', 'Karton']] },
-    { id: 'vol', kind: 'number', label: 'Volume', unit: (i) => i.vu, min: 1, step: 1 },
+    { id: 'p', kind: 'checks', label: 'Prinsipal', groups: () => [{ label: '', options: PIDS.map((p) => [p, p]) }] },
+    { id: 'sku', kind: 'checks', label: 'SKU', groups: (i) => PIDS.filter((p) => i.p.includes(p)).map((p) => ({ label: i.p.length > 1 ? `Prinsipal ${p}` : '', options: principal(p).skus.map((s) => [s, b2b().skus[s]?.code ?? s]) })) },
+    { id: 'vol', kind: 'number', label: 'Volume', unit: (i) => i.vu, min: 1, step: 1, choice: { id: 'vu', options: [['palet', 'palet'], ['karton', 'karton']] } },
     { id: 'ch', kind: 'seg', label: 'Kanal', options: () => [['b2b', 'B2B'], ['b2c', 'B2C'], ['mix', 'Campuran']] },
     { id: 'mix', kind: 'number', label: 'Porsi B2B', unit: () => '%', min: 1, step: 1, show: (i) => i.ch === 'mix' },
     { id: 'zone', kind: 'seg', label: 'Zona', options: () => ZONES.map((z) => [String(z.id), `Zona ${z.id}`] as [string, string]), show: (i) => i.ch !== 'b2c' },
@@ -464,6 +467,8 @@ export const distribusiScenario: ScenarioDef<DistInputs, DistState> = {
   normalize,
   validate,
   preview,
+  previewTable,
+  previewAfter: 'vol',
   units: (i) => inp('Volume skenario', i.vol, i.vu),
   summary,
   init: (i) => ({ plan: planOf(i), need: [], pos: [] }),

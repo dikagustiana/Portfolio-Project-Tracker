@@ -65,6 +65,8 @@ export class Ink {
   private day = { fill: {} as Record<string, THREE.Color>, line: {} as Record<string, THREE.Color>, text: {} as Record<string, THREE.Color> }
   private night = { fill: {} as Record<string, THREE.Color>, line: {} as Record<string, THREE.Color>, text: {} as Record<string, THREE.Color> }
   private glyphs = new Map<string, THREE.CanvasTexture>()
+  /** faded copies of materials, for whatever a scenario's director dims (Brief B6 §3) */
+  private dims = new Map<THREE.Material, THREE.Material>()
   dusk = 0
   readonly root: HTMLElement
   readonly anisotropy: number
@@ -119,10 +121,33 @@ export class Ink {
       const c = d.clone().lerp(nc, n)
       for (const m of ms) m.color.copy(c)
     }
+    this.refreshDims()
+  }
+
+  /** a faded copy of a material that follows it through theme and dusk changes */
+  dimOf(m: THREE.Material): THREE.Material {
+    const hit = this.dims.get(m)
+    if (hit) return hit
+    const d = m.clone()
+    this.dims.set(m, d)
+    this.refreshDims()
+    return d
+  }
+
+  private refreshDims(): void {
+    const bg = this.fill.ground?.color
+    if (!bg) return
+    for (const [m, d] of this.dims) {
+      const src = m as THREE.Material & { color?: THREE.Color }
+      const dst = d as THREE.Material & { color?: THREE.Color }
+      if (src.color && dst.color) dst.color.copy(src.color).lerp(bg, m instanceof LineMaterial ? 0.68 : 0.72)
+      if (m instanceof LineMaterial && d instanceof LineMaterial) d.resolution.copy(m.resolution)
+    }
   }
 
   setResolution(w: number, h: number): void {
     for (const m of Object.values(this.line)) m.resolution.set(w, h)
+    this.refreshDims()
   }
 
   /** a white glyph texture for a string, shared by every text that says the same thing */
@@ -161,6 +186,8 @@ export class Ink {
     for (const ms of Object.values(this.text)) for (const m of ms) m.dispose()
     for (const t of this.glyphs.values()) t.dispose()
     this.glyphs.clear()
+    for (const d of this.dims.values()) d.dispose()
+    this.dims.clear()
   }
 }
 

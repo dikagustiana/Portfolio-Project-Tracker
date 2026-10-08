@@ -89,7 +89,7 @@ export function buildWorld(scene: YardScene, data: Computed2, day: number, hour:
         ],
         next: 'Klik rak, dok, atau meja admin GR untuk langkahnya',
         notes: [
-          'Titik terbuka A: engine menumpuk palet sampai 1,8 m pada alas 12.000 cm² (aturan "tall"); aturan pemilik alas 1,1 × 1,2 m, tinggi 1 m. Untuk Oi Ocha 500 ml (41 × 28 × 23 cm): 56 karton per palet lawan 32, hampir dua kali palet-hari.',
+          'Titik terbuka A: aturan palet engine saat ini alas 1,1 × 1,2 m, muatan 1,0 m (sama dengan aturan pemilik); engine juga punya aturan "tall" alas 1,0 × 1,2 m, muatan 1,8 m. Untuk Oi Ocha 500 ml (41 × 28 × 23 cm): 56 karton per palet pada 1,8 m lawan 32 pada 1 m, hampir dua kali palet-hari.',
           'Titik terbuka B: palet keluar kurang menghitung prinsipal dengan banyak pesanan kecil (banyak DO satu karton) yang memakan waktu picker di level karton.',
         ],
       }
@@ -451,23 +451,62 @@ export function buildWorld(scene: YardScene, data: Computed2, day: number, hour:
     scene.scene.add(g)
   }
 
-  // the kantor: desks per team (engine headcounts), the dedicated desk in Prinsipal D's colour
+  // the kantor: desks per team (engine headcounts), the dedicated desk in Prinsipal D's colour;
+  // each team's desks are one clickable entity (a scenario's director lights the acting team)
   const seatProto = buildSeated(ink)
   seatProto.scale.setScalar(SCALE.desk)
-  const deskAt = (x: number, y: number, tone: Tone = 'n'): void => {
-    const d = buildDesk(ink, tone)
-    d.scale.setScalar(SCALE.desk)
-    pose(d, x, y, 0)
-    kt.peek.inside.add(d)
-    const s = seatProto.clone()
-    pose(s, x, y + 1.3 * SCALE.desk, -Math.PI / 2)
-    kt.peek.inside.add(s)
+  const team = (id: string, desks: [number, number][], tone: Tone, card: () => Card): void => {
+    const g = new THREE.Group()
+    g.name = id
+    for (const [x, y] of desks) {
+      const d = buildDesk(ink, tone)
+      d.scale.setScalar(SCALE.desk)
+      pose(d, x, y, 0)
+      g.add(d)
+      const s = seatProto.clone()
+      pose(s, x, y + 1.3 * SCALE.desk, -Math.PI / 2)
+      g.add(s)
+    }
+    kt.peek.inside.add(g)
+    const xs = desks.map(([x]) => x)
+    const ys = desks.map(([, y]) => y)
+    add({ id, kind: 'desk', groups: [g], still: true, pick: [(Math.min(...xs) + Math.max(...xs)) / 2, Math.max(...ys) + 1, 2.4], card })
   }
-  for (let i = 0; i < TEAM_SEATS.komersial; i++) deskAt(31 + i * 5.5, 34)
-  for (let i = 0; i < TEAM_SEATS.salesAdminShared; i++) deskAt(53 + i * 5.5, 34)
-  deskAt(53 + TEAM_SEATS.salesAdminShared * 5.5 + 3, 34, 'pD')
-  for (let i = 0; i < TEAM_SEATS.arFinance; i++) deskAt(31 + i * 6, 50)
-  for (let i = 0; i < TEAM_SEATS.tax; i++) deskAt(57 + i * 6, 50)
+  const row = (n: number, x0: number, dx: number, y: number): [number, number][] => Array.from({ length: n }, (_, i) => [x0 + i * dx, y])
+  const deskCard = (title: string, people: number, work: string, driver: string, engine: Card['engine'], notes?: string[]): Card => ({
+    kind: 'Kantor · meja tim', title, status: `${formatNumber(people)} orang · jam kerja`, rows: [['Pekerjaan', work]], driver, engine, notes,
+  })
+  const komersial = poolOf('komersial')
+  const shared = poolOf('salesAdminShared')
+  const ar = poolOf('arFinance')
+  const tax = poolOf('tax')
+  team('Meja Komersial', row(TEAM_SEATS.komersial, 31, 5.5, 34), 'n', () =>
+    deskCard('Meja Komersial', TEAM_SEATS.komersial, 'GM Commercial dan tim: forecast bulanan, cek stok, kebutuhan order', 'tidak dialokasikan engine', [
+      { label: 'Pool Komersial', value: `Rp ${formatNumber(komersial?.total ?? 0)}`, trace: komersial?.totalTrace },
+      { label: 'Driver alokasi', missing: `${MISSING}: engine tidak membagi pool Komersial ke prinsipal` },
+    ]),
+  )
+  team('Meja sales admin bersama', row(TEAM_SEATS.salesAdminShared, 53, 5.5, 34), 'n', () =>
+    deskCard('Meja sales admin bersama', TEAM_SEATS.salesAdminShared, 'PO ke prinsipal untuk semua prinsipal', 'jumlah PO', [
+      { label: 'Pool sales admin bersama', value: `Rp ${formatNumber(sa.shared.total)} · ${formatNumber(sa.shared.pos)} PO` },
+      { label: 'Biaya per PO', value: `Rp ${formatNumber(sa.shared.rate)}`, trace: shared?.rateTrace },
+    ]),
+  )
+  team('Meja sales admin khusus D', [[53 + TEAM_SEATS.salesAdminShared * 5.5 + 3, 34]], 'pD', () =>
+    deskCard('Meja sales admin khusus D', TEAM_SEATS.salesAdminDedicated, 'PO dan urusan admin Prinsipal D saja', 'langsung ke Prinsipal D', [
+      { label: 'Admin khusus Prinsipal D', value: `Rp ${formatNumber(sa.dedicated.total)} langsung ke D`, trace: poolOf('salesAdminDedicated')?.totalTrace },
+    ]),
+  )
+  team('Meja Finance AR', row(TEAM_SEATS.arFinance, 31, 6, 50), 'n', () =>
+    deskCard('Meja Finance AR', TEAM_SEATS.arFinance, 'invoice dari DO yang kembali ditandatangani, penagihan', 'invoice dibuat', [
+      { label: 'Biaya per invoice dibuat', value: `Rp ${formatNumber(ar?.rate ?? 0)}`, trace: ar?.rateTrace },
+    ]),
+  )
+  team('Meja pajak', row(TEAM_SEATS.tax, 57, 6, 50), 'n', () =>
+    deskCard('Meja pajak', TEAM_SEATS.tax, 'faktur pajak, pengiriman invoice, tukar faktur', 'invoice dikirim', [
+      { label: 'Biaya per invoice dikirim', value: `Rp ${formatNumber(tax?.rate ?? 0)}`, trace: tax?.rateTrace },
+    ]),
+  )
 
   // documents in flight: today's PO to its principal, an invoice at the AR desk, a coin coming home
   const poToday = data.world.b2b.pos.find((p) => p.day === day)

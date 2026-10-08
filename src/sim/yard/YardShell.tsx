@@ -7,12 +7,39 @@
 // the world (types.ts WorldDef). Factory Yard's click-for-a-card lives on: the panel is the card.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
-import { formatClock } from '../core/format.ts'
+import { formatClock, formatNumber } from '../core/format.ts'
 import { useReducedMotion } from '../ui3d/support.ts'
+import { Director } from '../scenario/director.ts'
+import type { Speed } from '../scenario/director.ts'
+import { plain } from '../scenario/figure.ts'
+import { runScenario } from '../scenario/run.ts'
+import type { Assumptions, Run } from '../scenario/types.ts'
+import { decodeScenario, encodeScenario, scenarioHash } from '../scenario/url.ts'
+import { Caption, Controls, StepTracker, Tiles } from '../scenario/ui/DirectorBar.tsx'
+import { Drawer } from '../scenario/ui/Drawer.tsx'
+import { Tips } from '../scenario/ui/Fig.tsx'
+import { Ledger } from '../scenario/ui/Ledger.tsx'
+import { PauseCard } from '../scenario/ui/PauseCard.tsx'
+import { ResultCard } from '../scenario/ui/ResultCard.tsx'
+import '../scenario/ui/scenario.css'
 import { YardScene } from './scene.ts'
 import type { Block, Card, Pulse, WorldDef, WorldId, WorldRuntime } from './types.ts'
 import { WORLDS } from './worlds.ts'
 import './yard.css'
+
+/** a scenario being played: its inputs and assumptions, the run they give, and its link */
+interface Play {
+  inputs: object
+  asm: Assumptions
+  run: Run
+  enc: string
+  /** opened from a link made on other engine data: the hash the link carries */
+  stale: string | null
+  /** opened from a link: show the result at once */
+  fromLink: boolean
+  /** a new number for each scenario started; entering an assumption keeps it */
+  session: number
+}
 
 interface Live {
   scene: YardScene
@@ -23,6 +50,10 @@ interface Live {
  *  (selection, follow, view, open buildings) bump the version, and render reads the snapshot. */
 class Controller {
   live: Live | null = null
+  /** the scenario director while a scenario plays (Brief B6 §3) */
+  director: Director | null = null
+  /** handles for window.sim (style frames, tests), refreshed every render */
+  api: { open?: (preset?: string, patch?: Record<string, unknown>) => void; start?: () => void; asm?: (values: Assumptions) => void } = {}
   private version = 0
   private readonly subs = new Set<() => void>()
   readonly subscribe = (f: () => void): (() => void) => {
@@ -37,6 +68,12 @@ class Controller {
   attach(live: Live | null): void {
     this.live = live
     this.emit()
+  }
+  setDirector(d: Director | null): void {
+    this.director = d
+  }
+  setApi(api: Controller['api']): void {
+    this.api = api
   }
 }
 
@@ -57,9 +94,12 @@ export interface YardShellProps {
   onMenu?: () => void
   /** the world switcher; without it the switcher still shows, inert */
   onWorld?: (id: WorldId) => void
+  /** Mode skenario (Brief B6): the encoded scenario of the URL, and how to write it back */
+  scenario?: string | null
+  onScenario?: (encoded: string | null) => void
 }
 
-export default function YardShell({ def, initialDay, initialHour, initialSelect, open, initialLens, onMenu, onWorld }: YardShellProps) {
+export default function YardShell({ def, initialDay, initialHour, initialSelect, open, initialLens, onMenu, onWorld, scenario, onScenario }: YardShellProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const [ctl] = useState(() => new Controller())
@@ -68,6 +108,11 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
   const [card, setCard] = useState<Card | null>(null)
   const [lens, setLensState] = useState<string | null>(initialLens ?? null)
   const [focus, setFocusState] = useState<string>(def.focus?.initial ?? '')
+  const scn = def.scenario
+  const [drawer, setDrawer] = useState<object | null>(null)
+  const [play, setPlay] = useState<Play | null>(null)
+  /** the finish the viewer closed the result card on (it opens again on the next finish) */
+  const [closedFinish, setClosedFinish] = useState(-1)
 
   useEffect(() => {
     const root = rootRef.current
@@ -102,6 +147,19 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
           screenOf: (id: string) => scene.screenOf(id), all: () => scene.entities.map((e) => ({ id: e.id, kind: e.kind, status: e.card().status })),
           place: (id: string) => scene.snapPlace(id), open: (id: string, on = true) => (on ? scene.forceOpen.add(id) : scene.forceOpen.delete(id)),
           night: (n: number) => scene.setNight(n),
+          scenario: {
+            open: (preset?: string, patch?: Record<string, unknown>) => ctl.api.open?.(preset, patch),
+            start: () => ctl.api.start?.(),
+            asm: (values: Record<string, number>) => ctl.api.asm?.(values),
+            goto: (idx: number, t = 0) => ctl.director?.goto(idx, t),
+            speed: (sp: Speed) => ctl.director?.setSpeed(sp),
+            end: () => ctl.director?.toEnd(),
+            pause: () => ctl.director?.pause(),
+            state: () => {
+              const d = ctl.director
+              return d ? { idx: d.idx, n: d.row?.n, playing: d.playing, awaiting: d.awaiting, finished: d.finished, status: d.run.status, total: d.run.total.value } : null
+            },
+          },
         },
       })
     }
@@ -114,13 +172,17 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
       if ((e.key === ' ' || e.key === 'Enter') && tgt?.closest('button')) return
       if (!root.contains(tgt) && tgt !== document.body) return
       const place = def.places.find((p) => p.key === e.key)
+      const d = ctl.director
+      const dir: Record<string, () => void> = d
+        ? { ' ': () => (d.playing ? d.pause() : d.play()), ArrowLeft: () => d.prev(), ArrowRight: () => d.next(), Escape: () => setClosedFinish(d.finishCount) }
+        : {}
       const act: Record<string, () => void> = {
         Escape: () => scene.select(null), f: () => scene.setFollow(!scene.follow), F: () => scene.setFollow(!scene.follow),
         ']': () => scene.cycle(1), '[': () => scene.cycle(-1), ' ': () => scene.setPaused(!scene.paused),
         '+': () => scene.zoomBy(1.4), '=': () => scene.zoomBy(1.4), '-': () => scene.zoomBy(1 / 1.4), Home: () => scene.resetView(),
         ...(zeroIsPlace ? {} : { '0': () => scene.resetView() }),
       }
-      const fn = place ? () => scene.goPlace(place.id) : act[e.key]
+      const fn = place ? () => scene.goPlace(place.id) : (dir[e.key] ?? act[e.key])
       if (fn) {
         fn()
         e.preventDefault()
@@ -132,6 +194,8 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
       window.removeEventListener('keydown', onKey)
       const w = window as unknown as { sim?: { scene?: YardScene } }
       if (w.sim?.scene === scene) delete w.sim
+      ctl.director?.dispose()
+      ctl.setDirector(null)
       scene.dispose()
       ctl.attach(null)
     }
@@ -141,6 +205,82 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
 
   const scene = ctl.live?.scene
   const runtime = ctl.live?.runtime
+
+  // ---- Mode skenario (Brief B6 §3) ---------------------------------------------------------------
+  /** a play of the scenario: a fresh session starts the director, the same session resumes it */
+  const playOf = (inputs: object, asm: Assumptions, session: number, link?: { enc: string; stale: string | null }): Play | null => {
+    if (!scn) return null
+    const run = runScenario(scn, inputs, asm)
+    return { inputs, asm, run, enc: link?.enc ?? encodeScenario(def.id, run.hash, inputs, asm), stale: link?.stale ?? null, fromLink: !!link, session }
+  }
+  const begin = (inputs: object, asm: Assumptions, session = (play?.session ?? 0) + 1): void => {
+    const p = playOf(inputs, asm, session)
+    if (!p) return
+    setDrawer(null)
+    setPlay(p)
+    onScenario?.(p.enc)
+  }
+  const saveAssumptions = (values: Assumptions): void => {
+    if (play) begin(play.inputs, { ...play.asm, ...values }, play.session)
+  }
+  const leave = (): void => {
+    setPlay(null)
+    onScenario?.(null)
+  }
+  // a scenario link in the URL (opened, or changed by the browser's back and forward): adopted
+  // while rendering, so the link and the screen never disagree for a frame
+  const [seenLink, setSeenLink] = useState<string | null | undefined>(undefined)
+  if (scn && scenario !== seenLink) {
+    setSeenLink(scenario)
+    if (scenario !== (play?.enc ?? null)) {
+      const dec = scenario ? decodeScenario(scenario) : null
+      if (!scenario) setPlay(null)
+      else if (dec?.ok && dec.saved.w === def.id) {
+        setDrawer(null)
+        setPlay(playOf(scn.normalize(dec.saved.i), dec.saved.a, (play?.session ?? 0) + 1, { enc: scenario, stale: dec.saved.h !== scn.dataHash() ? dec.saved.h : null }))
+      }
+    }
+  }
+  const api: Controller['api'] = {
+    open: (preset?: string, patch?: Record<string, unknown>) => {
+      if (scn) setDrawer({ ...(scn.presets.find((p) => p.id === preset)?.inputs ?? scn.defaults()), ...patch })
+    },
+    start: () => {
+      if (scn && drawer && Object.keys(scn.validate(drawer)).length === 0) begin(drawer, {})
+    },
+    asm: (values: Assumptions) => saveAssumptions(values),
+  }
+  useEffect(() => ctl.setApi(api))
+  // the director lives for one session of a scenario; an entered assumption gives it a new run
+  const session = play?.session
+  useEffect(() => {
+    if (!scene || !play) return
+    const nd = new Director(scene, play.run, ctl.emit, reduced)
+    ctl.setDirector(nd)
+    if (play.fromLink) nd.toEnd()
+    else nd.start()
+    return () => {
+      if (ctl.director === nd) ctl.setDirector(null)
+      nd.dispose()
+      ctl.emit()
+    }
+    // one director per session: later runs of the same session go through setRun below
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, session])
+  const playRun = play?.run
+  useEffect(() => {
+    if (playRun) ctl.director?.setRun(playRun)
+  }, [ctl, playRun])
+  // a link that cannot open says why, over the map
+  const linkDec = scenario ? decodeScenario(scenario) : null
+  const linkNote = !linkDec || play ? null : !linkDec.ok ? linkDec.error : linkDec.saved.w !== def.id ? 'Link skenario ini untuk dunia lain' : null
+  const d = play ? ctl.director : null
+  const showResult = !!(d && play && d.finished && d.finishCount !== closedFinish)
+  const link = play ? `${location.origin}/${scenarioHash(def.id, play.enc)}` : ''
+  const unitsNote = play && scn ? scn.preview(play.inputs).slice(0, 1).map(plain).join('') : ''
+  const goto = (i: number): void => {
+    d?.goto(i)
+  }
   const clock = runtime?.clock() ?? { day: initialDay ?? 1, hour: initialHour ?? 9, days: 30 }
   const metrics: Pulse[] = runtime?.metrics(lens, focus) ?? []
   const view = scene?.view ?? def.views[0]?.id ?? 'jaringan'
@@ -158,7 +298,7 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
   }
 
   return (
-    <div className="yd" ref={rootRef} data-world={def.id}>
+    <div className={`yd${d ? ' sc-on' : ''}`} ref={rootRef} data-world={def.id}>
       <nav className="yd-worlds" aria-label="Dunia">
         <div className="yd-seg" role="radiogroup" aria-label="Dunia">
           <span className="yd-seglabel">Dunia</span>
@@ -178,11 +318,12 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
               ☰
             </button>
           )}
-          <span className="yd-kicker">{lens ? (def.lenses.find((l) => l.id === lens)?.label ?? 'Lensa') : 'Denyut operasi'}</span>
-          <span className="yd-clock">
-            Hari {clock.day} · {formatClock(clock.hour)}
-          </span>
+          <span className="yd-kicker">{d ? 'Mode skenario' : lens ? (def.lenses.find((l) => l.id === lens)?.label ?? 'Lensa') : 'Denyut operasi'}</span>
+          <span className="yd-clock">{d ? `Hari skenario ${formatNumber(Math.floor(d.day))}` : `Hari ${clock.day} · ${formatClock(clock.hour)}`}</span>
         </div>
+        {d && play && scn ? (
+          <Tiles run={play.run} d={d} count={scn.count} extra={unitsNote} />
+        ) : (
         <ul className={`yd-metrics${lens ? ' lens' : ''}`} aria-live="polite" style={{ ['--n' as string]: Math.max(1, metrics.length) }}>
           {metrics.map((m) => (
             <li key={m.label} className={`yd-metric${m.tone ? ` ${m.tone}` : ''}${m.missing ? ' missing' : ''}`} title={m.missing ? `${def.gap}: ${m.missing}` : undefined}>
@@ -192,6 +333,7 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
             </li>
           ))}
         </ul>
+        )}
         <div className={`yd-lenses${def.lenses.length > 1 ? ' many' : ''}`}>
           {def.lenses.map((l) => (
             <button key={l.id} type="button" className="yd-lens" aria-pressed={lens === l.id} onClick={() => setLens(lens === l.id ? null : l.id)} title={l.title}>
@@ -215,6 +357,20 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="sc-run"
+          aria-pressed={!!drawer || !!play}
+          disabled={!scn}
+          title={scn ? 'Jalankan satu skenario dari awal sampai kas masuk' : `Skenario dunia ini menyusul (${def.scenarioLater ?? 'nanti'})`}
+          onClick={() => {
+            if (!scn) return
+            if (play) leave()
+            setDrawer(drawer ? null : scn.defaults())
+          }}
+        >
+          ▶ Jalankan skenario
+        </button>
       </nav>
 
       <div className="yd-body">
@@ -230,9 +386,32 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
             ))}
           </div>
           <p className="yd-note">Peta ini butuh WebGL, yang dimatikan di browser ini.</p>
+          {(d || linkNote) && (
+            <div className="sc-over">
+              {d && scn && <Caption d={d} count={scn.count} />}
+              {play?.stale && (
+                <p className="sc-banner" role="alert">
+                  Data engine berubah sejak skenario ini dibuat · versi di link {play.stale} · versi engine sekarang {play.run.hash}
+                </p>
+              )}
+              {linkNote && (
+                <p className="sc-banner" role="alert">
+                  {linkNote}
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        <aside className={`yd-panel${card ? ' open' : ''}`} aria-label="Detail pilihan">
-          {card ? (
+        <aside className={`yd-panel${card || drawer || d ? ' open' : ''}`} aria-label={d ? 'Buku biaya skenario' : drawer ? 'Jalankan skenario' : 'Detail pilihan'}>
+          {drawer && scn ? (
+            <Drawer def={scn} inputs={drawer} onChange={setDrawer} onStart={() => begin(drawer, {})} onClose={() => setDrawer(null)} />
+          ) : d && play && scn ? (
+            d.awaiting && play.run.pause && d.row ? (
+              <PauseCard key={d.row.n} row={d.row} count={scn.count} gaps={play.run.pause.gaps} onSave={saveAssumptions} />
+            ) : (
+              <Ledger run={play.run} shown={d.idx} current={d.idx} count={scn.count} onGoto={goto} />
+            )
+          ) : card ? (
             <CardView card={card} gap={def.gap} follow={scene?.follow ?? false} onFollow={() => scene?.setFollow(!scene.follow)} onClose={() => scene?.select(null)} />
           ) : (
             <div className="yd-idle">
@@ -244,12 +423,28 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
             </div>
           )}
         </aside>
+        {showResult && d && play && scn && (
+          <ResultCard
+            def={scn}
+            run={play.run}
+            inputs={play.inputs}
+            link={link}
+            stale={!!play.stale}
+            onGoto={(i) => {
+              if (i >= 0) goto(i)
+            }}
+            onClose={() => setClosedFinish(d.finishCount)}
+          />
+        )}
       </div>
 
       <footer className="yd-bottom">
         <div className="yd-trackwrap" aria-label="Pelacak tahap" role="region">
-          <Tracker card={card} stages={def.stages} idle={def.trackerIdle} />
+          {d && play ? <StepTracker run={play.run} d={d} onGoto={goto} /> : <Tracker card={card} stages={def.stages} idle={def.trackerIdle} />}
         </div>
+        {d ? (
+          <Controls d={d} onExit={leave} onResult={d.finished && !showResult ? () => setClosedFinish(-1) : undefined} />
+        ) : (
         <div className="yd-time" role="group" aria-label="Waktu">
           <button type="button" className="yd-icon" aria-pressed={night} aria-label={night ? 'Siang' : 'Malam'} title="Siang / malam" onClick={() => scene?.setNight(night ? 0 : 1)}>
             {night ? '☾' : '☀'}
@@ -266,7 +461,9 @@ export default function YardShell({ def, initialDay, initialHour, initialSelect,
             Hari {clock.day}/{clock.days}
           </span>
         </div>
+        )}
       </footer>
+      <Tips root={rootRef} />
     </div>
   )
 }

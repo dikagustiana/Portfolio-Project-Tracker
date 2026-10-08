@@ -6,6 +6,7 @@
 import type { PrincipalFill, V3 } from './kernel.ts'
 import type { Trace } from '../core/trace.ts'
 import type { YardScene } from './scene.ts'
+import type { AnyScenario } from '../scenario/types.ts'
 
 /** The three worlds of the simulation (Brief B5 §1). */
 export type WorldId = 'distribusi' | 'pabrik-singkong' | 'rpa'
@@ -184,4 +185,8 @@ export interface WorldDef {
   /** the six accent fills the kernel offers (distribution: the principals' colours) */
   fills: Record<PrincipalFill, string>
   build(scene: YardScene, opts: BuildOptions): WorldRuntime
+  /** Mode skenario (Brief B6): the world's scenario, when it has one wired */
+  scenario?: AnyScenario
+  /** when it has none yet, which step of the brief brings it */
+  scenarioLater?: string
 }

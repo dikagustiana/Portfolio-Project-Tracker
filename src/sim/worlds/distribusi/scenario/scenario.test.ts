@@ -110,6 +110,7 @@ describe('distribusi scenario · steps 1–3', () => {
       expect(figs.length).toBeGreaterThan(20)
       for (const f of figs) expect(BADGES).toContain(f.badge)
       for (const l of d.preview(p.inputs)) for (const f of l.f ?? []) expect(BADGES).toContain(f.badge)
+      for (const r of d.previewTable?.(p.inputs)?.rows ?? []) for (const f of r.cells) expect(BADGES).toContain(f.badge)
     }
   })
 
