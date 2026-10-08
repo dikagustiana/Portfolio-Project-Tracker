@@ -32,7 +32,7 @@ const SIDEBAR_PROJECTS = 6
 
 export function Shell() {
   const ui = useUI()
-  const { d, viewer } = useBoard()
+  const { d, viewer, degraded, refresh } = useBoard()
   const [drawer, setDrawer] = useState(false)
   const shell = useMemo(() => ({ toggleDrawer: () => setDrawer((x) => !x), closeDrawer: () => setDrawer(false) }), [])
   useFindShortcut()
@@ -71,6 +71,14 @@ export function Shell() {
         <main className={`main${plock ? ' plock' : ''}${noplan ? ' noplan' : ''}`} id="main">
           {ro && (
             <div className="banner">Kamu bisa melihat, tapi belum bisa mengubah apa pun. Minta admin menambahkanmu sebagai anggota project.</div>
+          )}
+          {degraded.length > 0 && (
+            <div className="banner" role="status">
+              <span>Sebagian data tidak bisa dimuat ({degraded.join(', ')}). Tampilan mungkin belum lengkap.</span>
+              <button className="btn ghost" onClick={() => void refresh()}>
+                Coba lagi
+              </button>
+            </div>
           )}
           {view === 'week' ? (
             <Week />
