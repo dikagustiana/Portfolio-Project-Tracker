@@ -1,7 +1,8 @@
-// Sim screen smoke (Brief B4): the owner opens the simulation from the signed-in shell and gets
+// Sim screen smoke (Brief B4, B5): the owner opens the simulation from the signed-in shell and gets
 // the command centre built on Factory Yard: the watermark, the live metrics bar, the place
 // buttons, Lensa biaya swapping in the engine's cost metrics, and a click on the map opening a
-// card bound to the engine, "Belum ada di engine" included. Both routes keep working, and
+// card bound to the engine, "Belum ada di engine" included. Both routes keep working, the world
+// switcher (Brief B5) opens the cassava plant and the slaughterhouse on their routes, and
 // prefers-reduced-motion still renders the world. ?debug=1 exposes window.sim for the clicks.
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
@@ -85,6 +86,23 @@ test('a click on the map opens a card bound to the engine, on both routes', asyn
     await page.keyboard.press('Escape')
     await expect(page.getByText('Panel konteks')).toBeVisible()
   }
+})
+
+test('the world switcher opens the cassava plant and the slaughterhouse on their own routes', async ({ page, baseURL }) => {
+  const admin = adminClient()
+  const base = baseURL ?? 'http://localhost:5173'
+  await signIn(page, admin, OWNER, base)
+  await openYard(page, base, '#/simulasi')
+  const dunia = page.getByRole('radiogroup', { name: 'Dunia' })
+  await dunia.getByRole('radio', { name: 'Pabrik singkong' }).click()
+  await expect(page).toHaveURL(/#\/simulasi\/pabrik-singkong$/)
+  await expect(page.getByText(/^Data BMG: biaya standar FCC/)).toBeVisible({ timeout: 30_000 })
+  await dunia.getByRole('radio', { name: 'Rumah potong ayam' }).click()
+  await expect(page).toHaveURL(/#\/simulasi\/rpa$/)
+  await expect(page.getByText('Ilustrasi: angka dummy, bukan data KGR')).toBeVisible({ timeout: 30_000 })
+  await dunia.getByRole('radio', { name: 'Distribusi' }).click()
+  await expect(page).toHaveURL(/#\/simulasi\/distribusi$/)
+  await expect(page.getByText(WATERMARK)).toBeVisible({ timeout: 30_000 })
 })
 
 test('prefers-reduced-motion still renders the world', async ({ page, baseURL }) => {

@@ -1,19 +1,16 @@
-// The yard scene: an imperative three.js world in its own canvas, mounted by YardScreen.tsx.
-// Camera, controls, picking, tags, the dashed route of a selected vehicle, the section drawings
-// and the frame loop are Factory Yard's (vendor/factory-yard/index.html, "camera & controls",
-// "selection, tags, card", "loop"); the world on the plate is SAMB's network (layout.ts).
+// The yard scene: an imperative three.js world in its own canvas, mounted by YardShell.tsx and
+// shared by every world (Brief B5 §2). Camera, controls, picking, tags, the dashed route of a
+// selected vehicle, the section drawings and the frame loop are Factory Yard's
+// (vendor/factory-yard/index.html, "camera & controls", "selection, tags, card", "loop"); what
+// stands on the plate is the world's (src/sim/worlds/<world>/yard/).
 // The simulation runs on Factory Yard's fixed 1/60 s step, so a given seed plays out the same way.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js'
-import { Ink, Path, W, clamp, ring, v3 } from '../kernel.ts'
-import type { P2, PrincipalFill, V3 } from '../kernel.ts'
-import { PRINCIPAL_COLOR } from '../../core/colors.ts'
-import type { Card } from './bind.ts'
-import { PLACES, PLATE } from './layout.ts'
-import type { PlaceId } from './layout.ts'
-import type { Peek } from './build.ts'
+import { Ink, Path, W, clamp, ring, v3 } from './kernel.ts'
+import type { P2, PrincipalFill, V3 } from './kernel.ts'
+import type { Card, PeekDef, PlaceDef, PlaceLabel } from './types.ts'
 
 export interface RouteInfo {
   path: Path
@@ -42,17 +39,16 @@ export interface SceneOptions {
   reduced: boolean
   /** called whenever selection, follow, view or open buildings change */
   onChange: () => void
+  /** the world's plate: anything outside it is cut */
+  plate: { x0: number; x1: number; y0: number; y1: number }
+  places: readonly PlaceDef[]
+  ariaLabel: string
+  /** the six accent fills (distribution: the principals' colours) */
+  fills: Record<PrincipalFill, string>
 }
 
-export type ViewMode = 'jaringan' | 'gudang' | 'kantor'
-
-/** A place name pinned to the map; under Lensa biaya it also names the cost driver there. */
-export interface PlaceLabel {
-  key: string
-  label: string
-  at: V3
-  driver: string
-}
+/** The Tampilan switch: the network, or the id of a view that holds buildings open. */
+export type ViewMode = string
 
 const STEP = 1 / 60
 const noop = (): void => {}
@@ -67,7 +63,7 @@ export class YardScene {
   readonly controls: OrbitControls
   readonly ink: Ink
   readonly entities: Entity[] = []
-  readonly peeks: { id: 'gudang' | 'kantor'; peek: Peek }[] = []
+  readonly peeks: { id: string; peek: PeekDef }[] = []
   readonly opts: SceneOptions
   /** fixed-step update hooks (the actors register theirs) */
   readonly tickers: ((dt: number, t: number) => void)[] = []
@@ -78,13 +74,18 @@ export class YardScene {
   hovered: Entity | null = null
   follow = false
   view: ViewMode = 'jaringan'
+  /** the lens that is on, if any (it shows the drivers under the place names) */
+  lens: string | null = null
   /** buildings held open by the view or the caller, whatever is selected */
-  forceOpen = new Set<'gudang' | 'kantor'>()
-  private night = 0
+  forceOpen = new Set<string>()
+  /** 0 by day, 1 by night */
+  night = 0
+  readonly plate: SceneOptions['plate']
+  readonly places: readonly PlaceDef[]
   private readonly ISO = v3(1, 1, 1).normalize()
-  private readonly CENTER = W((PLATE.x0 + PLATE.x1) / 2, (PLATE.y0 + PLATE.y1) / 2, 0)
+  private readonly CENTER: THREE.Vector3
   private fitZoom = 1
-  private HOME = this.CENTER.clone()
+  private HOME: THREE.Vector3
   private goal: { zoom: number; target?: THREE.Vector3 } | null = null
   private sized = false
   private raf = 0
@@ -114,14 +115,16 @@ export class YardScene {
     this.root = root
     this.stage = stage
     this.opts = opts
+    this.plate = opts.plate
+    this.places = opts.places
+    const PLATE = opts.plate
+    this.CENTER = W((PLATE.x0 + PLATE.x1) / 2, (PLATE.y0 + PLATE.y1) / 2, 0)
+    this.HOME = this.CENTER.clone()
     this.canvas = document.createElement('canvas')
     this.canvas.tabIndex = 0
     this.canvas.className = 'y-canvas'
     this.canvas.setAttribute('role', 'img')
-    this.canvas.setAttribute(
-      'aria-label',
-      'Peta isometrik jaringan distribusi SAMB, hidup: kantor, prinsipal, gudang, bay kurir, toko dan konsumen. Seret untuk menggeser, gulir atau cubit untuk zoom, klik objek untuk kartunya. Tombol 1 sampai 6 menuju tempat, 0 seluruh peta, [ dan ] memilih kendaraan berikutnya, F mengikuti, Escape menutup, Spasi jeda.',
-    )
+    this.canvas.setAttribute('aria-label', opts.ariaLabel)
     stage.prepend(this.canvas)
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
@@ -131,8 +134,7 @@ export class YardScene {
       new THREE.Plane(new THREE.Vector3(1, 0, 0), -PLATE.x0 + 0.05), new THREE.Plane(new THREE.Vector3(-1, 0, 0), PLATE.x1 + 0.05),
       new THREE.Plane(new THREE.Vector3(0, 0, 1), -PLATE.y0 + 0.05), new THREE.Plane(new THREE.Vector3(0, 0, -1), PLATE.y1 + 0.05),
     ]
-    const principal = Object.fromEntries(Object.entries(PRINCIPAL_COLOR).map(([k, c]) => [`p${k}`, c])) as Record<PrincipalFill, string>
-    this.ink = new Ink(root, this.renderer.capabilities.getMaxAnisotropy(), principal)
+    this.ink = new Ink(root, this.renderer.capabilities.getMaxAnisotropy(), opts.fills)
 
     this.camera.position.copy(this.CENTER).addScaledVector(this.ISO, 1500)
     this.camera.lookAt(this.CENTER)
@@ -217,7 +219,7 @@ export class YardScene {
     return e
   }
 
-  addPeek(id: 'gudang' | 'kantor', peek: Peek): void {
+  addPeek(id: string, peek: PeekDef): void {
     this.peeks.push({ id, peek })
   }
 
@@ -225,27 +227,74 @@ export class YardScene {
     for (const l of this.labels) l.el.remove()
     this.labels = defs.map((def) => {
       const el = document.createElement('div')
-      el.className = 'y-place'
+      el.className = `y-place${def.lens ? ' y-only' : ''}`
+      if (def.lens) el.dataset.lens = def.lens
+      // the key and the name apart, so a narrow map can show the key alone
       const name = document.createElement('b')
-      name.textContent = def.key ? `${def.key} · ${def.label}` : def.label
+      const key = document.createElement('i')
+      key.textContent = def.key
+      const nm = document.createElement('em')
+      nm.textContent = def.key ? ` · ${def.label}` : def.label
+      if (def.key) name.append(key)
+      name.append(nm)
       const drv = document.createElement('span')
       drv.textContent = def.driver
       el.append(name, drv)
+      if (def.ready) {
+        // the readiness bar: ADA, SEBAGIAN, BELUM in proportion, with their counts
+        const bar = document.createElement('i')
+        bar.className = 'y-ready'
+        bar.title = `ADA ${def.ready[0]} · SEBAGIAN ${def.ready[1]} · BELUM ${def.ready[2]}`
+        ;(['r-ada', 'r-seb', 'r-bel'] as const).forEach((tone, k) => {
+          const n = def.ready?.[k] ?? 0
+          if (!n) return
+          const seg = document.createElement('em')
+          seg.className = tone
+          seg.style.flexGrow = String(n)
+          seg.textContent = String(n)
+          bar.append(seg)
+        })
+        el.append(bar)
+      }
       this.stage.append(el)
       return { def, el }
     })
   }
-  setLens(on: boolean): void {
-    this.stage.classList.toggle('lens', on)
+  setLens(id: string | null): void {
+    this.lens = id
+    this.stage.classList.toggle('lens', !!id)
+    if (id) this.stage.dataset.lens = id
+    else delete this.stage.dataset.lens
   }
+  /** Pins each place name over its spot; where two would overlap, the later one (by key order)
+   *  steps back until there is room, so zoomed out or on a phone the names stay legible. */
   private placeLabels(): void {
     const w = this.stage.clientWidth
     const h = this.stage.clientHeight
+    this.stage.classList.toggle('narrow', w < 560)
+    const taken: [number, number, number, number][] = []
     for (const { def, el } of this.labels) {
-      const [x, y] = this.screenAt(W(...def.at))
-      const off = x < -40 || x > w + 40 || y < -20 || y > h + 40
-      el.hidden = off
-      if (!off) el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`
+      const at = this.screenAt(W(...def.at))
+      const y = at[1]
+      let x = at[0]
+      let hide = x < -40 || x > w + 40 || y < -20 || y > h + 40 || (!!def.lens && def.lens !== this.lens)
+      if (!hide) {
+        el.hidden = false
+        const bw = el.offsetWidth
+        const bh = el.offsetHeight
+        // kept inside the map; over its spot if there is room, else nudged above or below it, else stepped back
+        x = Math.max(bw / 2 + 4, Math.min(w - bw / 2 - 4, x))
+        const dy = [0, -(bh + 2), bh + 2, -2 * (bh + 2), 2 * (bh + 2)].find((d) => {
+          const r = [x - bw / 2, y + d - bh, x + bw / 2, y + d]
+          return !taken.some(([a, b, c, e]) => (r[0] ?? 0) < c && (r[2] ?? 0) > a && (r[1] ?? 0) < e && (r[3] ?? 0) > b)
+        })
+        hide = dy === undefined
+        if (dy !== undefined) {
+          taken.push([x - bw / 2, y + dy - bh, x + bw / 2, y + dy])
+          el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y + dy)}px) translate(-50%, -100%)`
+        }
+      }
+      el.hidden = hide
     }
   }
 
@@ -271,6 +320,7 @@ export class YardScene {
     if (!w || !h) return
     this.renderer.setSize(w, h, false)
     Object.assign(this.camera, { left: -w / 2, right: w / 2, top: h / 2, bottom: -h / 2 })
+    const PLATE = this.plate
     const f = this.frame(w, h, [PLATE.x0, PLATE.x1, PLATE.y0, PLATE.y1], [-4, 16])
     this.fitZoom = f.zoom
     this.HOME = f.target
@@ -300,16 +350,16 @@ export class YardScene {
     this.goal = { zoom: this.fitZoom, target: this.HOME.clone() }
     this.emit()
   }
-  goPlace(id: PlaceId): void {
-    const p = PLACES.find((x) => x.id === id)
+  goPlace(id: string): void {
+    const p = this.places.find((x) => x.id === id)
     if (!p) return
     this.setFollow(false)
     this.goal = this.frame(this.stage.clientWidth, this.stage.clientHeight, p.box)
     this.emit()
   }
   /** jump without easing (debug hook, style frames) */
-  snapPlace(id: PlaceId | 'all'): void {
-    const p = PLACES.find((x) => x.id === id)
+  snapPlace(id: string): void {
+    const p = this.places.find((x) => x.id === id)
     const f = p ? this.frame(this.stage.clientWidth, this.stage.clientHeight, p.box) : { zoom: this.fitZoom, target: this.HOME }
     this.goal = null
     this.moveTarget(f.target)
@@ -317,23 +367,20 @@ export class YardScene {
     this.camera.updateProjectionMatrix()
   }
   /** which place the camera is over, when zoomed in */
-  currentPlace(): PlaceId | null {
+  currentPlace(): string | null {
     const t = this.controls.target
     if (this.camera.zoom < this.fitZoom * 1.3) return null
-    const p = PLACES.find(({ box: [x0, x1, y0, y1] }) => t.x >= x0 && t.x <= x1 && t.z >= y0 && t.z <= y1)
+    const p = this.places.find(({ box: [x0, x1, y0, y1] }) => t.x >= x0 && t.x <= x1 && t.z >= y0 && t.z <= y1)
     return p?.id ?? null
   }
 
-  setView(v: ViewMode): void {
+  /** a view holds its buildings open and frames its place, or the whole plate */
+  setView(v: ViewMode, open: string[] = [], place?: string): void {
     this.view = v
     this.forceOpen.clear()
-    if (v === 'gudang') {
-      this.forceOpen.add('gudang')
-      this.goPlace('gudang')
-    } else if (v === 'kantor') {
-      this.forceOpen.add('kantor')
-      this.goPlace('kantor')
-    } else this.resetView()
+    for (const id of open) this.forceOpen.add(id)
+    if (place) this.goPlace(place)
+    else this.resetView()
     this.emit()
   }
 
@@ -349,6 +396,7 @@ export class YardScene {
     }
     for (const h of this.ray.intersectObjects(this.scene.children, true)) {
       if (!(h.object instanceof THREE.Mesh) || !shown(h.object)) continue
+      const PLATE = this.plate
       if (h.point.x < PLATE.x0 || h.point.x > PLATE.x1 || h.point.z < PLATE.y0 || h.point.z > PLATE.y1) continue
       let o: THREE.Object3D | null = h.object
       while (o && !o.userData.entity) o = o.parent
@@ -484,7 +532,7 @@ export class YardScene {
     this.routeLine.visible = true
   }
   /** a closed building opens while it, or something inside it, is selected, or while its view is on */
-  openNow(id: 'gudang' | 'kantor'): boolean {
+  openNow(id: string): boolean {
     return this.peeks.find((p) => p.id === id)?.peek.cut.visible ?? false
   }
   private updatePeek(): void {
@@ -494,11 +542,13 @@ export class YardScene {
       c = [(b.min.x + b.max.x) / 2, (b.min.z + b.max.z) / 2]
     }
     let changed = false
+    const here = this.currentPlace()
+    const placeOpen = this.places.find((p) => p.id === here)?.open ?? []
     for (const { id, peek } of this.peeks) {
       const [x0, x1, y0, y1] = peek.box
       const inside = (p: [number, number] | null): boolean => !!p && p[0] > x0 && p[0] < x1 && p[1] > y0 && p[1] < y1
       const sel = this.selected?.id === id
-      const on = this.forceOpen.has(id) || sel || inside(c) || (!!this.routeNext && inside([this.routeNext.p.x, this.routeNext.p.z]))
+      const on = this.forceOpen.has(id) || placeOpen.includes(id) || sel || inside(c) || (!!this.routeNext && inside([this.routeNext.p.x, this.routeNext.p.z]))
       if (peek.cut.visible !== on) {
         peek.cut.visible = on
         peek.shell.visible = !on
@@ -513,6 +563,7 @@ export class YardScene {
 
   setNight(n: number): void {
     this.night = n
+    this.emit()
   }
 
   start(): void {
@@ -566,7 +617,7 @@ export class YardScene {
     // slide the target along the view ray onto the ground (an invisible move), then keep it over the plate
     const t = this.controls.target
     this.moveTarget(t.clone().addScaledVector(this.ISO, -t.y / this.ISO.y))
-    this.moveTarget(v3(clamp(t.x, PLATE.x0, PLATE.x1), 0, clamp(t.z, PLATE.y0, PLATE.y1)))
+    this.moveTarget(v3(clamp(t.x, this.plate.x0, this.plate.x1), 0, clamp(t.z, this.plate.y0, this.plate.y1)))
     this.camera.updateMatrixWorld()
     this.updatePeek()
     if (this.hoverDirty && this.pointer) {

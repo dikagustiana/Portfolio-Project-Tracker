@@ -3,20 +3,16 @@
 // buildWarehouse pattern): a base that is always there, a shell that hides the inside, and a cut
 // with the walls cut low and hatched and the roof as an outline only.
 import * as THREE from 'three'
-import { FRONT, Part, SIDE, TOP, W, makeRng, plane } from '../kernel.ts'
-import type { Ink, V3 } from '../kernel.ts'
+import { FRONT, Part, SIDE, TOP, W, makeRng, plane } from '../../../yard/kernel.ts'
+import type { Ink, V3 } from '../../../yard/kernel.ts'
+import { lampPost, tree } from '../../../yard/models.ts'
+import type { PeekDef } from '../../../yard/types.ts'
 import {
   A1, A2, BAY, COURIER_SLOTS, GUDANG, HOUSES, HOUSE_LANES, KANTOR, LOAD_DOCKS, PLANTS, PLATE, POOL_BAYS, R1, R2, RACK_BAYS, RACK_PITCH,
   RACK_ROWS, RACK_X0, RECV_DOCKS, STORES, STORE_LANES, STORE_LINK,
 } from './layout.ts'
-import { lampPost, tree } from './models.ts'
 
-export interface Peek {
-  shell: THREE.Group
-  cut: THREE.Group
-  inside: THREE.Group
-  box: [number, number, number, number]
-}
+export type Peek = PeekDef
 
 // ---- ground, roads, paint ---------------------------------------------------------------------
 

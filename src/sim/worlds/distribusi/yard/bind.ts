@@ -3,48 +3,18 @@
 // here and formatted with the engine's own formatters. Where the cycle needs something the
 // engine does not hold, the card names it as "Belum ada di engine" instead of a number.
 // Nothing here changes a cost or an engine number.
-import type { Computed2 } from '../../worlds/b2b-b2c/engine/index.ts'
-import { metricItems2 } from '../../worlds/b2b-b2c/ui/metrics2.ts'
-import { POOLS as POOLS1, TRUCKS, ZONES } from '../../worlds/distribusi/engine/config.ts'
-import type { PrincipalId } from '../../core/colors.ts'
-import { PRINCIPAL_COLOR } from '../../core/colors.ts'
-import { formatM3, formatNumber, formatPct, formatRp, formatRpCard } from '../../core/format.ts'
-import type { Trace } from '../../core/trace.ts'
-import type { TripAllocation } from '../../worlds/distribusi/engine/cost.ts'
+import type { Computed2 } from '../../b2b-b2c/engine/index.ts'
+import { metricItems2 } from '../../b2b-b2c/ui/metrics2.ts'
+import { POOLS as POOLS1, TRUCKS, ZONES } from '../engine/config.ts'
+import type { PrincipalId } from '../../../core/colors.ts'
+import { PRINCIPAL_COLOR } from '../../../core/colors.ts'
+import { formatM3, formatNumber, formatPct, formatRp, formatRpCard } from '../../../core/format.ts'
+import type { TripAllocation } from '../engine/cost.ts'
+import type { Card, Pulse, Share } from '../../../yard/types.ts'
+
+export type { Card, Pulse } from '../../../yard/types.ts'
 
 export const MISSING = 'Belum ada di engine'
-
-/** One engine figure on a card: a value (with its trace when the engine has one) or a named gap. */
-export type Fig = { label: string; value: string; trace?: Trace } | { label: string; missing: string }
-
-export interface Share {
-  p: PrincipalId
-  color: string
-  value: number
-  label: string
-}
-
-export interface Card {
-  /** small caps line above the title */
-  kind: string
-  title: string
-  status: string
-  tone?: 'ok' | 'warn' | 'bad' | 'live'
-  channel?: 'B2B' | 'B2C'
-  progress?: { v: number; max: number; label: string }
-  /** a bar split by principal (m³ on a mixed truck, …) */
-  shares?: { label: string; items: Share[] }
-  rows: [string, string][]
-  /** the cost driver this object moves */
-  driver?: string
-  engine: Fig[]
-  next?: string
-  /** open points from the brief, shown as notes (A and B) */
-  notes?: string[]
-  followable?: boolean
-  /** B2B or B2C stage tracker: index of the current stage */
-  stage?: { channel: 'B2B' | 'B2C'; at: number; done?: boolean }
-}
 
 export const STAGES = {
   B2B: ['Order', 'Pick', 'Muat', 'Jalan', 'Diterima toko', 'Invoice', 'Tukar faktur', 'Dana'],
@@ -86,7 +56,7 @@ export function tripCard(v: TripView, stopsDone: number, status: string, tone: C
   const cls = TRUCKS[t.truckClass]
   const p = ta.parts
   const shares: Share[] = PIDS.filter((id) => ta.measureByPrincipal[id] > 0).map((id) => ({
-    p: id, color: PRINCIPAL_COLOR[id], value: ta.measureByPrincipal[id], label: `${id} ${formatM3(ta.measureByPrincipal[id])}`,
+    key: id, color: PRINCIPAL_COLOR[id], value: ta.measureByPrincipal[id], label: `${id} ${formatM3(ta.measureByPrincipal[id])}`,
   }))
   const firstDo = t.dos[0]
   return {
@@ -120,14 +90,6 @@ export function tripCard(v: TripView, stopsDone: number, status: string, tone: C
 }
 
 // ---- the metrics bar ----------------------------------------------------------------------------
-
-export interface Pulse {
-  label: string
-  value: string
-  sub: string
-  tone?: 'ok' | 'warn' | 'bad'
-  missing?: string
-}
 
 /** The operation's pulse (brief §7.2) at a day and hour. Trucks and pending loads come from the
  *  scene's own state, passed in; orders and pallets from the engine. */

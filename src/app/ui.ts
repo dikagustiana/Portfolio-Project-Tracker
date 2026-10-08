@@ -21,7 +21,10 @@ export interface Addr {
   ref: string
 }
 
-export type SimWorld = 'distribusi' | 'b2b-b2c'
+/** Brief B5: three worlds (distribusi, pabrik-singkong, rpa); b2b-b2c stays as the distribution
+ *  world's earlier route and opens it too (or world 2's 2D canvas where WebGL is missing). */
+export type SimWorld = 'distribusi' | 'b2b-b2c' | 'pabrik-singkong' | 'rpa'
+const SIM_WORLDS: SimWorld[] = ['distribusi', 'b2b-b2c', 'pabrik-singkong', 'rpa']
 /** World 2 view: the 3D scene (default when the browser supports it) or the 2D canvas. */
 export type SimView = '3d' | '2d'
 export type PortfolioFilterKey = 'all' | 'mine' | 'attention' | 'blocked' | 'done'
@@ -123,7 +126,7 @@ export function fromHash(hash: string): Partial<UIState> {
   if (a === 'portofolio') return { ...base, view: 'portfolio' }
   if (a === 'tinjauan') return { ...base, view: 'review' }
   if (a === 'orang' || a === 'tim') return { ...base, view: 'team' }
-  if (a === 'simulasi') return { ...base, view: 'sim', simWorld: b === 'b2b-b2c' ? 'b2b-b2c' : 'distribusi' }
+  if (a === 'simulasi') return { ...base, view: 'sim', simWorld: SIM_WORLDS.includes(b as SimWorld) ? (b as SimWorld) : 'distribusi' }
   if (a === 'admin') return { ...base, view: 'admin', adminTab: b || 'orang' }
   if (a === 'p' && b) {
     const kind = KIND[c ?? '']
@@ -148,7 +151,7 @@ export function toHash(s: UIState): string {
       case 'team':
         return '#/orang'
       case 'sim':
-        return s.simWorld === 'b2b-b2c' ? '#/simulasi/b2b-b2c' : '#/simulasi/distribusi'
+        return `#/simulasi/${SIM_WORLDS.includes(s.simWorld) ? s.simWorld : 'distribusi'}`
       case 'admin':
         return `#/admin/${s.adminTab}`
       case 'record':
