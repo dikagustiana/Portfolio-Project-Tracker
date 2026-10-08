@@ -2,7 +2,7 @@
 -- Run once in Supabase Dashboard -> SQL Editor on project samb-project-board (befiqvgeidqycwamritn).
 -- One transaction: if anything fails, nothing changes. Generated from the repository files on 8 Oct 2026.
 --
--- State this script expects: everything up to and including migration name `rpcs_p02j` has been
+-- State this script expects: everything up to and including migration name `rpcs_p02k` has been
 -- applied through the Supabase MCP connector. What is left is exactly what that connector refuses
 -- without an interactive confirmation: function bodies that delete rows of tasks, asks, milestones
 -- or projects (their phase-1 bodies are still in place and working), DROP FUNCTION for the retired
@@ -14,7 +14,7 @@ begin;
 -- Guard: only on the state this script was built for.
 do $guard$
 begin
-  if not exists (select 1 from supabase_migrations.schema_migrations where name = 'rpcs_p02j')
+  if not exists (select 1 from supabase_migrations.schema_migrations where name = 'rpcs_p02k')
      or exists (select 1 from supabase_migrations.schema_migrations where version = '20261007000400') then
     raise exception 'Unexpected migration state: this script is not for this database (or already ran).';
   end if;
