@@ -67,6 +67,8 @@ export class YardScene {
   readonly opts: SceneOptions
   /** fixed-step update hooks (the actors register theirs) */
   readonly tickers: ((dt: number, t: number) => void)[] = []
+  /** per-frame hooks on real time, run while the world is paused too (a scenario's director) */
+  readonly frameHooks = new Set<(dt: number) => void>()
   t = 0
   paused = false
   speed = 1
@@ -110,6 +112,9 @@ export class YardScene {
   private disposed = false
   private readonly listeners: [EventTarget, string, EventListener][] = []
   private labels: { def: PlaceLabel; el: HTMLElement }[] = []
+  /** objects a director has faded, and the entities it drew live */
+  private faded: THREE.Mesh[] = []
+  private lit: Entity[] = []
 
   constructor(root: HTMLElement, stage: HTMLElement, opts: SceneOptions) {
     this.root = root
@@ -366,6 +371,23 @@ export class YardScene {
     this.camera.zoom = f.zoom
     this.camera.updateProjectionMatrix()
   }
+  /** frame a box of the plate [x0, x1, y0, y1], eased, or at once */
+  goBox(box: readonly [number, number, number, number], snap = false): void {
+    this.setFollow(false)
+    const f = this.frame(this.stage.clientWidth, this.stage.clientHeight, box)
+    if (!snap) {
+      this.goal = f
+      return
+    }
+    this.goal = null
+    this.moveTarget(f.target)
+    this.camera.zoom = clamp(f.zoom, this.controls.minZoom, this.controls.maxZoom)
+    this.camera.updateProjectionMatrix()
+  }
+  /** the box a place frames */
+  placeBox(id: string): readonly [number, number, number, number] | null {
+    return this.places.find((x) => x.id === id)?.box ?? null
+  }
   /** which place the camera is over, when zoomed in */
   currentPlace(): string | null {
     const t = this.controls.target
@@ -421,6 +443,47 @@ export class YardScene {
     this.eachOwn(ent, (o) => {
       if (o instanceof LineSegments2 && o.userData.line === 'line') o.material = on ? this.ink.line.live : this.ink.line.line
     })
+  }
+  /** Director mode (Brief B6 §3): everything outside the kept entities fades toward the ground,
+   *  and the acting entities draw in the live colour. null restores the plate. Objects added
+   *  afterwards (a scenario's moving documents) are never faded. */
+  focus(f: { keep: string[]; live: string[] } | null): void {
+    for (const o of this.faded) {
+      const m = o.userData.undim as THREE.Material | undefined
+      if (m) o.material = m
+      delete o.userData.undim
+    }
+    this.faded = []
+    for (const e of this.lit) this.setLive(e, false)
+    this.lit = []
+    if (!f) return
+    const keep = new Set(f.keep)
+    const kept = (o: THREE.Object3D): boolean => {
+      for (let x: THREE.Object3D | null = o; x; x = x.parent) {
+        const e = x.userData.entity as Entity | undefined
+        if (e && keep.has(e.id)) return true
+      }
+      return false
+    }
+    this.scene.traverse((o) => {
+      const mesh = o as THREE.Mesh
+      if (!mesh.isMesh || o === this.retLine || o === this.routeLine || kept(o)) return
+      const mat = mesh.material
+      if (Array.isArray(mat)) return
+      mesh.userData.undim = mat
+      mesh.material = this.ink.dimOf(mat)
+      this.faded.push(mesh)
+    })
+    for (const id of f.live) {
+      const e = this.find(id)
+      if (!e) continue
+      this.setLive(e, true)
+      this.lit.push(e)
+    }
+  }
+  /** fade the place names outside these keys (null: all bright) */
+  focusLabels(keys: string[] | null): void {
+    for (const l of this.labels) l.el.classList.toggle('dim', !!keys && !keys.includes(l.def.key))
   }
   bounds(ent: Entity): THREE.Box3 {
     this.box.makeEmpty()
@@ -599,6 +662,7 @@ export class YardScene {
       }
     }
     this.ink.shade(this.night)
+    for (const f of this.frameHooks) f(dt)
     const k = this.opts.reduced ? 1 : 1 - Math.exp(-dt * 6)
     if (this.follow && this.selected) {
       const b = this.bounds(this.selected)
@@ -656,6 +720,7 @@ export class YardScene {
   dispose(): void {
     this.disposed = true
     cancelAnimationFrame(this.raf)
+    this.frameHooks.clear()
     for (const [t, type, fn] of this.listeners) t.removeEventListener(type, fn)
     this.themeWatch.disconnect()
     this.ro.disconnect()

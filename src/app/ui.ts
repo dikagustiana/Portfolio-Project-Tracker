@@ -57,6 +57,8 @@ export interface UIState {
   rvSel: string
   simWorld: SimWorld
   simView: SimView
+  /** Mode skenario (Brief B6): the encoded scenario of #/simulasi/<world>/skenario?s=… */
+  simScenario: string | null
 }
 
 const DEFAULTS: UIState = {
@@ -81,6 +83,7 @@ const DEFAULTS: UIState = {
   rvSel: '',
   simWorld: 'distribusi',
   simView: '3d',
+  simScenario: null,
 }
 
 const KEY = 'gpm-ui'
@@ -112,21 +115,23 @@ function load(): UIState {
     /* storage unavailable: defaults */
   }
   // The URL decides what is open; storage only remembers preferences.
-  return { ...DEFAULTS, ...saved, rec: null, peek: null, ...fromHash(location.hash) }
+  return { ...DEFAULTS, ...saved, rec: null, peek: null, simScenario: null, ...fromHash(location.hash) }
 }
 
 export function fromHash(hash: string): Partial<UIState> {
   const [path = '', query = ''] = hash.replace(/^#\/?/, '').split('?')
-  const peekRaw = new URLSearchParams(query).get('peek')
+  const params = new URLSearchParams(query)
+  const peekRaw = params.get('peek')
   const peek = peekRaw ? parseAddr(peekRaw) : null
   const [a, b, c, e] = path.split('/')
-  const base = { peek, rec: null }
+  const base = { peek, rec: null, simScenario: null }
   if (a === 'minggu') return { ...base, view: 'week' }
   if (a === 'keputusan') return { ...base, view: 'decisions' }
   if (a === 'portofolio') return { ...base, view: 'portfolio' }
   if (a === 'tinjauan') return { ...base, view: 'review' }
   if (a === 'orang' || a === 'tim') return { ...base, view: 'team' }
-  if (a === 'simulasi') return { ...base, view: 'sim', simWorld: SIM_WORLDS.includes(b as SimWorld) ? (b as SimWorld) : 'distribusi' }
+  if (a === 'simulasi')
+    return { ...base, view: 'sim', simWorld: SIM_WORLDS.includes(b as SimWorld) ? (b as SimWorld) : 'distribusi', simScenario: c === 'skenario' ? params.get('s') || null : null }
   if (a === 'admin') return { ...base, view: 'admin', adminTab: b || 'orang' }
   if (a === 'p' && b) {
     const kind = KIND[c ?? '']
@@ -137,7 +142,9 @@ export function fromHash(hash: string): Partial<UIState> {
 }
 
 export function toHash(s: UIState): string {
-  const peek = s.peek ? `?peek=${addrPath(s.peek)}` : ''
+  const scenario = s.view === 'sim' && s.simScenario ? `s=${s.simScenario}` : ''
+  const peekQ = s.peek ? `peek=${addrPath(s.peek)}` : ''
+  const peek = scenario || peekQ ? `?${[scenario, peekQ].filter(Boolean).join('&')}` : ''
   const path = (() => {
     switch (s.view) {
       case 'week':
@@ -151,7 +158,7 @@ export function toHash(s: UIState): string {
       case 'team':
         return '#/orang'
       case 'sim':
-        return `#/simulasi/${SIM_WORLDS.includes(s.simWorld) ? s.simWorld : 'distribusi'}`
+        return `#/simulasi/${SIM_WORLDS.includes(s.simWorld) ? s.simWorld : 'distribusi'}${s.simScenario ? '/skenario' : ''}`
       case 'admin':
         return `#/admin/${s.adminTab}`
       case 'record':
@@ -172,7 +179,7 @@ export function setUI(patch: Partial<UIState>): void {
   state = { ...state, ...patch }
   try {
     // The open record and peek belong to the URL, not to stored preferences.
-    localStorage.setItem(KEY, JSON.stringify({ ...state, rec: null, peek: null }))
+    localStorage.setItem(KEY, JSON.stringify({ ...state, rec: null, peek: null, simScenario: null }))
   } catch {
     /* ignore */
   }

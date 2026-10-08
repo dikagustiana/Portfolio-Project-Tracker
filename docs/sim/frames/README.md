@@ -61,3 +61,22 @@ the panel, then the tracker).
 
 The RPA's operating and cost tiles show "—" with "dummy · menyusul di W3": its quantities and
 rupiah figures are synthetic and come with the synthetic batch in W3.
+
+# Brief B6 frames
+
+## S0: the scenario shell, distribution world, steps 1–3 (gate)
+
+Captured with `node scripts/yard-frames.ts --out=docs/sim/frames --only=s0`, the same production
+build under the production CSP; every capture logged zero CSP violations and zero page errors.
+The preset is "100 palet · satu prinsipal · B2B Zona 1" (Prinsipal A, all five SKUs). The pause
+and result frames switch the sales admin to **Khusus**, which the engine holds only for
+Prinsipal D, so step 3 has to ask.
+
+| File | What it shows |
+|---|---|
+| `s0-drawer-1366x768-light.png` | **Jalankan skenario** opens the drawer: the two presets (badged Dummy, as the engine), principal and SKU choice, volume in palet or karton, and the live conversion "100 palet = 800 karton menurut aturan palet engine (1,1 × 1,2 m, muatan 1,0 m)" with each SKU's cartons per pallet [Engine] and its split [Hitungan]; Mulai at the foot |
+| `s0-director-1366x768-light.png` | Director mode in the middle of step 3: the caption "Langkah 3 dari 11 · Sales admin membuat PO ke prinsipal · driver: 1 PO · +Rp 3.000.000"; the plate faded except the Kantor and Prinsipal A; the shared sales admin desks and plant A drawn live; the PO flying between them; the ledger by team with the current row and its working; the scenario tiles; the step tracker (4a–11 dashed: S1); the controls and "Hari skenario 0" |
+| `s0-pause-1366x768-light.png` | The assumption pause at step 3: "Biaya sales admin khusus Prinsipal A per bulan", unit Rp/bulan, owner Komersial (anggaran sales admin), why it is needed; nothing pre-filled; **Simpan sebagai asumsi** |
+| `s0-result-1366x768-light.png` | The result after entering the value: Rp 195.000 per palet, the waterfall from Rp 0 (a value and a badge on every bar), cost per team, the cash timeline (none yet, said so), the assumption badged [Asumsi] with its owner and step, Celah data linking to step 3, Ringkasan with the engine data version, Salin link (CSV, print and compare wait for S4) |
+| `s0-result-1366x768-dark.png` | The same in the board's dark theme |
+| `s0-director-390x844-light.png` | Director mode at phone width: the map, then the ledger, then the steps and controls |

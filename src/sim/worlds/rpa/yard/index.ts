@@ -37,6 +37,7 @@ const rpa: WorldDef = {
   idle: 'Klik stasiun, divisi kantor, truk atau gate untuk kartu swimlane-nya: lane, peran PIC, fase, risiko dan kontrol, dokumen dan akun, driver, kebutuhan data dan gate.',
   trackerIdle: 'Pilih stasiun atau batch untuk melihat fasenya.',
   fills,
+  scenarioLater: 'S3',
   build(scene, { day = 8, hour = 10.75 }) {
     const world = buildWorld(scene)
     let jalur: Jalur = 'both'

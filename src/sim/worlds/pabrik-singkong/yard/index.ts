@@ -45,6 +45,7 @@ const pabrikSingkong: WorldDef = {
   idle: 'Klik stasiun, truk, skid CNG, gudang atau kantor pabrik untuk angka standar BMG, driver biaya dan langkah berikutnya.',
   trackerIdle: 'Pilih stasiun, truk atau karton untuk melihat tahap batch.',
   fills,
+  scenarioLater: 'S2',
   build(scene, { day = 8, hour = 10.75 }) {
     const world = buildWorld(scene)
     return {

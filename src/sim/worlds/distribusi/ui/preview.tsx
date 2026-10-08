@@ -5,7 +5,8 @@
 //   ?v=3d               3D world 2        ?theme=dark    dark tokens (3D follows data-theme)
 //   ?v=town             Brief B4 V0: Factory Yard's town as ported (?debug=1 → window.sim)
 //   ?v=yard             Brief B4/B5: the yard shell; &world=distribusi|pabrik-singkong|rpa,
-//                       &select=L-03, &open=gudang,kantor, &lens=biaya, ?debug=1 → window.sim
+//                       &select=L-03, &open=gudang,kantor, &lens=biaya, ?debug=1 → window.sim,
+//                       &s=<encoded> a saved scenario (Brief B6; kept in step as it changes)
 //   ?shell=1            pad the main area like the app shell next to its 240 px sidebar
 //   ?day=8&hour=10.75   3D clock start (defaults: day 1, 09.00)
 // Screens load lazily and render under StrictMode, as in the app (src/main.tsx), so dev-only
@@ -40,8 +41,14 @@ const yardWorld: WorldId = wq && WORLD_IDS.includes(wq) ? wq : 'distribusi'
 const onWorld = (id: WorldId): void => {
   const next = new URLSearchParams(location.search)
   next.set('world', id)
-  for (const k of ['select', 'open', 'lens']) next.delete(k)
+  for (const k of ['select', 'open', 'lens', 's']) next.delete(k)
   location.search = next.toString()
+}
+const onScenario = (enc: string | null): void => {
+  const next = new URLSearchParams(location.search)
+  if (enc) next.set('s', enc)
+  else next.delete('s')
+  history.replaceState(null, '', `?${next.toString()}`)
 }
 
 const el = document.getElementById('root')
@@ -63,6 +70,8 @@ if (el) {
                 initialLens={q.get('lens') ?? undefined}
                 initialDay={q.get('day') ? Number(q.get('day')) : undefined}
                 initialHour={q.get('hour') ? Number(q.get('hour')) : undefined}
+                scenario={q.get('s')}
+                onScenario={onScenario}
               />
             ) : q.get('v') === 'town' ? (
               <screens.TownV0 />
