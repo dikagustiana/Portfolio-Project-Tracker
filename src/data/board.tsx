@@ -62,7 +62,8 @@ export function BoardProvider({ supa, viewer, children, loading }: { supa: Supa;
 
   const value = useMemo<BoardState | null>(() => {
     if (!ready) return null
-    const rows = Object.fromEntries(BOARD_TABLES.map((t, i) => [t, results[i]?.data ?? []])) as unknown as BoardRows
+    // A degraded table is empty, not stale: TanStack keeps the last good rows next to isError.
+    const rows = Object.fromEntries(BOARD_TABLES.map((t, i) => [t, results[i]?.isError ? [] : (results[i]?.data ?? [])])) as unknown as BoardRows
     const degraded = BOARD_TABLES.filter((_, i) => results[i]?.isError)
     const { board, extras } = toBoard(rows)
     const appUrl = extras.appUrl || defaultAppUrl()
