@@ -14,6 +14,8 @@ import { Boundary3D } from './ui3d/Boundary3D.tsx'
 const Distribusi = lazy(() => import('./worlds/distribusi/ui/SimScreen.tsx').then((m) => ({ default: m.default })))
 const B2bB2c = lazy(() => import('./worlds/b2b-b2c/ui/SimScreen2.tsx').then((m) => ({ default: m.default })))
 const Sim3D = lazy(() => import('./ui3d/Sim3D.tsx').then((m) => ({ default: m.default })))
+// Brief B4: SAMB's distribution network on Factory Yard's kernel, as a command centre.
+const YardScreen = lazy(() => import('./yard/YardScreen.tsx'))
 
 const WORLDS: { id: SimWorld; label: string }[] = [
   { id: 'distribusi', label: 'Distribusi' },
@@ -31,6 +33,18 @@ export function SimHost() {
       <B2bB2c />
     </Suspense>
   )
+
+  if (hasWebGL()) {
+    return (
+      <div className="yd-host" style={{ minHeight: 520 }}>
+        <Boundary3D fallback={world2d}>
+          <Suspense fallback={<div className="skel" style={{ height: '100%' }} />}>
+            <YardScreen onMenu={toggleDrawer} />
+          </Suspense>
+        </Boundary3D>
+      </div>
+    )
+  }
 
   if (world === 'b2b-b2c' && can3d && ui.simView === '3d') {
     // The scene is all absolutely positioned, so it needs a definite height: the viewport less
