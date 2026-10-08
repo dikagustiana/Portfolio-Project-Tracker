@@ -22,6 +22,8 @@ export interface BoardState {
   viewer: Viewer
   today: DateStr
   actions: Actions
+  /** Tables outside the core that failed to load; their slice of the board is empty until a refetch succeeds. */
+  degraded: BoardTable[]
   /** Refetch everything that project actions can touch (after a write). */
   refresh: () => Promise<void>
   /** Refetch one table (admin screens after direct writes). */
