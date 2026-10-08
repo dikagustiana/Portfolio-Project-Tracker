@@ -26,8 +26,8 @@ test('changing the pemeriksa in the task form changes validator_person_id', asyn
   expect(task.data, 'a seeded task checked by Dika').toBeTruthy()
   const t = task.data!
   try {
-    people.push(await addSuperAdmin(admin, `Owner ${run}`, `owner${suffix}`))
-    await signIn(page, admin, `owner${suffix}`, base)
+    people.push(await addSuperAdmin(admin, `Owner ${run}`, `owner-form${suffix}`))
+    await signIn(page, admin, `owner-form${suffix}`, base)
 
     // The checklist row opens the task in the side peek; Edit opens the planning form.
     await page.goto(`${base}/#/p/${mb.data?.code ?? ''}/list`)

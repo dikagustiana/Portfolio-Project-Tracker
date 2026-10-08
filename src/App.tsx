@@ -45,6 +45,10 @@ function SignedIn({ supa, userId }: { supa: Supa; userId: string }) {
       if (error) throw new Error(error.message)
       return data as unknown as WhoAmI
     },
+    // Roles live in profiles, which is not streamed over Realtime: re-ask every minute and on focus,
+    // so a withdrawn super admin role closes the admin screens and reloads the board within a minute.
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   })
   if (who.isError) return <Notice title="Gagal memuat akun" text={who.error.message} retry />
   if (!who.data) return <Loading />

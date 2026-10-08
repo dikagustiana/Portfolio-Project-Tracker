@@ -234,6 +234,25 @@ $$;
 create trigger profiles_keep_one_super_admin before update or delete on public.profiles
   for each row execute function private.keep_one_super_admin();
 
+-- The system role lives on the login, not on the person. Deleting the person of a super admin
+-- (granted, or pending for their e-mail) would leave a super admin no admin screen can show or
+-- demote, so the role is withdrawn first.
+create function private.people_keep_super_admin() returns trigger
+language plpgsql security definer set search_path = ''
+as $$
+begin
+  if exists (select 1 from public.profiles pr where pr.user_id = old.user_id and pr.system_role = 'super_admin')
+     or exists (select 1 from public.people_contact c
+                  join public.pending_system_roles r on lower(r.email::text) = lower(c.email::text)
+                 where c.person_id = old.id) then
+    raise exception 'Orang ini super admin. Cabut peran super admin-nya dulu sebelum menghapus.' using errcode = '23514';
+  end if;
+  return old;
+end
+$$;
+create trigger people_keep_super_admin before delete on public.people
+  for each row execute function private.people_keep_super_admin();
+
 -- Audit rows of keyless tables carry their natural key (profiles: user_id).
 create or replace function private.log_activity() returns trigger
 language plpgsql security definer set search_path = ''

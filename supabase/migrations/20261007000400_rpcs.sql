@@ -640,6 +640,8 @@ begin
   if v_project is null or not private.can_read_project(v_project) then
     raise exception 'Data tidak ditemukan atau kamu tidak punya akses.' using errcode = 'P0002';
   end if;
+  -- A closed or stopped project is read-only, discussion included.
+  perform private.assert_project(v_project, true);
   perform private.require_contributor(v_project);
   insert into public.comments (project_id, task_id, ask_id, author_person_id, author_user_id, body)
   values (v_project, case when p_target = 'task' then p_id end, case when p_target = 'ask' then p_id end,

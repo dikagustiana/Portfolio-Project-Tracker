@@ -21,7 +21,12 @@ export function BoardProvider({ supa, viewer, children, loading }: { supa: Supa;
   const qc = useQueryClient()
   const today = useToday()
   const results = useQueries({
-    queries: BOARD_TABLES.map((t) => ({ queryKey: ['t', t, viewer.userId], queryFn: () => fetchAll(supa, t), staleTime: 30_000 })),
+    // The system role is part of the key: when it changes, every table is read again under the new rights.
+    queries: BOARD_TABLES.map((t) => ({
+      queryKey: ['t', t, viewer.userId, viewer.isSuperAdmin],
+      queryFn: () => fetchAll(supa, t),
+      staleTime: 30_000,
+    })),
   })
 
   // Realtime: any change on a published table refetches that table (debounced).

@@ -22,9 +22,9 @@ test('super admin grants Margin Bridge and MAM only; the person sees exactly tho
     const mb = await admin.from('projects').select('id, name, code').eq('legacy_id', 'samb-timeline').single()
     expect(mb.data, 'the Margin Bridge seed is imported').toBeTruthy()
 
-    people.push(await addSuperAdmin(admin, `Owner ${run}`, `owner${suffix}`))
+    people.push(await addSuperAdmin(admin, `Owner ${run}`, `owner-access${suffix}`))
     const ownerPage = await browser.newPage()
-    await signIn(ownerPage, admin, `owner${suffix}`, base)
+    await signIn(ownerPage, admin, `owner-access${suffix}`, base)
 
     // Admin → Orang & akun: add the person with an office e-mail.
     const name = `David ${run}`

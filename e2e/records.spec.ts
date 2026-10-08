@@ -81,15 +81,15 @@ test('Beranda adapts to the role: personal attention first, oversight only for a
   await expect(yani.getByText('Project yang kamu kelola')).toHaveCount(0)
   await expect(yani.getByRole('navigation', { name: 'Menu utama' }).getByRole('button', { name: 'Admin' })).toHaveCount(0)
 
-  const people = [await addSuperAdmin(admin, `Owner ${run}`, `owner${suffix}`)]
+  const people = [await addSuperAdmin(admin, `Owner ${run}`, `owner-home${suffix}`)]
   try {
     const owner = await browser.newPage()
-    await signIn(owner, admin, `owner${suffix}`, base)
+    await signIn(owner, admin, `owner-home${suffix}`, base)
     await owner.goto(`${base}/#/`)
     await expect(owner.getByText('Pengawasan portofolio')).toBeVisible()
     await expect(owner.getByRole('navigation', { name: 'Menu utama' }).getByRole('button', { name: 'Admin' })).toBeVisible()
   } finally {
-    await cleanup(admin, { people, emailSuffix: `owner${suffix}` })
+    await cleanup(admin, { people, emailSuffix: `owner-home${suffix}` })
   }
 })
 

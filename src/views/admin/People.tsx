@@ -83,7 +83,8 @@ export function AdminPeople() {
                   </button>
                 </div>
                 <div className="row" style={{ gap: 4 }}>
-                  {m.userId !== viewer.userId && <DeletePerson person={m} />}
+                  {/* A super admin's role must be withdrawn before the person can go (the database insists too). */}
+                  {m.userId !== viewer.userId && !sup && <DeletePerson person={m} />}
                 </div>
               </div>
             )

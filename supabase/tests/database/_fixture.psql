@@ -10,12 +10,14 @@
 
 -- Start from an empty board whatever the database holds (the test's transaction rolls it back).
 alter table public.profiles disable trigger profiles_keep_one_super_admin;
+alter table public.people disable trigger people_keep_super_admin;
 delete from public.projects;
 delete from public.invitations;
 delete from public.people;
 delete from public.pending_system_roles;
 delete from public.email_log;
 delete from auth.users;
+alter table public.people enable trigger people_keep_super_admin;
 alter table public.profiles enable trigger profiles_keep_one_super_admin;
 
 -- Deterministic ids, usable inside dollar-quoted test SQL.

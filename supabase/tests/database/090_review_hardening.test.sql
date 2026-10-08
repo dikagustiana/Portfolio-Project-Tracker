@@ -168,5 +168,22 @@ select ok(exists (select 1 from public.task_commitments where task_id = pg_temp.
 select lives_ok($$ delete from public.tasks where id = pg_temp.t('yani') $$, 'deleting a task takes its history with it (cascade)');
 select is((select count(*) from public.comments where body = 'Catatan'), 0::bigint, '… comments included');
 
+-- ---------------------------------------------------------------------------------------
+-- Codex review: closed projects take no comments; a super admin's person is not deletable
+-- ---------------------------------------------------------------------------------------
+reset role;
+update public.projects set status = 'selesai' where id = pg_temp.prj('MAM');
+select pg_temp.login('mira');
+select throws_ok($$ select public.add_comment('task', pg_temp.t('mam'), 'Masih bisa?') $$, 'P0001', null,
+  'a closed project takes no new comments');
+reset role;
+select throws_ok($$ delete from public.people where id = pg_temp.p('dika') $$, '23514', null,
+  'the person of a super admin cannot be deleted while the role stands');
+insert into public.pending_system_roles (email, system_role) values ('gita@samb.test', 'super_admin');
+select throws_ok($$ delete from public.people where id = pg_temp.p('gita') $$, '23514', null,
+  '… nor one whose e-mail holds a pending super admin role');
+delete from public.pending_system_roles where email = 'gita@samb.test';
+select lives_ok($$ delete from public.people where id = pg_temp.p('gita') $$, 'once withdrawn, the person can be deleted');
+
 select * from finish();
 rollback;

@@ -299,7 +299,7 @@ function TaskBody({ t, p, zoom }: { t: Task; p: Project; zoom: 'peek' | 'full' }
                 {t.committed ? `Dikomit ${d.mname(t.committedBy)}${t.committedAt ? ` · ${fmtTs(t.committedAt)}` : ''}` : 'Belum dikomit'}
                 {slip && slip.days !== 0 && (
                   <div className="sub" style={{ color: slip.days > 0 ? 'var(--bad-ink)' : 'var(--muted)' }}>
-                    Komitmen awal {fmt(slip.baseline.end)}, sekarang {fmt(t.end)} ({slip.days > 0 ? '+' : ''}
+                    Komitmen awal {fmt(slip.baseline.end)}, komitmen terakhir {fmt(slip.latest.end)} ({slip.days > 0 ? '+' : ''}
                     {slip.days} hari)
                   </div>
                 )}
