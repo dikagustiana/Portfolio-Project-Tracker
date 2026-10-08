@@ -1,0 +1,288 @@
+## World 1 Distribusi — default (m³ termuat, CBM murni, palet muatan 1,0 m, palet keluar, pajak dialokasikan, modal 12%)
+toggles: cbm|loaded|std|pallets|allocated|stockOff|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 34.469,6 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 43,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 109,3 jt | Rp 70 jt | Rp 0 | Rp 318,3 jt | Rp 575,5 jt | Rp 257,1 jt | Rp 364 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 7,2 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 17,5 jt | Rp 67 jt | Rp 0 | Rp 120,4 jt | Rp 824,1 jt | Rp 703,7 jt | Rp 848 rb | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 12,4 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 23,3 jt | Rp 22,5 jt | Rp 0 | Rp 102,9 jt | Rp 228,6 jt | Rp 125,7 jt | Rp 526 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 17,3 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 50 jt | Rp 44 jt | Rp 0 | Rp 173,9 jt | Rp 450 jt | Rp 276,1 jt | Rp 434 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 5,9 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 13,2 jt | Rp 11,5 jt | Rp 0 | Rp 55,6 jt | Rp 68,7 jt | Rp 13 jt | Rp 491 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 4,1 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 7 jt | Rp 16,6 jt | Rp 0 | Rp 47,8 jt | Rp 188,3 jt | Rp 140,5 jt | Rp 889 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp -0 — total Rp 54.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 872.980.868; dialokasi Rp 818.980.868
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: volumeMeasure
+toggles: chargeable|loaded|std|pallets|allocated|stockOff|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     42,4%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³     19,9%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³      9,5%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     19,4%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      5,5%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³      3,4%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 34.469,6 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 43,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 94,3 jt | Rp 70 jt | Rp 0 | Rp 303,3 jt | Rp 575,5 jt | Rp 272,1 jt | Rp 347 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 7,2 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 43,7 jt | Rp 67 jt | Rp 0 | Rp 146,5 jt | Rp 824,1 jt | Rp 677,6 jt | Rp 1 jt | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 12,4 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 20,1 jt | Rp 22,5 jt | Rp 0 | Rp 99,7 jt | Rp 228,6 jt | Rp 128,9 jt | Rp 509 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 17,3 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 43,1 jt | Rp 44 jt | Rp 0 | Rp 167 jt | Rp 450 jt | Rp 283 jt | Rp 417 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 5,9 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 11,4 jt | Rp 11,5 jt | Rp 0 | Rp 53,8 jt | Rp 68,7 jt | Rp 14,8 jt | Rp 475 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 4,1 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 7,7 jt | Rp 16,6 jt | Rp 0 | Rp 48,6 jt | Rp 188,3 jt | Rp 139,8 jt | Rp 903 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp -0 — total Rp 54.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 872.980.868; dialokasi Rp 818.980.868
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: truckBasis
+toggles: cbm|capacity|std|pallets|allocated|stockOff|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 34.469,6 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 43,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 94,6 jt | Rp 70 jt | Rp 0 | Rp 303,7 jt | Rp 575,5 jt | Rp 271,8 jt | Rp 347 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 7,2 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 15,2 jt | Rp 67 jt | Rp 0 | Rp 118,1 jt | Rp 824,1 jt | Rp 706 jt | Rp 832 rb | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 12,4 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 20,5 jt | Rp 22,5 jt | Rp 0 | Rp 100,1 jt | Rp 228,6 jt | Rp 128,4 jt | Rp 511 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 17,3 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 43,3 jt | Rp 44 jt | Rp 0 | Rp 167,2 jt | Rp 450 jt | Rp 282,8 jt | Rp 417 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 5,9 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 11,8 jt | Rp 11,5 jt | Rp 0 | Rp 54,3 jt | Rp 68,7 jt | Rp 14,4 jt | Rp 478 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 4,1 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 5,9 jt | Rp 16,6 jt | Rp 0 | Rp 46,8 jt | Rp 188,3 jt | Rp 141,6 jt | Rp 869 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp 28.859.181 — total Rp 82.859.181
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 872.980.868; dialokasi Rp 790.121.687
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: palletRule
+toggles: cbm|loaded|tall|pallets|allocated|stockOff|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B               99       224      7.229      2.531 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              199       300      5.442      4.591 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              298       442      8.182      7.056 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               56       150      2.543      1.930  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               24       120      2.446      1.619   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 42.389,2 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 2.005,7 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 36.217,3 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 37,3 jt | Rp 4 jt | Rp 40,4 jt | Rp 45,2 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 109,3 jt | Rp 70 jt | Rp 0 | Rp 324,1 jt | Rp 575,5 jt | Rp 251,4 jt | Rp 370 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,2 jt | Rp 2 jt | Rp 5,1 jt | Rp 8,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 17,5 jt | Rp 67 jt | Rp 0 | Rp 121,7 jt | Rp 824,1 jt | Rp 702,4 jt | Rp 857 rb | 29,7 hari |
+| C | Rp 9 jt | Rp 8,4 jt | Rp 6 jt | Rp 9,2 jt | Rp 10,9 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 23,3 jt | Rp 22,5 jt | Rp 0 | Rp 101,1 jt | Rp 228,6 jt | Rp 127,5 jt | Rp 516 rb | 30 hari |
+| D | Rp 6 jt | Rp 12,6 jt | Rp 4 jt | Rp 14,2 jt | Rp 16 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 50 jt | Rp 44 jt | Rp 0 | Rp 170,5 jt | Rp 450 jt | Rp 279,5 jt | Rp 425 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,4 jt | Rp 2 jt | Rp 3,9 jt | Rp 5,4 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 13,2 jt | Rp 11,5 jt | Rp 0 | Rp 53,9 jt | Rp 68,7 jt | Rp 14,8 jt | Rp 475 rb | 46 hari |
+| F | Rp 3 jt | Rp 1 jt | Rp 2 jt | Rp 3,2 jt | Rp 4,3 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 7 jt | Rp 16,6 jt | Rp 0 | Rp 47,7 jt | Rp 188,3 jt | Rp 140,6 jt | Rp 887 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp -0 — total Rp 54.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 872.980.868; dialokasi Rp 818.980.868
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: outboundDriver
+toggles: cbm|loaded|std|cartons|allocated|stockOff|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 2.549,1 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 24,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 109,3 jt | Rp 70 jt | Rp 0 | Rp 299,4 jt | Rp 575,5 jt | Rp 276,1 jt | Rp 342 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 18,4 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 17,5 jt | Rp 67 jt | Rp 0 | Rp 131,6 jt | Rp 824,1 jt | Rp 692,5 jt | Rp 927 rb | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 13,9 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 23,3 jt | Rp 22,5 jt | Rp 0 | Rp 104,3 jt | Rp 228,6 jt | Rp 124,2 jt | Rp 533 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 20,9 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 50 jt | Rp 44 jt | Rp 0 | Rp 177,5 jt | Rp 450 jt | Rp 272,5 jt | Rp 443 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 6,5 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 13,2 jt | Rp 11,5 jt | Rp 0 | Rp 56,2 jt | Rp 68,7 jt | Rp 12,5 jt | Rp 495 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 6,2 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 7 jt | Rp 16,6 jt | Rp 0 | Rp 49,9 jt | Rp 188,3 jt | Rp 138,4 jt | Rp 928 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp -0 — total Rp 54.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 872.980.868; dialokasi Rp 818.980.868
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: taxAllocation
+toggles: cbm|loaded|std|pallets|ga|stockOff|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 34.469,6 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 0 | Rp 28.000.000 | ga | — |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 43,1 jt | Rp 7 jt | Rp 0 | Rp 0 | Rp 109,3 jt | Rp 70 jt | Rp 0 | Rp 313,6 jt | Rp 575,5 jt | Rp 261,8 jt | Rp 358 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 7,2 jt | Rp 7 jt | Rp 0 | Rp 0 | Rp 17,5 jt | Rp 67 jt | Rp 0 | Rp 115,7 jt | Rp 824,1 jt | Rp 708,4 jt | Rp 815 rb | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 12,4 jt | Rp 7 jt | Rp 0 | Rp 0 | Rp 23,3 jt | Rp 22,5 jt | Rp 0 | Rp 98,2 jt | Rp 228,6 jt | Rp 130,4 jt | Rp 502 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 17,3 jt | Rp 7 jt | Rp 0 | Rp 12 jt | Rp 50 jt | Rp 44 jt | Rp 0 | Rp 169,2 jt | Rp 450 jt | Rp 280,8 jt | Rp 422 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 5,9 jt | Rp 5 jt | Rp 0 | Rp 0 | Rp 13,2 jt | Rp 11,5 jt | Rp 0 | Rp 51,1 jt | Rp 68,7 jt | Rp 17,5 jt | Rp 451 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 4,1 jt | Rp 5,8 jt | Rp 0 | Rp 0 | Rp 7 jt | Rp 16,6 jt | Rp 0 | Rp 43,1 jt | Rp 188,3 jt | Rp 145,2 jt | Rp 801 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 28.000.000; kapasitas truk tak terpakai Rp -0 — total Rp 82.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 872.980.868; dialokasi Rp 790.980.868
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: stockCapital
+toggles: cbm|loaded|std|pallets|allocated|stockOn|wacc0.1200
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 34.469,6 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 43,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 109,3 jt | Rp 70 jt | Rp 0 | Rp 318,3 jt | Rp 575,5 jt | Rp 257,1 jt | Rp 364 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 7,2 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 17,5 jt | Rp 67 jt | Rp 0 | Rp 120,4 jt | Rp 824,1 jt | Rp 703,7 jt | Rp 848 rb | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 12,4 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 23,3 jt | Rp 22,5 jt | Rp 0 | Rp 102,9 jt | Rp 228,6 jt | Rp 125,7 jt | Rp 526 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 17,3 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 50 jt | Rp 44 jt | Rp 0 | Rp 173,9 jt | Rp 450 jt | Rp 276,1 jt | Rp 434 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 5,9 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 13,2 jt | Rp 11,5 jt | Rp 0 | Rp 55,6 jt | Rp 68,7 jt | Rp 13 jt | Rp 491 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 4,1 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 7 jt | Rp 16,6 jt | Rp 573 rb | Rp 48,4 jt | Rp 188,3 jt | Rp 140 jt | Rp 899 rb | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp -0 — total Rp 54.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 873.553.469; dialokasi Rp 819.553.469
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+
+## World 1 flip: costOfCapital
+toggles: cbm|loaded|std|pallets|allocated|stockOff|wacc0.2000
+
+prinsipal  palet in palet out karton out palet-hari m³ bagian m³ PO inv. dibuat inv. dikirim pendapatan laba kotor
+A              881     1.249      9.465     20.165 875,12 m³     49,1%    2      720      120     Rp 7,2 M  Rp 575,5 jt
+B              100       209      7.229      2.541 141,96 m³        8%    2      720      120     Rp 6,9 M  Rp 824,1 jt
+C              212       360      5.442      4.884 195,78 m³       11%    3      720      120     Rp 2,3 M  Rp 228,6 jt
+D              338       501      8.182      7.977 400,75 m³     22,5%    2      720      120     Rp 4,5 M    Rp 450 jt
+E               70       172      2.543      2.426  113,4 m³      6,4%    2      513      115  Rp 762,9 jt   Rp 68,7 jt
+F               27       120      2.446      1.811   53,8 m³        3%    1      597      120     Rp 1,7 M  Rp 188,3 jt
+
+| pool | total | dialokasi | tidak dialokasi | mode | tarif per driver |
+|---|---:|---:|---:|---|---:|
+| Komersial | Rp 54.000.000 | Rp 0 | Rp 54.000.000 | none | — |
+| Sales admin (bersama) | Rp 36.000.000 | Rp 36.000.000 | Rp 0 | driver | Rp 3.000.000 / PO |
+| Sales admin (khusus Prinsipal D) | Rp 12.000.000 | Rp 12.000.000 | Rp 0 | direct | — |
+| Tim inbound | Rp 66.000.000 | Rp 66.000.000 | Rp 0 | driver | Rp 40.540,5 / palet |
+| Admin WMS | Rp 20.000.000 | Rp 20.000.000 | Rp 0 | driver | Rp 2.000.000 / PO |
+| Gudang | Rp 76.000.000 | Rp 76.000.000 | Rp 0 | driver | Rp 1.909,4 / palet-hari |
+| Tim packing dan outbound | Rp 90.000.000 | Rp 90.000.000 | Rp 0 | driver | Rp 34.469,6 / palet |
+| Finance AR | Rp 39.000.000 | Rp 39.000.000 | Rp 0 | driver | Rp 9.774,4 / invoice |
+| Pajak dan pengiriman invoice | Rp 28.000.000 | Rp 28.000.000 | Rp 0 | driver | Rp 39.160,8 / invoice |
+
+| prinsipal | pool PO | inbound | WMS | gudang | packing | AR | pajak | admin khusus | truk | modal kas | modal persediaan | biaya total | laba kotor | kontribusi | biaya/m³ | hari kas |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | Rp 6 jt | Rp 35,7 jt | Rp 4 jt | Rp 38,5 jt | Rp 43,1 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 117,3 jt | Rp 116,7 jt | Rp 0 | Rp 373 jt | Rp 575,5 jt | Rp 202,4 jt | Rp 426 rb | 29,6 hari |
+| B | Rp 6 jt | Rp 4,1 jt | Rp 2 jt | Rp 4,9 jt | Rp 7,2 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 18,8 jt | Rp 111,7 jt | Rp 0 | Rp 166,4 jt | Rp 824,1 jt | Rp 657,7 jt | Rp 1,2 jt | 29,7 hari |
+| C | Rp 9 jt | Rp 8,6 jt | Rp 6 jt | Rp 9,3 jt | Rp 12,4 jt | Rp 7 jt | Rp 4,7 jt | Rp 0 | Rp 25 jt | Rp 37,6 jt | Rp 0 | Rp 119,7 jt | Rp 228,6 jt | Rp 108,9 jt | Rp 611 rb | 30 hari |
+| D | Rp 6 jt | Rp 13,7 jt | Rp 4 jt | Rp 15,2 jt | Rp 17,3 jt | Rp 7 jt | Rp 4,7 jt | Rp 12 jt | Rp 53,7 jt | Rp 73,3 jt | Rp 0 | Rp 206,9 jt | Rp 450 jt | Rp 243,1 jt | Rp 516 rb | 29,7 hari |
+| E | Rp 6 jt | Rp 2,8 jt | Rp 2 jt | Rp 4,6 jt | Rp 5,9 jt | Rp 5 jt | Rp 4,5 jt | Rp 0 | Rp 14,2 jt | Rp 19,2 jt | Rp 0 | Rp 64,3 jt | Rp 68,7 jt | Rp 4,3 jt | Rp 567 rb | 46 hari |
+| F | Rp 3 jt | Rp 1,1 jt | Rp 2 jt | Rp 3,5 jt | Rp 4,1 jt | Rp 5,8 jt | Rp 4,7 jt | Rp 0 | Rp 7,5 jt | Rp 27,7 jt | Rp 0 | Rp 59,4 jt | Rp 188,3 jt | Rp 129 jt | Rp 1,1 jt | 29,5 hari |
+
+Tidak dialokasi: komersial Rp 54.000.000; pajak (G&A) Rp 0; kapasitas truk tak terpakai Rp 0 — total Rp 54.000.000
+Total: pendapatan Rp 23.321.790.000; laba kotor Rp 2.335.155.000; biaya Rp 1.043.736.328; dialokasi Rp 989.736.328
+Dataset hash: 80ab43da; PO 12; DO 720; trip 90; invoice dibuat 3990; dikirim 715
+

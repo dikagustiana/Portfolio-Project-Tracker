@@ -1,0 +1,3146 @@
+{
+  "source": {
+    "file": "docs/sim/sources/KGR_swimlane_detail.md",
+    "read": "2026-10-07",
+    "database": "Personal OS, tabel os_process_*",
+    "entity": "KGR"
+  },
+  "lanes": [
+    {
+      "no": 1,
+      "id": "PEMASOK",
+      "description": "Pemasok live bird — pihak ketiga",
+      "external": true,
+      "steps": 2
+    },
+    {
+      "no": 2,
+      "id": "PURCHASING",
+      "description": "Rencana & order live bird",
+      "external": false,
+      "steps": 5
+    },
+    {
+      "no": 3,
+      "id": "OPERASIONAL",
+      "description": "Jadwal, keputusan, dan otorisasi operasional",
+      "external": false,
+      "steps": 3
+    },
+    {
+      "no": 4,
+      "id": "GUDANG",
+      "description": "Terima, timbang, simpan, pick, kirim",
+      "external": false,
+      "steps": 9
+    },
+    {
+      "no": 5,
+      "id": "VETERINER",
+      "description": "Gate kesmavet — dokter hewan berwenang",
+      "external": true,
+      "steps": 3
+    },
+    {
+      "no": 6,
+      "id": "PRODUKSI",
+      "description": "Lini potong, halal, chilling, cut-up",
+      "external": false,
+      "steps": 5
+    },
+    {
+      "no": 7,
+      "id": "QC",
+      "description": "Pemeriksaan mutu & sanitasi",
+      "external": false,
+      "steps": 2
+    },
+    {
+      "no": 8,
+      "id": "SALES",
+      "description": "Order, pengiriman, penagihan awal",
+      "external": false,
+      "steps": 2
+    },
+    {
+      "no": 9,
+      "id": "ACCOUNTING",
+      "description": "Costing, AP/AR, pelaporan",
+      "external": false,
+      "steps": 17
+    }
+  ],
+  "phases": [
+    {
+      "ribbon": "TRADING",
+      "name": "PENGADAAN & PENERIMAAN",
+      "slots": [
+        1,
+        18
+      ]
+    },
+    {
+      "ribbon": "TRADING",
+      "name": "PENJUALAN",
+      "slots": [
+        25,
+        28
+      ]
+    },
+    {
+      "ribbon": "TRADING",
+      "name": "PENAGIHAN",
+      "slots": [
+        32,
+        33
+      ]
+    },
+    {
+      "ribbon": "TRADING",
+      "name": "PEMBAYARAN",
+      "slots": [
+        34,
+        35
+      ]
+    },
+    {
+      "ribbon": "TRADING",
+      "name": "PELAPORAN",
+      "slots": [
+        36,
+        38
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PENGADAAN LIVE BIRD",
+      "slots": [
+        1,
+        6
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PRODUKSI SAMPAI SPLIT-OFF",
+      "slots": [
+        7,
+        12
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PEMROSESAN LANJUT",
+      "slots": [
+        13,
+        15
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "DISPOSISI & YIELD",
+      "slots": [
+        16,
+        18
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "COSTING BATCH",
+      "slots": [
+        19,
+        24
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PENJUALAN",
+      "slots": [
+        25,
+        28
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "EOD SETTLEMENT",
+      "slots": [
+        29,
+        31
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PENAGIHAN",
+      "slots": [
+        32,
+        33
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PEMBAYARAN",
+      "slots": [
+        34,
+        35
+      ]
+    },
+    {
+      "ribbon": "DEFAULT",
+      "name": "PELAPORAN",
+      "slots": [
+        36,
+        38
+      ]
+    }
+  ],
+  "paths": {
+    "RPA": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "35",
+      "36",
+      "37",
+      "38"
+    ],
+    "TRADING": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "6",
+      "T7",
+      "T8",
+      "T9",
+      "T10",
+      "18",
+      "25",
+      "26",
+      "27",
+      "28",
+      "32",
+      "33",
+      "34",
+      "35",
+      "36",
+      "37",
+      "38"
+    ]
+  },
+  "steps": [
+    {
+      "label": "1",
+      "slot": 1,
+      "lane": "PURCHASING",
+      "path": "RPA",
+      "form": "",
+      "name": "Rencana Potong",
+      "pic": "",
+      "gate": "TBC-37",
+      "risk": "Kebutuhan diidentifikasi tanpa interval tetap sehingga bergantung ingatan orang; proyeksi penjualan tidak dikonfirmasi Sales sehingga volume beli tidak berdasar.",
+      "control": "Review harian terjadwal atas laporan stok dan proyeksi terkini; rencana pembelian dikonfirmasi Manajer Operasional pada hari yang sama.",
+      "documents": [
+        "Laporan stok harian",
+        "Sales Forecast Mingguan",
+        "Rencana pembelian"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Proyeksi kebutuhan kg berat hidup H-3",
+        "Volume normal bulanan → denominator tarif overhead"
+      ],
+      "needs": [
+        {
+          "label": "Interval review kebutuhan harian",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Proyeksi penjualan per SKU per stream",
+          "type": "TRANSAKSI",
+          "source": "Sales Forecast Mingguan",
+          "owner": "Tim Sales",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Stok live bird dan kapasitas RPA harian",
+          "type": "TRANSAKSI",
+          "source": "Laporan stok harian",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Volume normal/budgeted bulanan kg berat hidup",
+          "type": "PARAMETER",
+          "source": "Demand plan — belum ada",
+          "owner": "Manajer Operasional + PF",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        2
+      ]
+    },
+    {
+      "label": "2",
+      "slot": 2,
+      "lane": "PURCHASING",
+      "path": "RPA",
+      "form": "",
+      "name": "Batch ID, review anggaran",
+      "pic": "Staff Purchasing",
+      "gate": "TBC-13",
+      "risk": "PO di luar batas otorisasi; Batch ID duplikat atau dipakai ulang sehingga costing dua batch tercampur.",
+      "control": "PO disetujui sesuai matriks otorisasi; review anggaran Manajer Accounting tertulis pada lembar PO; sistem mencegah pemakaian ulang Batch ID yang sudah close.",
+      "documents": [
+        "Purchase Order (memuat Batch ID)",
+        "Daftar Pemasok Aktif",
+        "Lembar Review PO Manajer Accounting"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Nilai PO → matriks otorisasi",
+        "Batch ID → pengikat seluruh siklus"
+      ],
+      "needs": [
+        {
+          "label": "Daftar Pemasok Aktif yang disetujui",
+          "type": "MASTER",
+          "source": "Seleksi pemasok",
+          "owner": "Staff Purchasing",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Format Batch ID",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting + IT",
+          "status": "BELUM"
+        },
+        {
+          "label": "Matriks Otorisasi PO",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Nilai PO yang wajib co-approval Manajer Accounting",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        3
+      ]
+    },
+    {
+      "label": "3",
+      "slot": 3,
+      "lane": "PEMASOK",
+      "path": "RPA",
+      "form": "",
+      "name": "Kirim live bird",
+      "pic": "Pemasok live bird",
+      "gate": null,
+      "risk": "Kiriman datang di luar jadwal yang disepakati sehingga live bird menunggu di kendaraan dan mortalitas naik sebelum penerimaan.",
+      "control": "Konfirmasi tertulis H-1 memuat jumlah ekor, estimasi berat, waktu tiba, dan Batch ID.",
+      "documents": [
+        "Surat Jalan Pemasok",
+        "Konfirmasi pengiriman tertulis"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Jumlah ekor & estimasi berat kiriman"
+      ],
+      "needs": [
+        {
+          "label": "Konfirmasi pengiriman tertulis H-1",
+          "type": "TRANSAKSI",
+          "source": "WhatsApp / email / surat",
+          "owner": "Staff Purchasing",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Surat jalan pemasok dengan berat kiriman",
+          "type": "TRANSAKSI",
+          "source": "Dokumen pemasok",
+          "owner": "Pemasok",
+          "status": "ADA"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "label": "4",
+      "slot": 4,
+      "lane": "GUDANG",
+      "path": "RPA",
+      "form": "",
+      "name": "Terima & timbang live bird",
+      "pic": "Staff Gudang",
+      "gate": null,
+      "risk": "Selisih berat aktual vs surat jalan tidak terdeteksi sehingga tagihan melebihi barang yang benar-benar diterima.",
+      "control": "Toleransi timbang ≤ 2%; selisih di atas 2% dieskalasi ke Manajer Operasional dan dikonfirmasi ke pemasok pada hari yang sama untuk keputusan pengurangan tagihan.",
+      "documents": [
+        "Berita Acara Penerimaan Live Bird",
+        "Surat Jalan Pemasok",
+        "Catatan timbangan terkalibrasi"
+      ],
+      "accounts": [
+        {
+          "group": "Persediaan",
+          "name": "Persediaan Live Bird / WIP per Batch"
+        }
+      ],
+      "drivers": [
+        "Berat aktual diterima → dasar nilai persediaan",
+        "Selisih timbang vs surat jalan"
+      ],
+      "needs": [
+        {
+          "label": "Berat aktual diterima per Batch ID",
+          "type": "TRANSAKSI",
+          "source": "Timbangan terkalibrasi",
+          "owner": "Staff Gudang",
+          "status": "ADA"
+        },
+        {
+          "label": "Jam kerja tenaga bongkar & terima",
+          "type": "TRANSAKSI",
+          "source": "Absensi",
+          "owner": "Staff Gudang + HR",
+          "status": "BELUM"
+        },
+        {
+          "label": "Sertifikat kalibrasi timbangan",
+          "type": "MASTER",
+          "source": "Vendor kalibrasi",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "5",
+      "slot": 5,
+      "lane": "QC",
+      "path": "RPA",
+      "form": "",
+      "name": "Quality check & verifikasi DOA",
+      "pic": "Staff QC / Operasional",
+      "gate": "TBC-22",
+      "risk": "DOA dicatat tanpa ambang sehingga klaim ke pemasok bergantung inisiatif; live bird tidak layak lolos ke holding dan mati sebelum potong.",
+      "control": "Quality check wajib sebelum penerimaan final; penolakan disertai berita acara dua pihak; DOA di atas ambang dilaporkan hari yang sama untuk keputusan klaim.",
+      "documents": [
+        "Form Quality Check Live Bird",
+        "Berita Acara Retur atau Penolakan"
+      ],
+      "accounts": [
+        {
+          "group": "Beban",
+          "name": "Beban Kerugian Persediaan — DOA"
+        }
+      ],
+      "drivers": [
+        "Tingkat DOA → klaim ke pemasok",
+        "Berat/ekor ditolak"
+      ],
+      "needs": [
+        {
+          "label": "Ambang DOA yang wajib klaim",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Spesifikasi mutu live bird yang disepakati",
+          "type": "REFERENSI",
+          "source": "Kontrak pemasok",
+          "owner": "Staff Purchasing",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Tingkat DOA per penerimaan",
+          "type": "TRANSAKSI",
+          "source": "Form Quality Check",
+          "owner": "Staff QC",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        1
+      ]
+    },
+    {
+      "label": "6",
+      "slot": 6,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Catat utang usaha atau accrual",
+      "pic": "Staff Accounting",
+      "gate": null,
+      "risk": "Utang dicatat melebihi penerimaan aktual; accrual tidak diselesaikan saat invoice datang sehingga dobel tercatat.",
+      "control": "Finance hanya mencatat berdasarkan BA Penerimaan bertandatangan; clearing accrual mengikuti pola akun asal (Dr Akrual / Cr Utang Usaha) di SOP 7; accrual belum selesai masuk AP reconciliation bulanan.",
+      "documents": [
+        "Invoice Pemasok",
+        "Faktur Pajak",
+        "BA Penerimaan bertandatangan"
+      ],
+      "accounts": [
+        {
+          "group": "Persediaan",
+          "name": "Persediaan Live Bird / WIP per Batch"
+        },
+        {
+          "group": "Neraca",
+          "name": "Utang Usaha Pemasok Live Bird"
+        },
+        {
+          "group": "Neraca",
+          "name": "Akrual Biaya Pembelian Live Bird — bila invoice belum diterima"
+        }
+      ],
+      "drivers": [
+        "Nilai aktual diterima setelah koreksi berat, retur, dan klaim"
+      ],
+      "needs": [
+        {
+          "label": "BA Penerimaan bertandatangan",
+          "type": "TRANSAKSI",
+          "source": "Dokumen gudang",
+          "owner": "Staff Gudang",
+          "status": "ADA"
+        },
+        {
+          "label": "Daftar accrual belum selesai",
+          "type": "TRANSAKSI",
+          "source": "AP reconciliation",
+          "owner": "Staff Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Invoice pemasok",
+          "type": "TRANSAKSI",
+          "source": "Pemasok",
+          "owner": "Pemasok",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "7",
+      "slot": 7,
+      "lane": "PRODUKSI",
+      "path": "RPA",
+      "form": "",
+      "name": "Pemuasaan & sanitasi pra-operasi",
+      "pic": "Supervisor Produksi",
+      "gate": "TBC-20",
+      "risk": "Lini jalan sebelum sanitasi lulus; pemuasaan tidak terjadwal sehingga isi saluran cerna menaikkan risiko kontaminasi saat eviscerasi dan yield bergerak tanpa sebab yang bisa dilacak.",
+      "control": "Lini tidak boleh jalan sebelum sanitasi pra-operasi lulus dan terdokumentasi; jadwal pemuasaan dicatat per batch.",
+      "documents": [
+        "Catatan Holding per Batch",
+        "Checklist sanitasi pra-operasi",
+        "Catatan kalibrasi alat"
+      ],
+      "accounts": [
+        {
+          "group": "Overhead",
+          "name": "Overhead Produksi — Pool A"
+        }
+      ],
+      "drivers": [
+        "Jam pemuasaan → stabilitas yield"
+      ],
+      "needs": [
+        {
+          "label": "Checklist sanitasi lulus sebelum lini jalan",
+          "type": "TRANSAKSI",
+          "source": "Form sanitasi",
+          "owner": "Staff QC / Sanitasi",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Jadwal pemuasaan 8–12 jam per batch",
+          "type": "PARAMETER",
+          "source": "Kebijakan operasional",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Mortalitas selama holding per batch",
+          "type": "TRANSAKSI",
+          "source": "Catatan Holding",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        1
+      ]
+    },
+    {
+      "label": "8",
+      "slot": 8,
+      "lane": "VETERINER",
+      "path": "RPA",
+      "form": "",
+      "name": "Inspeksi antemortem — gate kesmavet 1",
+      "pic": "Dokter hewan berwenang",
+      "gate": "TBC-33",
+      "risk": "Gate dijalankan tanpa petugas berwenang sehingga status halal dan kesmavet tidak punya dasar; ternak tidak layak masuk lini.",
+      "control": "Ternak tidak layak dipisahkan sebelum lini; hasil inspeksi dicatat per batch dan ditandatangani petugas berwenang.",
+      "documents": [
+        "Form Antemortem per Batch"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Ekor layak potong vs ditunda vs ditolak"
+      ],
+      "needs": [
+        {
+          "label": "Form Antemortem per Batch",
+          "type": "TRANSAKSI",
+          "source": "Dokumen veteriner",
+          "owner": "Dokter hewan",
+          "status": "BELUM"
+        },
+        {
+          "label": "Petugas veteriner berwenang yang tersedia",
+          "type": "MASTER",
+          "source": "Dinas via kontrak sewa atau rekrut sendiri",
+          "owner": "Direktur + Manajer Operasional",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "9",
+      "slot": 9,
+      "lane": "GUDANG",
+      "path": "RPA",
+      "form": "",
+      "name": "Timbang masuk lini",
+      "pic": "Staff Gudang",
+      "gate": "TBC-36",
+      "risk": "Berat masuk lini tidak ditimbang terpisah sehingga yield dihitung dari berat terima — susut holding tersembunyi di dalam yield dan terlihat seperti masalah proses.",
+      "control": "Timbang masuk lini pada timbangan terkalibrasi per Batch ID; selisih terhadap berat terima dicatat sebagai susut holding; di atas ambang wajib berita acara.",
+      "documents": [
+        "Catatan Timbang Masuk Lini per Batch"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Kg berat hidup masuk lini → BASIS YIELD dan denominator Pool A"
+      ],
+      "needs": [
+        {
+          "label": "Ambang susut holding normal",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Berat masuk lini per Batch ID",
+          "type": "TRANSAKSI",
+          "source": "Timbangan terkalibrasi",
+          "owner": "Staff Gudang",
+          "status": "ADA"
+        },
+        {
+          "label": "Susut berat holding per batch",
+          "type": "TRANSAKSI",
+          "source": "Selisih terima vs masuk lini",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "10",
+      "slot": 10,
+      "lane": "PRODUKSI",
+      "path": "RPA",
+      "form": "",
+      "name": "Pemotongan halal, bleeding, scalding, plucking, eviscerasi",
+      "pic": "Juleha + Penyelia Halal",
+      "gate": null,
+      "risk": "Karkas masuk tahap berikutnya sebelum kematian sempurna diverifikasi sehingga status halal gugur; kontaminasi silang antara area kotor dan bersih.",
+      "control": "Karkas tidak boleh lanjut sebelum kematian sempurna diverifikasi dan dicatat per shift oleh Penyelia Halal; pemisahan alur, alat, dan personel antara area kotor dan area bersih.",
+      "documents": [
+        "Catatan verifikasi kematian sempurna per shift",
+        "Catatan downtime lini",
+        "Log suhu proses"
+      ],
+      "accounts": [
+        {
+          "group": "Overhead",
+          "name": "Overhead Produksi — Pool A"
+        },
+        {
+          "group": "WIP",
+          "name": "Tenaga Kerja Langsung per Batch"
+        }
+      ],
+      "drivers": [
+        "Jam kerja langsung per shift → TKL per batch"
+      ],
+      "needs": [
+        {
+          "label": "Catatan verifikasi kematian sempurna per shift",
+          "type": "TRANSAKSI",
+          "source": "Penyelia Halal",
+          "owner": "Penyelia Halal",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Jam kerja langsung dan output per shift",
+          "type": "TRANSAKSI",
+          "source": "Catatan shift",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Parameter suhu & durasi scalding",
+          "type": "PARAMETER",
+          "source": "Kebijakan teknis",
+          "owner": "Supervisor Produksi + QC",
+          "status": "BELUM"
+        },
+        {
+          "label": "Sertifikat Juleha dan Penyelia Halal aktif",
+          "type": "MASTER",
+          "source": "Lembaga sertifikasi",
+          "owner": "Manajer Operasional",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        2
+      ]
+    },
+    {
+      "label": "11",
+      "slot": 11,
+      "lane": "VETERINER",
+      "path": "RPA",
+      "form": "",
+      "name": "Inspeksi post-mortem & kondemnasi — gate kesmavet 2",
+      "pic": "Petugas veteriner",
+      "gate": "TBC-35",
+      "risk": "Kondemnasi dilebur ke bucket Waste sehingga hilang sebagai informasi dan tidak bisa dibedakan dari susut proses; pemusnahan tanpa berita acara veteriner.",
+      "control": "Kondemnasi dipisahkan ke wadah khusus berlabel dan dicatat per Batch ID; pemusnahan dengan berita acara ditandatangani petugas veteriner dan Supervisor Produksi.",
+      "documents": [
+        "Form Post-mortem & Kondemnasi per Batch",
+        "Berita Acara Pemusnahan",
+        "Manifest Limbah"
+      ],
+      "accounts": [
+        {
+          "group": "Beban",
+          "name": "Beban Kondemnasi di atas batas normal — beban periode"
+        }
+      ],
+      "drivers": [
+        "Kg kondemnasi → bucket tersendiri, bukan Waste"
+      ],
+      "needs": [
+        {
+          "label": "Ambang kondemnasi normal",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional + Veteriner",
+          "status": "BELUM"
+        },
+        {
+          "label": "Izin pengelola limbah dan izin lingkungan",
+          "type": "MASTER",
+          "source": "Instansi berwenang",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kg kondemnasi per Batch ID",
+          "type": "TRANSAKSI",
+          "source": "Form Post-mortem",
+          "owner": "Petugas veteriner",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "label": "12",
+      "slot": 12,
+      "lane": "PRODUKSI",
+      "path": "RPA",
+      "form": "",
+      "name": "Chilling & grading ke kategori yield — TITIK SPLIT-OFF",
+      "pic": "Supervisor Produksi",
+      "gate": "TBC-03",
+      "risk": "Suhu inti tidak mencapai target dalam jendela waktu sehingga shelf life fresh berkurang tanpa tercatat; berat output per SKU ditimbang tidak independen.",
+      "control": "Penimbangan output per SKU oleh penimbang fisik independen pada timbangan terkalibrasi; suhu inti dan jendela waktu chilling dipantau dan dicatat.",
+      "documents": [
+        "Catatan suhu inti karkas",
+        "Timbangan output per SKU",
+        "Label tanggal produksi & kedaluwarsa"
+      ],
+      "accounts": [
+        {
+          "group": "Overhead",
+          "name": "Overhead Produksi — Pool A"
+        }
+      ],
+      "drivers": [
+        "Kg aktual per kategori yield → basis 7 langkah NRV",
+        "Shelf life per pool → label kedaluwarsa"
+      ],
+      "needs": [
+        {
+          "label": "Berat aktual per SKU per Batch ID",
+          "type": "TRANSAKSI",
+          "source": "Timbangan terkalibrasi",
+          "owner": "Staff Operasional + Staff Gudang",
+          "status": "ADA"
+        },
+        {
+          "label": "Jendela waktu chilling dan target suhu ruang",
+          "type": "PARAMETER",
+          "source": "Standar kesmavet",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Shelf life fresh dalam jam",
+          "type": "PARAMETER",
+          "source": "Kebijakan mutu",
+          "owner": "Manajer Operasional + QC",
+          "status": "BELUM"
+        },
+        {
+          "label": "Suhu inti karkas ≤ 4°C dalam jendela waktu",
+          "type": "TRANSAKSI",
+          "source": "Log suhu",
+          "owner": "Staff QC",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "13",
+      "slot": 13,
+      "lane": "OPERASIONAL",
+      "path": "RPA",
+      "form": "",
+      "name": "Disposisi karkas — barang jadi atau WIP",
+      "pic": "Manajer Operasional",
+      "gate": null,
+      "risk": "Disposisi diputuskan di lapangan tanpa instruksi tertulis sehingga karkas masuk WIP padahal pesanannya utuh — dan biaya pemrosesan lanjut terjadi tanpa pesanan yang menampungnya.",
+      "control": "Disposisi ditetapkan tertulis per batch berdasarkan komposisi pesanan hari itu sebelum karkas meninggalkan area chilling.",
+      "documents": [
+        "Sales Order harian",
+        "Instruksi disposisi karkas",
+        "Kartu batch"
+      ],
+      "accounts": [
+        {
+          "group": "Persediaan",
+          "name": "Barang Jadi — karkas utuh"
+        },
+        {
+          "group": "WIP",
+          "name": "WIP — karkas untuk pemrosesan lanjut"
+        }
+      ],
+      "drivers": [
+        "Kg karkas ke FG vs ke WIP → menentukan jalur biaya di hilir"
+      ],
+      "needs": [
+        {
+          "label": "Instruksi disposisi tertulis per batch",
+          "type": "TRANSAKSI",
+          "source": "Belum ada form",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kapasitas pemrosesan lanjut harian",
+          "type": "PARAMETER",
+          "source": "Kapasitas lini",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Komposisi disposisi karkas aktual per batch dalam kg — FG utuh, WIP cut-up, input MDM",
+          "type": "TRANSAKSI",
+          "source": "Sales Order + Instruksi disposisi tertulis per batch",
+          "owner": "Admin Sales",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "14",
+      "slot": 14,
+      "lane": "PRODUKSI",
+      "path": "RPA",
+      "form": "OLAHAN",
+      "name": "Pemrosesan lanjut karkas → SKU hasil cut-up",
+      "pic": "Supervisor Produksi",
+      "gate": "TBC-41",
+      "risk": "Biaya pemrosesan lanjut dilebur ke joint cost sehingga Ceker, Usus, dan Kepala menanggung biaya proses yang tidak pernah mereka lewati — dan cost per kg SKU olahan understated.",
+      "control": "Input dan output pemrosesan lanjut ditimbang terpisah per batch; biayanya dikumpulkan sebagai separable cost, bukan masuk pool joint.",
+      "documents": [
+        "Instruksi kerja pemrosesan lanjut",
+        "Timbangan output per SKU",
+        "Label SKU"
+      ],
+      "accounts": [
+        {
+          "group": "WIP",
+          "name": "Separable Cost — Cut-up"
+        },
+        {
+          "group": "Overhead",
+          "name": "Overhead Produksi — Pool A porsi pemrosesan lanjut"
+        }
+      ],
+      "drivers": [
+        "Kg input karkas WIP → kg output per SKU",
+        "Yield pemrosesan lanjut per SKU"
+      ],
+      "needs": [
+        {
+          "label": "Basis pengukuran borongan — per kilo, ekor, atau shift",
+          "type": "PARAMETER",
+          "source": "Kebijakan pengupahan",
+          "owner": "Manajer Operasional + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Berat input karkas dan output per SKU hasil cut-up",
+          "type": "TRANSAKSI",
+          "source": "Timbangan terkalibrasi",
+          "owner": "Staff Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Biaya borongan cut-up per batch",
+          "type": "TRANSAKSI",
+          "source": "Catatan borongan",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Yield pemrosesan lanjut per SKU",
+          "type": "PARAMETER",
+          "source": "Belum ada benchmark",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        4
+      ]
+    },
+    {
+      "label": "15",
+      "slot": 15,
+      "lane": "PRODUKSI",
+      "path": "RPA",
+      "form": "OLAHAN",
+      "name": "Pemrosesan MDM",
+      "pic": "Supervisor Produksi",
+      "gate": "TBC-40",
+      "risk": "Bahan baku MDM tetap masuk bucket Waste sehingga output MDM tidak pernah muncul sebagai produk, dan mesinnya berjalan tanpa biaya yang terbebankan ke SKU mana pun.",
+      "control": "Kerangka yang masuk MDM dikeluarkan dari bucket Waste dan dicatat sebagai input MDM; biaya proses MDM dibebankan langsung ke SKU MDM.",
+      "documents": [
+        "Catatan input kerangka ke MDM",
+        "Timbangan output MDM",
+        "Log jam mesin MDM"
+      ],
+      "accounts": [
+        {
+          "group": "WIP",
+          "name": "Separable Cost — MDM"
+        },
+        {
+          "group": "Overhead",
+          "name": "Depresiasi mesin MDM, TKL MDM, listrik MDM"
+        }
+      ],
+      "drivers": [
+        "Kg kerangka masuk MDM → kg output MDM"
+      ],
+      "needs": [
+        {
+          "label": "Harga jual referensi SKU MDM",
+          "type": "PARAMETER",
+          "source": "Daftar harga referensi",
+          "owner": "Manajer Operasional + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Jam mesin dan listrik MDM",
+          "type": "TRANSAKSI",
+          "source": "Log mesin",
+          "owner": "Teknik",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kg kerangka masuk dan output MDM per batch",
+          "type": "TRANSAKSI",
+          "source": "Timbangan",
+          "owner": "Staff Operasional",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "label": "16",
+      "slot": 16,
+      "lane": "OPERASIONAL",
+      "path": "RPA",
+      "form": "",
+      "name": "Verifikasi yield terhadap benchmark",
+      "pic": "Manajer Operasional",
+      "gate": "TBC-34",
+      "risk": "Benchmark dipakai sebagai target dan bukan pembanding sehingga deviasi ditutup di lapangan; costing difinalisasi di atas yield yang belum diinvestigasi.",
+      "control": "Deviasi di atas ambang wajib Berita Acara Deviasi Yield dan investigasi internal sebelum costing difinalisasi; Yield Report final ditandatangani Manajer Operasional dan direview analitis Finance.",
+      "documents": [
+        "Yield Report final bertandatangan",
+        "Berita Acara Deviasi Yield"
+      ],
+      "accounts": [],
+      "drivers": [
+        "% aktual per kategori vs Yield Benchmark",
+        "Deviasi relatif per kategori"
+      ],
+      "needs": [
+        {
+          "label": "Ambang deviasi yield yang wajib berita acara",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Basis Yield Daging — karkas utuh / parting / boneless, sebelum atau sesudah chilling",
+          "type": "PARAMETER",
+          "source": "Keputusan manajemen",
+          "owner": "Manajer Operasional + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Data yield 5 batch pertama untuk validasi benchmark",
+          "type": "TRANSAKSI",
+          "source": "Yield Report",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Mekanisme review benchmark berkala",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional + Manajer Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        4
+      ]
+    },
+    {
+      "label": "17",
+      "slot": 17,
+      "lane": "GUDANG",
+      "path": "RPA",
+      "form": "KARKAS",
+      "name": "Inventory receipt ke pool Fresh",
+      "pic": "Staff Gudang",
+      "gate": null,
+      "risk": "Receipt dicatat tanpa Batch ID sehingga traceability ke batch dan ke costing terputus; estimated cost tidak pernah di-true-up.",
+      "control": "Batch ID wajib pada setiap inventory receipt; nilai memakai estimated cost sampai costing SOP 3 final, lalu di-true-up.",
+      "documents": [
+        "Inventory receipt per SKU per Batch ID"
+      ],
+      "accounts": [
+        {
+          "group": "Persediaan",
+          "name": "Persediaan Barang Jadi — pool Fresh, estimated cost"
+        }
+      ],
+      "drivers": [
+        "Kg per SKU masuk pool fresh"
+      ],
+      "needs": [
+        {
+          "label": "Estimated cost per SKU sebelum costing final",
+          "type": "PARAMETER",
+          "source": "Turunan",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Inventory receipt per SKU per Batch ID",
+          "type": "TRANSAKSI",
+          "source": "Sistem gudang",
+          "owner": "Staff Gudang",
+          "status": "ADA"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "label": "18",
+      "slot": 18,
+      "lane": "GUDANG",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Daily stock movement & FIFO per stream",
+      "pic": "Staff Gudang",
+      "gate": "TBC-24",
+      "risk": "Mutasi tidak dicatat per stream sehingga fresh dan frozen bercampur dan FIFO tidak bisa ditegakkan; discrepancy harian tanpa ambang mengendap sampai opname bulanan.",
+      "control": "Mutasi dicatat real-time per transaksi dengan Batch ID, SKU, dan stream; FIFO per stream; discrepancy di atas ambang dilaporkan ke Kepala Gudang hari yang sama.",
+      "documents": [
+        "Daily Stock Movement Report",
+        "Kartu stok per Batch ID"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Mutasi harian per stream",
+        "FIFO per stream"
+      ],
+      "needs": [
+        {
+          "label": "Ambang discrepancy fisik vs sistem",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Kepala Gudang",
+          "status": "BELUM"
+        },
+        {
+          "label": "Hasil opname bulanan dengan counter independen",
+          "type": "TRANSAKSI",
+          "source": "Berita acara opname",
+          "owner": "Staff Gudang + Finance/IA",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Mutasi harian per Batch ID per SKU per stream",
+          "type": "TRANSAKSI",
+          "source": "Sistem gudang",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        1
+      ]
+    },
+    {
+      "label": "19",
+      "slot": 19,
+      "lane": "ACCOUNTING",
+      "path": "RPA",
+      "form": "",
+      "name": "Buka batch costing sheet & akumulasi biaya",
+      "pic": "Cost Accounting",
+      "gate": "TBC-15",
+      "risk": "Tarif overhead dihitung atas kapasitas terpasang dan bukan volume normal sehingga cost per kg tercemar di seluruh SKU; overhead aktual dibebankan langsung ke batch tanpa akun kontrol.",
+      "control": "Denominator wajib volume normal/budgeted bulanan, bukan kapasitas terpasang; overhead aktual dikumpulkan di akun kontrol dan direkonsiliasi terpisah, tidak dibebankan langsung ke batch.",
+      "documents": [
+        "Batch Costing Sheet",
+        "Rekap Biaya Konversi",
+        "Catatan jam kerja / output shift"
+      ],
+      "accounts": [
+        {
+          "group": "WIP",
+          "name": "WIP per Batch — live bird cost"
+        },
+        {
+          "group": "WIP",
+          "name": "WIP per Batch — TKL"
+        },
+        {
+          "group": "Overhead",
+          "name": "Applied Overhead Pool A = tarif × kg masuk lini"
+        }
+      ],
+      "drivers": [
+        "Tarif Pool A × kg berat hidup masuk lini",
+        "TKL dari catatan shift"
+      ],
+      "needs": [
+        {
+          "label": "Jam kerja langsung dan output per shift",
+          "type": "TRANSAKSI",
+          "source": "Catatan shift",
+          "owner": "Supervisor Produksi",
+          "status": "BELUM"
+        },
+        {
+          "label": "Porsi refrigerasi yang dipisah ke Pool B",
+          "type": "PARAMETER",
+          "source": "Estimasi teknik",
+          "owner": "Manajer Accounting + teknik",
+          "status": "BELUM"
+        },
+        {
+          "label": "Tarif overhead Pool A",
+          "type": "PARAMETER",
+          "source": "Volume normal bulanan ÷ overhead anggaran",
+          "owner": "PF + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Volume normal bulanan sebagai denominator",
+          "type": "PARAMETER",
+          "source": "Demand plan — belum ada",
+          "owner": "Manajer Operasional + PF",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        4
+      ]
+    },
+    {
+      "label": "20",
+      "slot": 20,
+      "lane": "ACCOUNTING",
+      "path": "RPA",
+      "form": "",
+      "name": "NRV-based joint costing — 7 langkah",
+      "pic": "Cost Accounting",
+      "gate": "TBC-07",
+      "risk": "Harga referensi tidak diperbarui sehingga Allocation Ratio menyimpang dari nilai jual sebenarnya dan cost per kg salah di seluruh SKU sekaligus; by-product diberi nilai nol tanpa dasar.",
+      "control": "Harga referensi diperbarui minimal bulanan sebelum closing, bertanggal efektif, disetujui bersama Manajer Operasional dan Manajer Accounting, terpisah fresh dan frozen; nilai nol wajib dokumentasi alasan dan persetujuan formal.",
+      "documents": [
+        "Batch Costing Sheet",
+        "Daftar Harga Jual Referensi NRV per SKU",
+        "Yield Report final"
+      ],
+      "accounts": [
+        {
+          "group": "WIP",
+          "name": "Allocated Joint Cost per SKU"
+        }
+      ],
+      "drivers": [
+        "Allocation Ratio = NRV SKU ÷ Total NRV Batch",
+        "Cost per Kg per SKU = Allocated Joint Cost ÷ berat aktual SKU",
+        "Bauran aktual FG vs WIP dari step 13 → himpunan SKU yang masuk denominator"
+      ],
+      "needs": [
+        {
+          "label": "Ambang penyimpangan harga referensi vs terealisasi yang wajib revisi",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting + Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Back-test harga referensi terhadap harga jual terealisasi per SKU per periode",
+          "type": "TRANSAKSI",
+          "source": "Sub-ledger penjualan vs Daftar Harga Jual Referensi NRV",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Berat aktual per SKU dari Yield Report final",
+          "type": "TRANSAKSI",
+          "source": "Yield Report",
+          "owner": "Manajer Operasional",
+          "status": "ADA"
+        },
+        {
+          "label": "Dasar dan persetujuan harga referensi nol untuk by-product",
+          "type": "PARAMETER",
+          "source": "Memo persetujuan",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Harga Jual Referensi NRV per SKU, terpisah fresh dan frozen",
+          "type": "PARAMETER",
+          "source": "Daftar harga referensi",
+          "owner": "Manajer Operasional + Manajer Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        1,
+        0,
+        4
+      ]
+    },
+    {
+      "label": "21",
+      "slot": 21,
+      "lane": "ACCOUNTING",
+      "path": "RPA",
+      "form": "OLAHAN",
+      "name": "Tambahkan separable cost per SKU setelah alokasi",
+      "pic": "Cost Accounting",
+      "gate": null,
+      "risk": "Separable cost ikut dilebur ke joint pool sehingga cost per kg seluruh kategori bergeser — kategori yang tidak diproses menanggung biaya, dan yang diproses terlihat lebih murah dari sebenarnya.",
+      "control": "Separable cost dibebankan hanya ke SKU yang benar-benar melewati prosesnya, setelah alokasi joint selesai dan sebelum batch difinalisasi.",
+      "documents": [
+        "Batch Costing Sheet — bagian separable",
+        "Rekap biaya pemrosesan lanjut dan MDM"
+      ],
+      "accounts": [
+        {
+          "group": "WIP",
+          "name": "Separable Cost — Cut-up ke SKU terkait"
+        },
+        {
+          "group": "WIP",
+          "name": "Separable Cost — MDM ke SKU MDM"
+        },
+        {
+          "group": "Overhead",
+          "name": "Applied Overhead Pool B ke SKU frozen"
+        }
+      ],
+      "drivers": [
+        "Separable cost ÷ kg output SKU terkait",
+        "Cost per kg SKU = allocated joint + separable"
+      ],
+      "needs": [
+        {
+          "label": "Pemetaan proses lanjut ke SKU yang menerimanya",
+          "type": "MASTER",
+          "source": "Belum ada",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Separable cost per jenis proses per batch",
+          "type": "TRANSAKSI",
+          "source": "Rekap biaya konversi",
+          "owner": "Staff Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "22",
+      "slot": 22,
+      "lane": "ACCOUNTING",
+      "path": "RPA",
+      "form": "",
+      "name": "Disposisi selisih overhead Pool A dan Pool B",
+      "pic": "Manajer Accounting",
+      "gate": "TBC-15",
+      "risk": "Selisih overhead tidak pernah dihitung sehingga under-absorption terkubur di unit cost dan tarifnya tidak pernah teruji; tarif yang salah bertahan tanpa ada yang tahu.",
+      "control": "Overhead aktual dikumpulkan di akun kontrol dan direkonsiliasi terhadap applied setiap periode; selisih tidak terserap diakui sebagai beban periode, bukan dibebankan ulang ke batch.",
+      "documents": [
+        "Rekonsiliasi overhead aktual vs applied",
+        "Jurnal disposisi selisih"
+      ],
+      "accounts": [
+        {
+          "group": "Overhead",
+          "name": "Overhead Aktual — Pool A"
+        },
+        {
+          "group": "Overhead",
+          "name": "Overhead Aktual — Pool B"
+        },
+        {
+          "group": "Overhead",
+          "name": "Selisih Overhead — Pool A"
+        },
+        {
+          "group": "Overhead",
+          "name": "Selisih Overhead — Pool B"
+        },
+        {
+          "group": "Beban",
+          "name": "Selisih tidak terserap — beban periode"
+        }
+      ],
+      "drivers": [
+        "Overhead aktual − applied per pool",
+        "Volume aktual vs volume normal → penyebab selisih"
+      ],
+      "needs": [
+        {
+          "label": "Ambang selisih yang wajib dijelaskan",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Overhead aktual per pool per periode",
+          "type": "TRANSAKSI",
+          "source": "GL",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Volume aktual kg masuk lini per periode",
+          "type": "TRANSAKSI",
+          "source": "Catatan timbang masuk lini",
+          "owner": "Staff Gudang",
+          "status": "ADA"
+        },
+        {
+          "label": "Volume normal bulanan sebagai pembanding",
+          "type": "PARAMETER",
+          "source": "Demand plan — belum ada",
+          "owner": "Manajer Operasional + PF",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "23",
+      "slot": 23,
+      "lane": "ACCOUNTING",
+      "path": "RPA",
+      "form": "",
+      "name": "Review kewajaran & finalisasi batch",
+      "pic": "Manajer Accounting",
+      "gate": "TBC-23",
+      "risk": "Batch difinalisasi dengan cost per kg yang menyimpang tanpa investigasi; selisih rekonsiliasi dibiarkan tidak nol sehingga sub-ledger dan GL bercabang.",
+      "control": "Gate checklist wajib lengkap sebelum finalisasi: invoice atau accrual ada, Yield Report final bertandatangan termasuk bucket Kondemnasi, dan Rekap Biaya Konversi ada; selisih rekonsiliasi harus NOL sebelum batch dinyatakan closed.",
+      "documents": [
+        "Gate checklist finalisasi",
+        "Rekonsiliasi costing sheet vs sub-ledger vs GL"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Cost per kg vs 3 batch terakhir",
+        "Margin penjualan aktual batch sebelumnya"
+      ],
+      "needs": [
+        {
+          "label": "Ambang penyimpangan cost per kg vs 3 batch terakhir",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Cost per kg batch sebelumnya periode sama",
+          "type": "TRANSAKSI",
+          "source": "Batch Costing Sheet",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Materialitas selisih rekonsiliasi",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "24",
+      "slot": 24,
+      "lane": "ACCOUNTING",
+      "path": "RPA",
+      "form": "",
+      "name": "Update nilai persediaan ke aktual & true-up COGS",
+      "pic": "Staff Accounting",
+      "gate": null,
+      "risk": "Nilai persediaan tertinggal di estimated cost sehingga neraca dan HPP dua-duanya salah; true-up tidak dilakukan atas unit yang sudah terjual sebelum costing final.",
+      "control": "Revaluasi dan true-up dijalankan segera setelah costing final; keduanya direkonsiliasi ke GL sebelum closing.",
+      "documents": [
+        "Jurnal revaluasi persediaan",
+        "Jurnal true-up COGS"
+      ],
+      "accounts": [
+        {
+          "group": "Persediaan",
+          "name": "Persediaan Barang Jadi — dari estimated ke actual cost"
+        },
+        {
+          "group": "HPP",
+          "name": "True-up HPP unit yang sudah terjual"
+        }
+      ],
+      "drivers": [
+        "Selisih estimated vs actual cost per SKU"
+      ],
+      "needs": [
+        {
+          "label": "Cost per kg final per SKU dari SOP 3",
+          "type": "TRANSAKSI",
+          "source": "Batch Costing Sheet",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Daftar unit sudah terjual sebelum costing final",
+          "type": "TRANSAKSI",
+          "source": "Sub-ledger penjualan",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "label": "25",
+      "slot": 25,
+      "lane": "SALES",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Order masuk & stock availability check per stream",
+      "pic": "Admin Sales",
+      "gate": "TBC-26",
+      "risk": "Order diterima lewat kanal tidak resmi sehingga tidak punya jejak; order fresh dikonfirmasi tanpa memeriksa sisa shelf life sehingga tidak bisa dipenuhi.",
+      "control": "Stock availability check pada pool sesuai stream sebelum order dikonfirmasi: fresh terhadap produksi hari berjalan dan sisa shelf life jam, frozen terhadap stok cold storage dan aging.",
+      "documents": [
+        "Sales Order",
+        "Stock Availability Check per stream"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Order per stream",
+        "Sisa shelf life fresh saat order"
+      ],
+      "needs": [
+        {
+          "label": "Kanal resmi penerimaan pesanan",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Sales",
+          "status": "BELUM"
+        },
+        {
+          "label": "Payment terms per pelanggan",
+          "type": "MASTER",
+          "source": "Kontrak pelanggan",
+          "owner": "Sales + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Stok tersedia per stream real-time",
+          "type": "TRANSAKSI",
+          "source": "Sistem gudang",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "26",
+      "slot": 26,
+      "lane": "GUDANG",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Picking FIFO per stream, packing & surat jalan",
+      "pic": "Staff Gudang",
+      "gate": "TBC-27",
+      "risk": "Barang keluar gudang tanpa otorisasi yang jelas; Batch ID tidak dicantumkan sehingga traceability dari pelanggan kembali ke batch terputus.",
+      "control": "Surat jalan disetujui pejabat berwenang sebelum barang keluar; Batch ID wajib tercantum; picking FIFO per stream — fresh dari batch produksi paling awal hari itu, frozen dari tanggal blast freeze paling awal.",
+      "documents": [
+        "Surat Jalan (memuat Batch ID & stream)",
+        "Packing list per stream"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Kg keluar per stream per SKU"
+      ],
+      "needs": [
+        {
+          "label": "Batch ID pada setiap surat jalan",
+          "type": "TRANSAKSI",
+          "source": "Surat jalan",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Pejabat berwenang menyetujui surat jalan",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Standar kemasan per stream",
+          "type": "MASTER",
+          "source": "Kebijakan mutu",
+          "owner": "QC + Manajer Operasional",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        1
+      ]
+    },
+    {
+      "label": "27",
+      "slot": 27,
+      "lane": "SALES",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Pengiriman & Bukti Serah Terima",
+      "pic": "Driver / Pengirim",
+      "gate": "TBC-25",
+      "risk": "BST tidak diperoleh sebelum driver kembali sehingga penjualan tidak bisa diakui dan piutang tidak punya dasar; rantai dingin terputus dalam perjalanan tanpa tercatat.",
+      "control": "BST wajib diperoleh sebelum driver kembali; fresh dikirim dengan kendaraan berpendingin atau boks berinsulasi menjaga suhu chilled; frozen dijaga tetap beku.",
+      "documents": [
+        "Bukti Serah Terima (BST)",
+        "Catatan suhu kendaraan"
+      ],
+      "accounts": [
+        {
+          "group": "Beban",
+          "name": "Beban Angkut Keluar — biaya menjual, tidak pernah masuk nilai persediaan"
+        },
+        {
+          "group": "Beban",
+          "name": "Beban Jasa Ekspedisi — pihak ketiga atau entity grup"
+        },
+        {
+          "group": "Neraca",
+          "name": "Utang Jasa Angkut — pihak berelasi bila armada milik entity grup"
+        }
+      ],
+      "drivers": [
+        "Kg terkirim per stream",
+        "Biaya angkut per pengiriman → komponen terbesar estimasi biaya menjual di step 37",
+        "Syarat penyerahan per pelanggan → menentukan apakah ongkos angkut ditanggung KGR"
+      ],
+      "needs": [
+        {
+          "label": "Biaya angkut keluar per pengiriman — armada sendiri atau jasa pihak ketiga/entity grup",
+          "type": "TRANSAKSI",
+          "source": "Belum ada — sumbernya mengikuti keputusan armada",
+          "owner": "Manajer Accounting + Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "BST bertandatangan pelanggan",
+          "type": "TRANSAKSI",
+          "source": "Dokumen pengiriman",
+          "owner": "Driver",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Catatan penolakan saat pengiriman",
+          "type": "TRANSAKSI",
+          "source": "Form penolakan",
+          "owner": "Driver",
+          "status": "BELUM"
+        },
+        {
+          "label": "Syarat penyerahan per pelanggan — franco gudang pembeli atau ambil sendiri",
+          "type": "MASTER",
+          "source": "Kontrak pelanggan",
+          "owner": "Sales + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Target dan pemantauan suhu kendaraan chilled",
+          "type": "PARAMETER",
+          "source": "Standar mutu",
+          "owner": "QC + Manajer Operasional",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        4
+      ]
+    },
+    {
+      "label": "28",
+      "slot": 28,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Terbit invoice",
+      "pic": "Staff Billing",
+      "gate": "TBC-28",
+      "risk": "Invoice terbit tanpa BST valid; stream tidak dicantumkan sehingga pendapatan dan HPP tidak bisa dipisah per stream di pelaporan segmental.",
+      "control": "Invoice hanya terbit dari BST yang sudah diterima; stream dan Batch ID wajib tercantum pada invoice.",
+      "documents": [
+        "Invoice",
+        "Faktur Pajak bila berlaku"
+      ],
+      "accounts": [
+        {
+          "group": "Pendapatan",
+          "name": "Pendapatan Penjualan — per stream"
+        },
+        {
+          "group": "HPP",
+          "name": "HPP — per stream"
+        },
+        {
+          "group": "Neraca",
+          "name": "Piutang Usaha"
+        },
+        {
+          "group": "Neraca",
+          "name": "PPN keluaran bila berlaku"
+        }
+      ],
+      "drivers": [
+        "Nilai invoice per stream per SKU"
+      ],
+      "needs": [
+        {
+          "label": "Batas waktu penerbitan invoice setelah BST",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Matriks PPN per jenis produk",
+          "type": "REFERENSI",
+          "source": "Ketentuan pajak",
+          "owner": "Tax + Manajer Accounting",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "29",
+      "slot": 29,
+      "lane": "GUDANG",
+      "path": "RPA",
+      "form": "",
+      "name": "EOD stock count sisa fresh",
+      "pic": "Staff Gudang",
+      "gate": "TBC-01",
+      "risk": "Tanpa jam cutoff yang pasti, penghitungan mulai kapan saja dan keputusan disposisi bergeser setiap hari; sisa fresh melewati shelf life sebelum diputuskan.",
+      "control": "EOD stock count dimulai pada EOD Cutoff yang ditetapkan; hasil diserahkan ke Manajer Operasional dalam tenggat, lengkap dengan catatan kondisi fisik.",
+      "documents": [
+        "EOD Stock Count Sheet"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Kg sisa fresh per SKU pada EOD Cutoff"
+      ],
+      "needs": [
+        {
+          "label": "EOD Cutoff — jam batas akhir penjualan fresh",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur + Manajer Operasional",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kondisi fisik per SKU sisa",
+          "type": "TRANSAKSI",
+          "source": "EOD Stock Count Sheet",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Tenggat serah stock count setelah cutoff",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Operasional",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "30",
+      "slot": 30,
+      "lane": "OPERASIONAL",
+      "path": "RPA",
+      "form": "",
+      "name": "Keputusan disposisi — blast freeze, repricing, atau write-off",
+      "pic": "Manajer Operasional",
+      "gate": "TBC-06",
+      "risk": "Keputusan disposisi jadi penilaian orang karena ambangnya belum ada; repricing menjual di bawah HPP tanpa terlihat; write-off diputuskan tanpa eskalasi.",
+      "control": "Setiap sisa stok ditetapkan satu dari tiga disposisi dengan dasar tertulis; repricing dalam batas diskon yang disetujui; write-off dengan berita acara dan eskalasi di atas ambang.",
+      "documents": [
+        "Kriteria Layak Blast Freeze",
+        "Repricing Authorization Form",
+        "Berita Acara Write-off"
+      ],
+      "accounts": [
+        {
+          "group": "Beban",
+          "name": "Beban Kerugian Persediaan — write-off"
+        }
+      ],
+      "drivers": [
+        "Kg per keputusan disposisi",
+        "Ekspektasi biaya simpan per jalur disposisi → pembanding beku vs repricing vs write-off"
+      ],
+      "needs": [
+        {
+          "label": "Ambang suhu produk pada Kriteria Layak Blast Freeze",
+          "type": "PARAMETER",
+          "source": "Kebijakan mutu",
+          "owner": "Manajer Operasional + QC",
+          "status": "BELUM"
+        },
+        {
+          "label": "Ambang write-off yang wajib eskalasi Direktur",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Batas diskon minimum terhadap HPP",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Estimasi biaya simpan cold storage per satuan waktu — input keputusan disposisi, bukan biaya persediaan",
+          "type": "PARAMETER",
+          "source": "Estimasi teknik — pecahan cold storage dari TBC-17",
+          "owner": "Teknik + Manajer Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        4
+      ]
+    },
+    {
+      "label": "31",
+      "slot": 31,
+      "lane": "GUDANG",
+      "path": "RPA",
+      "form": "",
+      "name": "Eksekusi blast freeze & applied overhead Pool B",
+      "pic": "Staff Gudang",
+      "gate": "TBC-16",
+      "risk": "Overhead pembekuan dilebur ke joint cost sehingga SKU fresh menanggung biaya pembekuan yang tidak pernah dia pakai; tanggal pembekuan tidak dicatat sehingga aging frozen tidak punya titik mulai.",
+      "control": "Blast Freeze Transfer Record menjadi dasar jurnal transfer, applied overhead Pool B, tanggal mulai aging frozen, dan label kedaluwarsa baru; label dicetak ulang berbasis tanggal pembekuan.",
+      "documents": [
+        "Blast Freeze Transfer Record",
+        "Label kedaluwarsa baru berbasis tanggal pembekuan"
+      ],
+      "accounts": [
+        {
+          "group": "Persediaan",
+          "name": "Transfer pool Fresh ke pool Frozen"
+        },
+        {
+          "group": "Overhead",
+          "name": "Applied Overhead Pool B — dibebankan langsung ke SKU frozen"
+        },
+        {
+          "group": "Beban",
+          "name": "Biaya Simpan Cold Storage — beban periode, di luar applied Pool B"
+        }
+      ],
+      "drivers": [
+        "Kg aktual dibekukan → dasar applied Pool B",
+        "Tanggal pembekuan → mulai aging frozen"
+      ],
+      "needs": [
+        {
+          "label": "Estimasi teknik listrik ABF dan cold storage",
+          "type": "PARAMETER",
+          "source": "Estimasi teknik",
+          "owner": "Teknik + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kg aktual dibekukan per SKU per Batch ID",
+          "type": "TRANSAKSI",
+          "source": "Blast Freeze Transfer Record",
+          "owner": "Staff Gudang",
+          "status": "BELUM"
+        },
+        {
+          "label": "Tarif Pool B per kg",
+          "type": "PARAMETER",
+          "source": "Overhead pembekuan ÷ volume dibekukan",
+          "owner": "Manajer Accounting + PF",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "label": "32",
+      "slot": 32,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Catat piutang & AR aging",
+      "pic": "Staff Accounting",
+      "gate": "TBC-11",
+      "risk": "Piutang dicatat tanpa tanggal jatuh tempo yang berdasar sehingga aging tidak bisa dihitung; stream tidak dicatat sehingga piutang per stream tidak bisa dianalisis.",
+      "control": "Piutang dicatat pada hari invoice diterbitkan lengkap dengan tanggal jatuh tempo, nomor surat jalan, Batch ID, stream, dan nomor SO; AR Aging disusun mingguan dengan review terdokumentasi.",
+      "documents": [
+        "AR Aging Report — enam bucket",
+        "Kartu piutang per pelanggan"
+      ],
+      "accounts": [
+        {
+          "group": "Neraca",
+          "name": "Piutang Usaha per pelanggan"
+        }
+      ],
+      "drivers": [
+        "Umur piutang per bucket",
+        "Payment terms per pelanggan"
+      ],
+      "needs": [
+        {
+          "label": "Jadwal review AR aging mingguan",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Payment terms per pelanggan",
+          "type": "MASTER",
+          "source": "Kontrak pelanggan",
+          "owner": "Sales + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Stream dan Batch ID pada catatan piutang",
+          "type": "TRANSAKSI",
+          "source": "Sistem akuntansi",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "33",
+      "slot": 33,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Follow-up, eskalasi & collection",
+      "pic": "Staff Accounting",
+      "gate": "TBC-10",
+      "risk": "Overdue tidak ditagih karena tidak ada pemilik dan tenggat; provisi memakai kebijakan sementara tanpa dasar formal sehingga penurunan nilai tidak bisa dipertahankan.",
+      "control": "Reminder 3 hari kerja sebelum jatuh tempo; follow-up berjenjang per bucket dengan tenggat; credit hold atas keputusan Manajer Accounting; eskalasi ke Direktur pada bucket 61–90 dengan memo berisi riwayat dan rekomendasi.",
+      "documents": [
+        "Form Follow-up Collection",
+        "Memo eskalasi Direktur"
+      ],
+      "accounts": [
+        {
+          "group": "Beban",
+          "name": "Provisi Penurunan Nilai Piutang"
+        }
+      ],
+      "drivers": [
+        "Umur overdue per bucket → tingkat provisi"
+      ],
+      "needs": [
+        {
+          "label": "Ambang dan tenggat eskalasi per bucket",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kebijakan provisi piutang formal",
+          "type": "PARAMETER",
+          "source": "Kebijakan akuntansi",
+          "owner": "Manajer Accounting + Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Riwayat komunikasi penagihan per pelanggan",
+          "type": "TRANSAKSI",
+          "source": "Form Follow-up",
+          "owner": "Staff Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "label": "34",
+      "slot": 34,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Three-way matching & catat utang usaha",
+      "pic": "Staff Accounting",
+      "gate": null,
+      "risk": "Akrual dikreditkan ke akun beban dan bukan ke akun asalnya sehingga beban tercatat dua kali; selisih dengan supplier statement mengendap tanpa tenggat.",
+      "control": "Three-way matching per jenis vendor sebelum AP dicatat; clearing akrual wajib mengikuti akun asal (Dr Akrual / Cr Utang Usaha), bukan dikreditkan ke beban; rekonsiliasi AP ledger vs supplier statement berkala.",
+      "documents": [
+        "Invoice vendor",
+        "PO / kontrak",
+        "BA Penerimaan atau meter reading"
+      ],
+      "accounts": [
+        {
+          "group": "Neraca",
+          "name": "Utang Usaha Vendor"
+        },
+        {
+          "group": "Neraca",
+          "name": "Clearing Akrual — Dr Akrual / Cr Utang Usaha"
+        }
+      ],
+      "drivers": [
+        "Nilai terverifikasi per vendor"
+      ],
+      "needs": [
+        {
+          "label": "Daftar akrual terbuka dari SOP 1 dan SOP 8",
+          "type": "TRANSAKSI",
+          "source": "Sub-ledger akrual",
+          "owner": "Staff Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Kelengkapan dokumen per invoice vendor",
+          "type": "TRANSAKSI",
+          "source": "Checklist verifikasi",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Tenggat penyelesaian selisih dengan supplier statement",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "35",
+      "slot": 35,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Payment proposal & eksekusi dual authorization",
+      "pic": "Manajer Accounting",
+      "gate": "TBC-13",
+      "risk": "Pembayaran dieksekusi tanpa dual authorization; urgent payment jadi jalur biasa karena tidak dicatat terpisah.",
+      "control": "Pembayaran melalui rekening perusahaan dengan dual authorization maker–releaser; bukti transfer disimpan; AP di-clear pada hari pembayaran; urgent payment dicatat pada payment register khusus di luar siklus mingguan.",
+      "documents": [
+        "AP Aging",
+        "Payment Proposal",
+        "Bukti transfer",
+        "Payment register urgent"
+      ],
+      "accounts": [
+        {
+          "group": "Neraca",
+          "name": "Utang Usaha Vendor"
+        },
+        {
+          "group": "Neraca",
+          "name": "Bank"
+        }
+      ],
+      "drivers": [
+        "Nilai jatuh tempo per vendor → prioritas pembayaran"
+      ],
+      "needs": [
+        {
+          "label": "Daftar vendor prioritas dan urgensi",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Matriks otorisasi pembayaran",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Direktur",
+          "status": "BELUM"
+        },
+        {
+          "label": "Posisi kas harian",
+          "type": "TRANSAKSI",
+          "source": "Rekening bank",
+          "owner": "Staff Finance",
+          "status": "ADA"
+        }
+      ],
+      "overview": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "36",
+      "slot": 36,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Cut-off penjualan & pembelian",
+      "pic": "Staff Accounting",
+      "gate": "TBC-14",
+      "risk": "Penjualan dicatat tanpa BST sehingga pendapatan diakui sebelum penyerahan; pembelian akhir bulan tidak di-accrual sehingga persediaan dan utang dua-duanya understated.",
+      "control": "Penjualan dicatat di bulan berjalan hanya kalau BST diperoleh sebelum atau pada hari terakhir bulan; live bird diterima tanpa invoice wajib di-accrual pada bulan penerimaan.",
+      "documents": [
+        "Monthly close checklist",
+        "Rekap cut-off penjualan dan pembelian"
+      ],
+      "accounts": [],
+      "drivers": [
+        "BST sebelum akhir bulan → pengakuan penjualan",
+        "Live bird diterima sebelum akhir bulan → pengakuan pembelian"
+      ],
+      "needs": [
+        {
+          "label": "Daftar BST yang diperoleh sebelum akhir bulan",
+          "type": "TRANSAKSI",
+          "source": "Dokumen pengiriman",
+          "owner": "Admin Sales",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Daftar penerimaan live bird tanpa invoice pada akhir bulan",
+          "type": "TRANSAKSI",
+          "source": "BA Penerimaan",
+          "owner": "Staff Gudang",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Tanggal close bulanan yang ditetapkan",
+          "type": "PARAMETER",
+          "source": "Group Project Finance",
+          "owner": "Group Project Finance",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        2,
+        1
+      ]
+    },
+    {
+      "label": "37",
+      "slot": 37,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "Rekonsiliasi & uji LCNRV frozen",
+      "pic": "Manajer Accounting",
+      "gate": "TBC-09",
+      "risk": "Frozen dicatat di atas nilai realisasi bersihnya sehingga persediaan overstated; rekonsiliasi per stream tidak dilakukan sehingga selisih fresh dan frozen saling menutupi.",
+      "control": "Uji LCNRV wajib bulanan untuk setiap SKU frozen; rekonsiliasi inventory valuation, HPP, pendapatan, piutang, dan utang dilakukan per stream; selisih di atas materialitas wajib diinvestigasi dan dijelaskan.",
+      "documents": [
+        "Rekonsiliasi inventory valuation per stream",
+        "Laporan Aging Frozen",
+        "Kertas kerja LCNRV"
+      ],
+      "accounts": [
+        {
+          "group": "Beban",
+          "name": "Penurunan Nilai Persediaan — LCNRV frozen"
+        }
+      ],
+      "drivers": [
+        "Cost per kg tercatat vs NRV kini per SKU frozen"
+      ],
+      "needs": [
+        {
+          "label": "Aging frozen per SKU per tanggal pembekuan",
+          "type": "TRANSAKSI",
+          "source": "Laporan Aging Frozen",
+          "owner": "Staff Gudang",
+          "status": "BELUM"
+        },
+        {
+          "label": "Estimasi biaya menjual per SKU",
+          "type": "PARAMETER",
+          "source": "Turunan",
+          "owner": "Staff Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Harga jual referensi frozen terkini",
+          "type": "PARAMETER",
+          "source": "Daftar harga referensi",
+          "owner": "Manajer Operasional + Manajer Accounting",
+          "status": "BELUM"
+        },
+        {
+          "label": "Materialitas selisih rekonsiliasi",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        4
+      ]
+    },
+    {
+      "label": "38",
+      "slot": 38,
+      "lane": "ACCOUNTING",
+      "path": "BERSAMA",
+      "form": "",
+      "name": "P&L segmental Fresh vs Frozen & submission",
+      "pic": "Manajer Accounting",
+      "gate": "TBC-14",
+      "risk": "Margin per stream tidak terpisah sehingga keputusan bauran fresh dan frozen diambil tanpa dasar; koreksi pasca-submission dilakukan tanpa mekanisme formal.",
+      "control": "P&L segmental Fresh vs Frozen wajib; Manajer Accounting mereview margin per SKU dan per stream; koreksi pasca-submission hanya via mekanisme adjustment formal yang disetujui Manajer Accounting dan Group Project Finance.",
+      "documents": [
+        "Laporan laba rugi",
+        "Neraca",
+        "P&L segmental Fresh vs Frozen"
+      ],
+      "accounts": [],
+      "drivers": [
+        "Pendapatan, HPP, dan margin per stream",
+        "Margin per SKU"
+      ],
+      "needs": [
+        {
+          "label": "Mekanisme adjustment formal pasca-submission",
+          "type": "PARAMETER",
+          "source": "Kebijakan internal",
+          "owner": "Manajer Accounting + GPF",
+          "status": "BELUM"
+        },
+        {
+          "label": "Pendapatan dan HPP terpisah per stream",
+          "type": "TRANSAKSI",
+          "source": "Sub-ledger",
+          "owner": "Staff Accounting",
+          "status": "SEBAGIAN"
+        },
+        {
+          "label": "Tenggat submission ke Group Project Finance",
+          "type": "PARAMETER",
+          "source": "Group Project Finance",
+          "owner": "Group Project Finance",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "T1",
+      "slot": 1,
+      "lane": "PURCHASING",
+      "path": "TRADING",
+      "form": "",
+      "name": "Permintaan & rencana beli",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [],
+      "overview": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "T2",
+      "slot": 2,
+      "lane": "PURCHASING",
+      "path": "TRADING",
+      "form": "",
+      "name": "Keputusan buy & pemilihan pemasok",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Daftar pemasok terverifikasi",
+          "type": "MASTER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        },
+        {
+          "label": "Price list pemasok per SKU",
+          "type": "MASTER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "T3",
+      "slot": 3,
+      "lane": "PURCHASING",
+      "path": "TRADING",
+      "form": "",
+      "name": "Terbitkan PO barang jadi",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Format PO barang jadi",
+          "type": "PARAMETER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        },
+        {
+          "label": "Termin & lead time per pemasok",
+          "type": "MASTER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "T4",
+      "slot": 4,
+      "lane": "PEMASOK",
+      "path": "TRADING",
+      "form": "",
+      "name": "Kirim barang jadi",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [],
+      "overview": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "T5",
+      "slot": 5,
+      "lane": "GUDANG",
+      "path": "TRADING",
+      "form": "",
+      "name": "Terima & timbang barang jadi",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Berat sesuai surat jalan per SKU",
+          "type": "TRANSAKSI",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        },
+        {
+          "label": "Timbangan terima terkalibrasi",
+          "type": "MASTER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "T6",
+      "slot": 6,
+      "lane": "QC",
+      "path": "TRADING",
+      "form": "",
+      "name": "QC penerimaan — suhu, kemasan, shelf life, kesesuaian SKU",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Minimum sisa shelf life saat terima",
+          "type": "PARAMETER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        },
+        {
+          "label": "Standar suhu terima per stream",
+          "type": "PARAMETER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "T7",
+      "slot": 7,
+      "lane": "VETERINER",
+      "path": "TRADING",
+      "form": "",
+      "name": "Verifikasi NKV, halal & sertifikat kesehatan pemasok",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Register NKV & sertifikat halal pemasok yang masih berlaku",
+          "type": "MASTER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "label": "T8",
+      "slot": 8,
+      "lane": "ACCOUNTING",
+      "path": "TRADING",
+      "form": "",
+      "name": "Hitung landed cost — harga beli, freight, handling",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Komponen landed cost yang boleh dikapitalisasi",
+          "type": "PARAMETER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        },
+        {
+          "label": "Tarif freight per rute",
+          "type": "PARAMETER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "label": "T9",
+      "slot": 9,
+      "lane": "ACCOUNTING",
+      "path": "TRADING",
+      "form": "",
+      "name": "Nilai persediaan masuk pada landed cost",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Kebijakan penilaian persediaan barang beli",
+          "type": "PARAMETER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "label": "T10",
+      "slot": 10,
+      "lane": "GUDANG",
+      "path": "TRADING",
+      "form": "",
+      "name": "Putaway ke pool per stream, tandai asal beli",
+      "pic": "",
+      "gate": null,
+      "risk": "",
+      "control": "",
+      "documents": [],
+      "accounts": [],
+      "drivers": [],
+      "needs": [
+        {
+          "label": "Penanda asal (beli vs potong) di master stok",
+          "type": "MASTER",
+          "source": "",
+          "owner": "",
+          "status": "BELUM"
+        }
+      ],
+      "overview": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "TBC-01",
+      "type": "DECISION",
+      "title": "EOD Cutoff — batas akhir penjualan fresh harian",
+      "sub": "Pemicu seluruh SOP 9",
+      "owner": "Direktur + Manajer Operasional",
+      "steps": [
+        "29"
+      ],
+      "why": "Tanpa jam pasti, EOD stock count tidak punya titik mulai dan keputusan disposisi bergeser tiap hari."
+    },
+    {
+      "id": "TBC-02",
+      "type": "DECISION",
+      "title": "Lead time pengadaan H-3 / H-2",
+      "sub": "SOP 1.4",
+      "owner": "Manajer Operasional",
+      "steps": [],
+      "why": "Tetapkan jarak hari yang mengikat antara identifikasi kebutuhan, penerbitan PO, dan jadwal potong."
+    },
+    {
+      "id": "TBC-03",
+      "type": "DECISION",
+      "title": "Shelf life fresh (jam) dan ambang aging frozen (hari)",
+      "sub": "SOP 2.4, 4.4",
+      "owner": "Manajer Operasional + QC",
+      "steps": [
+        "12"
+      ],
+      "why": "Menentukan kapan produk wajib keluar dari pool fresh dan kapan frozen masuk uji penurunan nilai."
+    },
+    {
+      "id": "TBC-04",
+      "type": "DECISION",
+      "title": "Ambang deviasi yield yang wajib berita acara",
+      "sub": "default 5% relatif",
+      "owner": "Manajer Operasional",
+      "steps": [],
+      "why": "Di bawah ambang, deviasi lewat tanpa investigasi; di atas, costing tidak boleh difinalisasi."
+    },
+    {
+      "id": "TBC-05",
+      "type": "DECISION",
+      "title": "Ambang write-off yang wajib eskalasi Direktur",
+      "sub": "SOP 9",
+      "owner": "Direktur",
+      "steps": [],
+      "why": "Menentukan siapa yang menanggung keputusan kerugian sisa fresh."
+    },
+    {
+      "id": "TBC-06",
+      "type": "DECISION",
+      "title": "Kriteria Layak Blast Freeze — ambang suhu produk",
+      "sub": "SOP 9.4",
+      "owner": "Manajer Operasional + QC",
+      "steps": [
+        "30"
+      ],
+      "why": "Empat kriteria sudah ada; ambang suhunya belum. Tanpa itu keputusan blast freeze jadi penilaian orang."
+    },
+    {
+      "id": "TBC-07",
+      "type": "DECISION",
+      "title": "Harga Jual Referensi NRV per SKU, terpisah fresh dan frozen",
+      "sub": "Basis alokasi joint cost",
+      "owner": "Manajer Operasional + Manajer Accounting",
+      "steps": [
+        "20"
+      ],
+      "why": "Ini penentu Allocation Ratio di 7 langkah. Salah di sini, seluruh cost per kg per SKU salah."
+    },
+    {
+      "id": "TBC-08",
+      "type": "DECISION",
+      "title": "Format Batch ID",
+      "sub": "SOP 1.3",
+      "owner": "Manajer Accounting + IT",
+      "steps": [],
+      "why": "Batch ID mengikat PO, timbang masuk lini, yield, costing, dan inventory. Format harus mencegah pemakaian ulang."
+    },
+    {
+      "id": "TBC-09",
+      "type": "DECISION",
+      "title": "Materialitas selisih rekonsiliasi yang wajib dijelaskan",
+      "sub": "SOP 8.4",
+      "owner": "Manajer Accounting",
+      "steps": [
+        "37"
+      ],
+      "why": "Tanpa ambang, setiap selisih setara — atau tidak ada yang ditelusuri."
+    },
+    {
+      "id": "TBC-10",
+      "type": "DECISION",
+      "title": "Kebijakan provisi piutang formal",
+      "sub": "Sementara: 50% di 91–180 hari",
+      "owner": "Manajer Accounting + Direktur",
+      "steps": [
+        "33"
+      ],
+      "why": "Kebijakan sementara sudah jalan; yang formal belum ditetapkan."
+    },
+    {
+      "id": "TBC-11",
+      "type": "DECISION",
+      "title": "Payment terms per pelanggan",
+      "sub": "SOP 6.4",
+      "owner": "Sales + Manajer Accounting",
+      "steps": [
+        "32"
+      ],
+      "why": "Menentukan tanggal jatuh tempo, dan tanpa itu AR aging tidak punya dasar."
+    },
+    {
+      "id": "TBC-12",
+      "type": "DECISION",
+      "title": "Batas diskon minimum terhadap HPP",
+      "sub": "SOP 9 repricing",
+      "owner": "Direktur",
+      "steps": [],
+      "why": "Repricing tanpa batas bawah bisa menjual di bawah biaya tanpa terlihat."
+    },
+    {
+      "id": "TBC-13",
+      "type": "DECISION",
+      "title": "Matriks otorisasi PO dan pembayaran",
+      "sub": "SOP 1.4, 7.4",
+      "owner": "Direktur",
+      "steps": [
+        "2",
+        "35"
+      ],
+      "why": "Satu matriks untuk dua siklus; belum ditetapkan nilainya."
+    },
+    {
+      "id": "TBC-14",
+      "type": "DECISION",
+      "title": "Tanggal close bulanan dan tenggat submission",
+      "sub": "SOP 8.4",
+      "owner": "Group Project Finance",
+      "steps": [
+        "36",
+        "38"
+      ],
+      "why": "Menentukan seluruh tenggat H+1 sampai H+5 di siklus pelaporan."
+    },
+    {
+      "id": "TBC-15",
+      "type": "DATA",
+      "title": "Volume normal bulanan (kg berat hidup) — denominator tarif overhead",
+      "sub": "P2. Indikasi RAB C4.4 tidak konsisten dengan kapasitas terpasang",
+      "owner": "Manajer Operasional + PF",
+      "steps": [
+        "19",
+        "22"
+      ],
+      "why": "Sumber yang benar adalah demand plan, bukan kapasitas terpasang. SOP 2.3 melarang pakai kapasitas terpasang. Tanpa ini seluruh cost per kg tercemar."
+    },
+    {
+      "id": "TBC-16",
+      "type": "DATA",
+      "title": "Porsi biaya refrigerasi yang dipisah ke Pool B",
+      "sub": "P1 internal ABF",
+      "owner": "Manajer Accounting + teknik",
+      "steps": [
+        "31"
+      ],
+      "why": "Pool B dibebankan langsung ke SKU frozen; porsinya belum dipisah dari listrik total."
+    },
+    {
+      "id": "TBC-17",
+      "type": "DATA",
+      "title": "Estimasi teknik listrik ABF dan cold storage",
+      "sub": "Lampiran C",
+      "owner": "Teknik + Manajer Accounting",
+      "steps": [],
+      "why": "Dua angka dengan dua nasib berbeda, dan memisahkannya adalah inti gate ini. Porsi ABF masuk tarif Pool B dan ikut ke nilai persediaan lewat step 31; porsi cold storage jadi beban periode dan hanya dipakai sebagai input keputusan disposisi di step 30. Selama keduanya menyatu, tarif Pool B kemasukan biaya simpan dan setiap SKU frozen menanggung penyimpanan yang belum tentu dia pakai."
+    },
+    {
+      "id": "TBC-18",
+      "type": "DECISION",
+      "title": "Masa amortisasi perlengkapan di bawah threshold kapitalisasi",
+      "sub": "P3, maksimal 12 bulan sejalan masa sewa",
+      "owner": "Manajer Accounting",
+      "steps": [],
+      "why": "Seluruh item B2 tidak didepresiasi; masa amortisasinya belum dipatok."
+    },
+    {
+      "id": "TBC-19",
+      "type": "DECISION",
+      "title": "Ambang mortalitas holding yang jadi write-off",
+      "sub": "SOP 1.7, 2.8",
+      "owner": "Manajer Operasional",
+      "steps": [],
+      "why": "Memisahkan susut normal yang melebur ke cost dari kerugian yang jadi beban periode."
+    },
+    {
+      "id": "TBC-20",
+      "type": "DECISION",
+      "title": "Parameter teknis lini — pemuasaan, scalding, chilling",
+      "sub": "SOP 2.4",
+      "owner": "Supervisor Produksi + QC",
+      "steps": [
+        "7"
+      ],
+      "why": "Jadwal dan suhu belum dipatok, padahal keduanya menentukan yield dan risiko kontaminasi."
+    },
+    {
+      "id": "TBC-21",
+      "type": "DATA",
+      "title": "Izin lingkungan dan pengelola limbah berizin",
+      "sub": "SOP 2.4 sub-prosedur limbah",
+      "owner": "Manajer Operasional",
+      "steps": [],
+      "why": "Manifest limbah dan IPAL harus terkait izin yang sah."
+    },
+    {
+      "id": "TBC-22",
+      "type": "DECISION",
+      "title": "Ambang DOA saat penerimaan yang wajib klaim",
+      "sub": "SOP 1.4",
+      "owner": "Manajer Operasional",
+      "steps": [
+        "5"
+      ],
+      "why": "Menentukan kapan klaim ke pemasok wajib diajukan."
+    },
+    {
+      "id": "TBC-23",
+      "type": "DECISION",
+      "title": "Ambang penyimpangan cost per kg vs 3 batch terakhir",
+      "sub": "SOP 3.4",
+      "owner": "Manajer Accounting",
+      "steps": [
+        "23"
+      ],
+      "why": "Pemicu investigasi sebelum batch difinalisasi."
+    },
+    {
+      "id": "TBC-24",
+      "type": "DECISION",
+      "title": "Ambang discrepancy stok fisik vs sistem",
+      "sub": "SOP 4.7",
+      "owner": "Kepala Gudang",
+      "steps": [
+        "18"
+      ],
+      "why": "Menentukan kapan selisih harian dieskalasi."
+    },
+    {
+      "id": "TBC-25",
+      "type": "DECISION",
+      "title": "Frekuensi dan target suhu cold storage & kendaraan chilled",
+      "sub": "SOP 4.7, 5.4",
+      "owner": "QC + Manajer Operasional",
+      "steps": [
+        "27"
+      ],
+      "why": "Pemantauan suhu tanpa target bukan pengendalian."
+    },
+    {
+      "id": "TBC-26",
+      "type": "DECISION",
+      "title": "Kanal resmi penerimaan pesanan pelanggan",
+      "sub": "SOP 5.2",
+      "owner": "Manajer Sales",
+      "steps": [
+        "25"
+      ],
+      "why": "Order dari kanal tidak resmi tidak punya jejak dan tidak bisa direkonsiliasi."
+    },
+    {
+      "id": "TBC-27",
+      "type": "DECISION",
+      "title": "Pejabat berwenang menyetujui surat jalan",
+      "sub": "SOP 5.4",
+      "owner": "Direktur",
+      "steps": [
+        "26"
+      ],
+      "why": "Barang keluar gudang tanpa otorisasi yang jelas."
+    },
+    {
+      "id": "TBC-28",
+      "type": "DECISION",
+      "title": "Batas waktu penerbitan invoice setelah BST",
+      "sub": "SOP 5.4",
+      "owner": "Manajer Accounting",
+      "steps": [
+        "28"
+      ],
+      "why": "Menentukan jarak antara barang diterima pelanggan dan piutang tercatat."
+    },
+    {
+      "id": "TBC-29",
+      "type": "DECISION",
+      "title": "Tenggat penyelesaian selisih rekonsiliasi AP",
+      "sub": "SOP 7.4",
+      "owner": "Manajer Accounting",
+      "steps": [],
+      "why": "Selisih dengan supplier statement tanpa tenggat mengendap."
+    },
+    {
+      "id": "TBC-30",
+      "type": "DECISION",
+      "title": "Tenggat EOD — serah stock count dan rekonsiliasi kas",
+      "sub": "SOP 9.4",
+      "owner": "Manajer Operasional",
+      "steps": [],
+      "why": "Menentukan apakah settlement selesai pada hari yang sama."
+    },
+    {
+      "id": "TBC-31",
+      "type": "DECISION",
+      "title": "Mekanisme review Yield Benchmark",
+      "sub": "SOP 2.3",
+      "owner": "Manajer Operasional + Manajer Accounting",
+      "steps": [],
+      "why": "Benchmark yang tidak pernah ditinjau berubah jadi target, bukan pembanding."
+    },
+    {
+      "id": "TBC-32",
+      "type": "DECISION",
+      "title": "Ambang KPI dan mekanisme persetujuan perubahan SOP",
+      "sub": "tersebar di 1.9, 6.4, 7.4",
+      "owner": "Direktur",
+      "steps": [],
+      "why": "Beberapa KPI dan jadwal mingguan memakai penanda yang sama; perlu dipecah dan dipatok."
+    },
+    {
+      "id": "TBC-33",
+      "type": "DECISION",
+      "title": "Sumber dokter hewan berwenang — Dinas via kontrak sewa atau rekrut sendiri",
+      "sub": "P5. Payroll RAB belum memuat dokter hewan",
+      "owner": "Direktur + Manajer Operasional",
+      "steps": [
+        "8"
+      ],
+      "why": "Dua gate veteriner tidak bisa dijalankan tanpa petugas berwenang. Ini gap SDM, bukan administratif."
+    },
+    {
+      "id": "TBC-34",
+      "type": "DECISION",
+      "title": "Basis Yield Daging — karkas utuh / parting / boneless, sebelum atau sesudah chilling",
+      "sub": "P4. Angka 57% hanya indikatif",
+      "owner": "Manajer Operasional + Manajer Accounting",
+      "steps": [
+        "16"
+      ],
+      "why": "Basis menentukan arti angka 57%. Benchmark hanya boleh dikunci setelah validasi 5 batch pertama."
+    },
+    {
+      "id": "TBC-35",
+      "type": "DECISION",
+      "title": "Ambang kondemnasi normal",
+      "sub": "SOP 2.4",
+      "owner": "Manajer Operasional + Veteriner",
+      "steps": [
+        "11"
+      ],
+      "why": "Di bawah ambang melebur ke joint cost; di atas jadi beban periode. Bucket tidak boleh dilebur ke Waste."
+    },
+    {
+      "id": "TBC-36",
+      "type": "DECISION",
+      "title": "Ambang susut berat holding yang normal",
+      "sub": "SOP 2.4",
+      "owner": "Manajer Operasional",
+      "steps": [
+        "9"
+      ],
+      "why": "Di bawah ambang melebur ke cost per kg; di atas wajib berita acara."
+    },
+    {
+      "id": "TBC-37",
+      "type": "DECISION",
+      "title": "Interval review kebutuhan harian",
+      "sub": "SOP 1.2",
+      "owner": "Manajer Operasional",
+      "steps": [
+        "1"
+      ],
+      "why": "Identifikasi kebutuhan tanpa interval tetap bergantung ingatan orang."
+    },
+    {
+      "id": "TBC-38",
+      "type": "DECISION",
+      "title": "Nilai PO yang wajib co-approval Manajer Accounting",
+      "sub": "SOP 1.4",
+      "owner": "Direktur",
+      "steps": [],
+      "why": "Live bird ±89% total biaya batch; ambang co-approval belum ditetapkan."
+    },
+    {
+      "id": "TBC-39",
+      "type": "DECISION",
+      "title": "Prasyarat go-live keputusan parameter",
+      "sub": "Penutup",
+      "owner": "Direktur",
+      "steps": [],
+      "why": "Beberapa parameter ditandai prasyarat go-live tanpa daftar yang mengikat."
+    },
+    {
+      "id": "TBC-40",
+      "type": "DATA",
+      "title": "Arti singkatan KRK pada tahap potong kaki dan KRK",
+      "sub": "Belum dikonfirmasi — jangan diasumsikan",
+      "owner": "Supervisor Produksi + Manajer Operasional",
+      "steps": [
+        "15"
+      ],
+      "why": "Tabel yield SOP memuat Ceker, Hati & Ampela, Usus, dan Kepala — KRK tidak ada di antaranya. Dugaan kerangka, dan itu penting karena kerangka adalah bahan baku MDM. Satu konfirmasi ke pemilik proses menutupnya."
+    },
+    {
+      "id": "TBC-41",
+      "type": "DECISION",
+      "title": "Basis pengukuran upah borongan tenaga potong",
+      "sub": "Per kilo, per ekor, atau per shift",
+      "owner": "Manajer Operasional + Manajer Accounting",
+      "steps": [
+        "14"
+      ],
+      "why": "Ada tiga pool borongan — sembelih, potong kaki dan KRK, dan cut-up. Kalau upahnya per kilo atau per ekor, jam kerja bukan pembagi yang benar; yang dibutuhkan output per pekerja per batch."
+    },
+    {
+      "id": "TBC-VOL",
+      "type": "DATA",
+      "title": "Volume budgeted yang direkonsiliasi dengan RAB dan kapasitas",
+      "sub": "P2, kembar dengan TBC-15",
+      "owner": "PF + Manajer Operasional",
+      "steps": [],
+      "why": "Indikasi kapasitas di RAB tidak konsisten dengan kapasitas terpasang dan wajib direkonsiliasi."
+    }
+  ]
+}

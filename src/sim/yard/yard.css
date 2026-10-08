@@ -1,4 +1,4 @@
-/* Brief B4 command centre. Factory Yard's plate language (hairlines, flat fills, one live colour,
+/* The shared shell of the simulation (Brief B5 §2), from Brief B4's command centre. Factory Yard's plate language (hairlines, flat fills, one live colour,
    mono captions) in SAMB's calm palette: soft cool whites and light blue-greys, muted teal and
    blue, soft green / amber / restrained red for state. Tokens live on .yd and follow the board's
    theme: dark when <html data-theme="dark">, or when the device prefers dark and the board has
@@ -41,7 +41,7 @@
 .yd {
   container: yard / inline-size;
   height: 100%; min-height: 520px; box-sizing: border-box;
-  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 8px;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 8px;
   padding: 12px 14px; background: var(--y-panel); color: var(--y-ink);
   border: 1px solid var(--y-edge); border-radius: 22px;
   font: 13px/1.4 var(--y-sans);
@@ -60,12 +60,16 @@
 .yd-menu { display: none !important; }
 @media (max-width: 860px) { .yd-menu { display: inline-grid !important; margin-bottom: 4px; } }
 
+/* the world switcher (Dunia), with the world's kicker */
+.yd-worlds { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; }
+.yd-worlds .yd-seg button { padding: 3px 12px; }
+.yd-worldnote { margin-left: auto; }
+
 /* top: the live metrics bar */
 .yd-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; gap: 10px; }
 .yd-brand { display: grid; align-content: center; gap: 2px; padding-right: 4px; }
 .yd-clock { font: 500 18px var(--y-mono); color: var(--y-ink-hi); letter-spacing: .02em; }
-.yd-metrics { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.yd-metrics.lens { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.yd-metrics { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); gap: 8px; }
 .yd-metric { border: 1px solid var(--y-edge); border-radius: 12px; padding: 6px 10px; display: grid; gap: 1px; min-width: 0; background: var(--y-panel); }
 .yd-metric b { font: 600 15px var(--y-mono); color: var(--y-ink-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .yd-mlabel { font: 500 10px var(--y-mono); text-transform: uppercase; letter-spacing: .11em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -75,6 +79,7 @@
 .yd-metric.bad b::before { background: var(--y-bad); }
 .yd-metric.missing { border-style: dashed; }
 .yd-metric.missing .yd-msub { color: var(--y-warn); }
+.yd-lenses { align-self: center; display: grid; gap: 4px; }
 .yd-lens { align-self: center; font: 500 11px var(--y-mono) !important; text-transform: uppercase; letter-spacing: .12em; padding: 8px 12px !important; }
 
 /* the context switcher */
@@ -100,7 +105,9 @@
 .yd .y-canvas:active { cursor: grabbing; }
 .yd .y-canvas.over { cursor: pointer; }
 .yd-tools { position: absolute; left: 10px; top: 10px; display: grid; gap: 6px; z-index: 2; }
-.yd-watermark { position: absolute; left: 12px; bottom: 8px; margin: 0; font: 500 10.5px var(--y-mono); letter-spacing: .08em; color: var(--y-ink); background: color-mix(in srgb, var(--y-panel) 85%, transparent); border: 1px solid var(--y-edge); border-radius: 6px; padding: 2px 8px; pointer-events: none; z-index: 2; }
+.yd-watermark { position: absolute; left: 12px; bottom: 8px; max-width: min(560px, calc(100% - 24px)); font: 500 10.5px var(--y-mono); letter-spacing: .08em; color: var(--y-ink); background: color-mix(in srgb, var(--y-panel) 85%, transparent); border: 1px solid var(--y-edge); border-radius: 6px; padding: 2px 8px; pointer-events: none; z-index: 2; }
+.yd-watermark p { margin: 0; }
+.yd-watermark p + p { border-top: 1px dashed var(--y-edge); margin-top: 2px; padding-top: 2px; }
 .yd-note { position: absolute; inset: 0; display: none; place-items: center; margin: 0; padding: 24px; text-align: center; }
 .yd-stage[data-nowebgl] .yd-note { display: grid; }
 .yd .y-tag { position: absolute; left: 0; top: 0; transform: translate(-50%, calc(-100% - 10px)); pointer-events: none; white-space: nowrap; z-index: 3;
@@ -113,7 +120,21 @@
 .yd .y-place b { font: 600 10.5px var(--y-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--y-ink-hi); background: color-mix(in srgb, var(--y-panel) 88%, transparent); border: 1px solid var(--y-edge); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
 .yd .y-place span { display: none; font: 500 10px var(--y-mono); color: var(--y-live); background: var(--y-panel); border: 1px dashed var(--y-live); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
 .yd .lens .y-place span { display: block; }
+/* a readiness lens shows each place's ADA / SEBAGIAN / BELUM bar instead of its cost driver */
+.yd .y-place .y-ready { display: none; min-width: 96px; height: 13px; border: 1px solid var(--y-edge); border-radius: 4px; overflow: hidden; background: var(--y-panel); font-style: normal; }
+.yd .lens[data-lens='data'] .y-place span { display: none; }
+.yd .lens[data-lens='data'] .y-place .y-ready { display: flex; }
+.yd .y-ready em { display: grid; place-items: center; min-width: 13px; font: 600 9px var(--y-mono); font-style: normal; color: var(--y-panel); }
+.yd .y-ready em { border-radius: 0; padding: 0; margin: 0; line-height: 13px; }
+.yd .y-ready em.r-ada { background: var(--y-ok); }
+.yd .y-ready em.r-seb { background: var(--y-warn); }
+.yd .y-ready em.r-bel { background: var(--y-bad); }
+.yd .y-place.y-only b { font-size: 9.5px; background: var(--y-panel); }
 .yd .y-place[hidden] { display: none; }
+.yd .y-place b i, .yd .y-place b em { font-style: normal; }
+/* a narrow map pins the number key alone; the place buttons carry the names */
+.yd .narrow .y-place b:has(i) em { display: none; }
+.yd .narrow .y-place b:has(i) { min-width: 20px; text-align: center; border-radius: 50%; padding: 1px 4px; }
 
 .yd-panel { min-height: 0; overflow: auto; border: 1px solid var(--y-edge); border-radius: 14px; padding: 12px 14px 14px; background: var(--y-panel); }
 .yd-idle p { margin: 6px 0; }
@@ -143,6 +164,38 @@
 .yd-driver, .yd-next { margin: 0; font-size: 12px; color: var(--y-ink-hi); }
 .yd-engine { display: grid; gap: 4px; }
 .yd-notes { margin: 0; font-size: 11.5px; border-left: 2px solid var(--y-warn); padding: 2px 0 2px 8px; }
+.yd-source { margin: 0; font: 10.5px/1.45 var(--y-mono); color: var(--y-ink); }
+.yd-block { display: grid; gap: 4px; }
+.yd-block p { margin: 0; font-size: 12px; color: var(--y-ink-hi); }
+.yd-list { margin: 0; padding-left: 16px; font-size: 12px; color: var(--y-ink-hi); }
+.yd-list li + li { margin-top: 2px; }
+.yd-needs { list-style: none; margin: 0; padding: 0; display: grid; }
+.yd-needs li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 8px; padding: 5px 0; border-top: 1px solid var(--y-edge); font-size: 12px; color: var(--y-ink-hi); }
+.yd-needs small { grid-column: 2; font-size: 10.5px; color: var(--y-ink); }
+.yd-need { font-style: normal; font: 600 9px var(--y-mono); letter-spacing: .06em; border-radius: 4px; padding: 2px 4px; align-self: start; border: 1px solid; }
+.yd-need.ok { color: var(--y-ok); border-color: var(--y-ok); background: var(--y-ok-soft); }
+.yd-need.warn { color: var(--y-warn); border-color: var(--y-warn); background: var(--y-warn-soft); }
+.yd-need.bad { color: var(--y-bad); border-color: var(--y-bad); background: var(--y-bad-soft); }
+.yd-hbars { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.yd-hbars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 8px; font-size: 11.5px; }
+.yd-hbars b { font: 500 11px var(--y-mono); color: var(--y-ink-hi); }
+.yd-hbars i { grid-column: 1 / -1; display: block; height: 4px; border-radius: 2px; background: var(--y-line); }
+.yd-hbars i.live { background: var(--y-live); }
+.yd-hbars i.ok { background: var(--y-ok); }
+.yd-hbars i.warn { background: var(--y-warn); }
+.yd-hbars i.bad { background: var(--y-bad); }
+.yd-wf { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.yd-wf li { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 8px; font-size: 11px; }
+.yd-wf li > div { position: relative; height: 12px; border-left: 1px solid var(--y-edge); }
+.yd-wf li > div i { position: absolute; top: 1px; bottom: 1px; border-radius: 2px; background: var(--y-line); }
+.yd-wf li.total > div i { background: var(--y-blue); }
+.yd-wf li.up > div i { background: var(--y-bad); }
+.yd-wf li.down > div i { background: var(--y-ok); }
+.yd-wf b { font: 500 11px var(--y-mono); color: var(--y-ink-hi); text-align: right; min-width: 64px; }
+.yd-wf li.total span { color: var(--y-ink-hi); font-weight: 600; }
+.yd-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.yd-tabs button { font: 500 10.5px var(--y-mono); padding: 2px 7px; border-radius: 6px; }
+.yd-stepbody { display: grid; gap: 9px; padding-top: 4px; }
 .yd-foot button { font: 500 11px var(--y-mono); text-transform: uppercase; letter-spacing: .12em; }
 
 /* bottom: the stage tracker, and the clock controls at the right */
@@ -169,11 +222,14 @@
 /* phone: one column; metrics and switches scroll sideways inside their own strips; the panel follows the map */
 @container yard (max-width: 720px) {
   .yd-clock { font-size: 16px; }
-  .yd-metrics, .yd-metrics.lens { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 2px; }
+  .yd-metrics { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 2px; }
   .yd-metric { flex: 0 0 62%; scroll-snap-align: start; }
   .yd-metric b { font-size: 14px; }
-  .yd-switch { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
-  .yd-switch > * { flex: none; }
+  .yd-switch, .yd-worlds { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .yd-switch > *, .yd-worlds > * { flex: none; }
+  .yd-worldnote { margin-left: 0; }
+  .yd-lenses { grid-auto-flow: column; }
+  .yd-lenses.many { grid-column: 1 / -1; grid-row: 3; justify-content: start; }
   .yd-time { margin-left: 0; }
   .yd-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(340px, 56vh) auto; }
   .yd-panel { max-height: none; overflow: visible; }
@@ -181,6 +237,7 @@
   .yd-trackwrap { flex-basis: 100%; }
   .yd-time { margin-left: auto; }
   .yd-idle p:not(.yd-kicker) { font-size: 12px; }
-  .yd-watermark { bottom: auto; top: 10px; left: auto; right: 10px; }
+  .yd-watermark { left: 10px; right: 10px; bottom: 8px; max-width: none; font-size: 9.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .yd * { transition: none !important; scroll-behavior: auto !important; } }
+.yd-steptitle { margin: 0; font: 500 14px/1.3 var(--y-mono); color: var(--y-ink-hi); }

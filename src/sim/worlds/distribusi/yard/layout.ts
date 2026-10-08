@@ -17,7 +17,8 @@
 // Toko             | 314–440    | 0–104      | ten modern-trade stores (zona 1), service lane y 46–54
 // Konsumen         | 132–440    | 118–280    | housing east of Jl. Niaga and south of Jl. Perumahan
 
-import type { P2 } from '../kernel.ts'
+import type { P2 } from '../../../yard/kernel.ts'
+import type { PlaceDef, PlaceLabel } from '../../../yard/types.ts'
 
 export const PLATE = { x0: 0, x1: 440, y0: 0, y1: 280 }
 
@@ -89,12 +90,12 @@ export const PLACES = [
   { key: '4', id: 'bay', label: 'Bay kurir', box: [196, 300, 186, 250] },
   { key: '5', id: 'toko', label: 'Toko', box: [306, 440, 0, 104] },
   { key: '6', id: 'konsumen', label: 'Konsumen', box: [306, 440, 118, 280] },
-] as const
+] as const satisfies readonly PlaceDef[]
 export type PlaceId = (typeof PLACES)[number]['id']
 
 /** where each place's name sits on the map, and the cost driver it names under Lensa biaya
  *  (brief §5's driver column) */
-export const PLACE_LABELS: { key: string; label: string; at: [number, number, number]; driver: string }[] = [
+export const PLACE_LABELS: PlaceLabel[] = [
   { key: '1', label: 'Kantor', at: [54, 26, 12], driver: 'PO · invoice dibuat · invoice dikirim' },
   { key: '2', label: 'Prinsipal', at: [6, 222, 12], driver: 'jumlah PO' },
   { key: '3', label: 'Gudang', at: [199, 126, 15], driver: 'palet masuk · palet-hari · palet keluar' },

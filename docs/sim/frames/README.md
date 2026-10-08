@@ -26,3 +26,38 @@ world-1 model at 0,4× demand). Positions are staged for the still; motion comes
 | `v1-network-390x844-light.png` | The same at phone width (full page: the map, then the panel, then the tracker) |
 | `v1-lensa-biaya-1366x768-light.png` | Lensa biaya on: the bar shows the engine's cost metrics (Rp 105.444 per B2C order, Rp 204.869 per B2B DO, Rp 230 jt shared warehouse — the same figures `main` shows for day 8), and each place names its cost driver |
 | `main-today-1366x768.png`, `main-today-390x844.png` | The simulation as it looks on `main` today (Brief 3's 3D view, world 2, Hari 8 · 10.45), captured from a clean build of `origin/main` |
+
+# Brief B5 frames
+
+Captured with `node scripts/yard-frames.ts --out=docs/sim/frames`: a production build of the dev
+preview page served with the production Content-Security-Policy from `vercel.json`, headless
+Chromium on SwiftShader. Every capture logged zero CSP violations and zero page errors. All stills
+are **Hari 8 · 10.45**, staged (movement comes in W2 and W3).
+
+## W0: the distribution world after the shell refactor
+
+| File | What it shows |
+|---|---|
+| `w0-distribusi-1366x768-light.png` | B4's V1 still (L-03 selected, gudang open) on the shared shell: unchanged except the new **Dunia** switcher row on top |
+
+## W1: style frames of the two new worlds (gate)
+
+Each world in network view with its places labelled and one place open as a section drawing,
+with the world switcher, at 1366 × 768 and at a phone width (390 × 844, full page: map, then
+the panel, then the tracker).
+
+| File | What it shows |
+|---|---|
+| `w1-pabrik-singkong-1366x768-light.png` | BMG's plant on Factory Yard's factory: receiving canopy and bins, the sawtooth line hall **open as a section** (peeling, washing and slicing, frying, sorting, packing), the CNG skids, the conveyor, the finished-goods store with IFM trucks at its east docks, Kantor pabrik. The frying station selected: its card on real BMG standard figures; daily actuals say "Belum ada data" |
+| `w1-pabrik-singkong-1366x768-dark.png` | The same in the board's dark theme |
+| `w1-pabrik-singkong-390x844-light.png` | The same at phone width; the pins show their number keys only |
+| `w1-pabrik-singkong-kantor-1366x768-light.png` | Kantor pabrik open, its cost card leading with the August waterfall, standard → actual, a value on every bar and the −18,8 residual as its own bar |
+| `w1-pabrik-singkong-lensa-biaya-1366x768-light.png` | Lensa biaya: per kg production and premium, the IFM price, margin and contribution, pools A–E; each place names its Rp per kg; the pools drawn as a band across the stages |
+| `w1-rpa-1366x768-light.png` | KGR's RPA: suppliers behind the fence (external), receiving and holding, the veterinary post, the processing hall **open as a section** (slaughter line, chilling and the eight split-off bins, disposition / cut-up / MDM), the Fresh store, the blast freezer and rented cold rooms, shipping, the Kantor. Chilling and split-off selected: its swimlane card (step 12, real) |
+| `w1-rpa-1366x768-dark.png` | The same in dark |
+| `w1-rpa-390x844-light.png` | The same at phone width, the swimlane card in full below the map |
+| `w1-rpa-lensa-data-1366x768-light.png` | Lensa kesiapan data: the tiles show the swimlane's totals (135 needs; ADA 9 · SEBAGIAN 34 · BELUM 92; 42 gates); every place and division carries its ADA / SEBAGIAN / BELUM bar; gate flags stand where a TBC is open; TBC-03 selected |
+| `w1-rpa-kantor-1366x768-light.png` | The Kantor open: four divisions by lane with their step counts, and the 16 gates no step refers to |
+
+The RPA's operating and cost tiles show "—" with "dummy · menyusul di W3": its quantities and
+rupiah figures are synthetic and come with the synthetic batch in W3.
