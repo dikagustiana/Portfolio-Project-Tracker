@@ -17,7 +17,7 @@ The spec is [`BRIEF.md`](BRIEF.md). Where the brief says nothing, the prototype'
 | M4 | UI parity on Realtime data | Built; owner walkthrough pending | All screens and dialogs ported. Browser tests: access grant, task form pemeriksa (§6.7), commit → submit → accept |
 | M5 | Seed import, Vercel preview | Import done; cloud waiting on owner | Verification report; DB round-trip matches the golden file. Cloud deploy needs a free Supabase project slot (`docs/deploy.md`) |
 | M6 | Daily digest, dry run | Done locally | Edge Function run for a workday and a holiday matches the domain; the summary matches the golden digest |
-| A1 | Architecture pass (docs/ARCHITECTURE.md) | Done locally; migrations not applied to any cloud project | pgTAP 550 assertions; integration 16; browser 10; unit/domain 381 |
+| A1 | Architecture pass (docs/ARCHITECTURE.md) | Applied to `samb-project-board` except the statements in `ops/finish-production-upgrade.sql` (owner runs once) | pgTAP 550 assertions; integration 16; browser 10; unit/domain 381 |
 
 ## Stack
 
